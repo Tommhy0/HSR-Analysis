@@ -1,0 +1,14 @@
+{
+  "version": "4.6",
+  "files": 577,
+  "failures": [],
+  "source": "https://static.nanoka.cc/hsr/4.6",
+  "checkedAt": "2026-10-13T23:50:44+0800",
+  "database": "data/databases/HSR_4.6.db",
+  "counts": {
+    "characters": 98,
+    "character_skills": 673,
+    "monster_stats": 632,
+    "abyss_wave_monsters": 8010
+  }
+}

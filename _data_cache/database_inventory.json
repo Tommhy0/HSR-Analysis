@@ -1,0 +1,3178 @@
+[
+  {
+    "path": "D:/HSR Analysis/HSR_现有_4.5.db",
+    "meta": [
+      {
+        "key": "version",
+        "value": "4.5"
+      },
+      {
+        "key": "locale",
+        "value": "zh"
+      },
+      {
+        "key": "source",
+        "value": "nanoka.cc (static.nanoka.cc/hsr)"
+      },
+      {
+        "key": "hp_formula",
+        "value": "HP = HPBase x HPModifyRatio x <精英组表>.HPRatio x HardLevelGroup.HPRatio; 无限波次再乘 (1+ParamList[1])。三深渊的精英组全部取自 EliteGroup，逐条实际使用哪张表见 abyss_wave_monsters.hp_formula_json 的 operands.eg_source"
+      },
+      {
+        "key": "modes",
+        "value": "moc=混沌回忆(maze.json/zh/maze), pf=虚构叙事(maze_extra.json/zh/story), as=末日幻影(maze_boss.json/zh/boss)"
+      },
+      {
+        "key": "wiki_source",
+        "value": "abyss_wiki_season / abyss_wiki_wave 来自 wiki.biligame.com/sr (SMW action=ask 取起止时间，赛期模板取逐波敌名)。abyss_seasons.begin_time 由它回填，因为 nanoka 源里是空串。"
+      }
+    ],
+    "tables": {
+      "meta": {
+        "count": 6,
+        "columns": [
+          "key",
+          "value"
+        ]
+      },
+      "characters": {
+        "count": 97,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "element",
+          "element_en",
+          "sp_need",
+          "release",
+          "camp",
+          "desc",
+          "icon",
+          "enhanced_json",
+          "memosprite_json",
+          "unique_json"
+        ]
+      },
+      "character_skills": {
+        "count": 664,
+        "columns": [
+          "character_id",
+          "skill_id",
+          "name",
+          "type",
+          "type_name",
+          "tag",
+          "desc",
+          "simple_desc",
+          "sp_base",
+          "bp_need",
+          "bp_add",
+          "show_stance_list_json",
+          "params_json",
+          "extra_json"
+        ]
+      },
+      "character_ranks": {
+        "count": 582,
+        "columns": [
+          "character_id",
+          "rank_id",
+          "name",
+          "desc",
+          "param_list_json",
+          "icon"
+        ]
+      },
+      "character_traces": {
+        "count": 1771,
+        "columns": [
+          "character_id",
+          "point_key",
+          "point_id",
+          "anchor",
+          "point_type",
+          "point_type_name",
+          "point_name",
+          "point_desc",
+          "max_level",
+          "default_unlock",
+          "avatar_promotion_limit",
+          "level_up_skill_id_json",
+          "status_add_list_json",
+          "param_list_json",
+          "pre_point_json",
+          "material_list_json",
+          "levels_json",
+          "icon"
+        ]
+      },
+      "character_stats": {
+        "count": 679,
+        "columns": [
+          "character_id",
+          "promotion",
+          "hp_base",
+          "hp_add",
+          "attack_base",
+          "attack_add",
+          "defence_base",
+          "defence_add",
+          "speed_base",
+          "critical_chance",
+          "critical_damage",
+          "base_aggro"
+        ]
+      },
+      "character_relics": {
+        "count": 97,
+        "columns": [
+          "character_id",
+          "set4_ids_json",
+          "set2_ids_json",
+          "property_list3_json",
+          "property_list4_json"
+        ]
+      },
+      "character_lightcones": {
+        "count": 268,
+        "columns": [
+          "character_id",
+          "lightcone_id",
+          "weight"
+        ]
+      },
+      "lightcones": {
+        "count": 169,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "skill_name",
+          "skill_desc",
+          "skill_params_json",
+          "desc"
+        ]
+      },
+      "lightcone_stats": {
+        "count": 1183,
+        "columns": [
+          "lightcone_id",
+          "promotion",
+          "max_level",
+          "base_hp",
+          "base_attack",
+          "base_defence",
+          "base_hp_add",
+          "base_attack_add",
+          "base_defence_add",
+          "player_level_require",
+          "world_level_require"
+        ]
+      },
+      "relicsets": {
+        "count": 60,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "set2_desc",
+          "set2_params_json",
+          "set4_desc",
+          "set4_params_json"
+        ]
+      },
+      "monsters": {
+        "count": 628,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rank",
+          "camp",
+          "camp_name",
+          "weak_json",
+          "desc",
+          "icon"
+        ]
+      },
+      "monster_stats": {
+        "count": 628,
+        "columns": [
+          "monster_id",
+          "attack_base",
+          "defence_base",
+          "hp_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "critical_damage_base",
+          "initial_delay_ratio",
+          "minimum_fatigue_ratio",
+          "stance_count"
+        ]
+      },
+      "monster_childs": {
+        "count": 2649,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "elite_group",
+          "hard_level_group",
+          "hp_modify_ratio",
+          "attack_modify_ratio",
+          "defence_modify_ratio",
+          "speed_modify_ratio",
+          "speed_modify_value",
+          "stance_modify_ratio",
+          "stance_modify_value",
+          "stance_weak_json",
+          "damage_type_resistance_json"
+        ]
+      },
+      "monster_skills": {
+        "count": 8052,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "skill_id",
+          "skill_name",
+          "skill_desc",
+          "damage_type",
+          "sp_hit_base",
+          "extra_json"
+        ]
+      },
+      "monster_values": {
+        "count": 628,
+        "columns": [
+          "monster_id",
+          "hp_base",
+          "attack_base",
+          "defence_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "rank"
+        ]
+      },
+      "elite_groups": {
+        "count": 1406,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "hard_level_groups": {
+        "count": 745,
+        "columns": [
+          "hard_level_group",
+          "level",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "infinite_elite_groups": {
+        "count": 40,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "abyss_seasons": {
+        "count": 92,
+        "columns": [
+          "mode",
+          "season_id",
+          "name",
+          "buff_name",
+          "buff_desc",
+          "buff_params_json",
+          "begin_time",
+          "end_time",
+          "version",
+          "option_json",
+          "sub_option_json"
+        ]
+      },
+      "abyss_floors": {
+        "count": 708,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "floor_name",
+          "is_boss",
+          "hard_name",
+          "challenge_json",
+          "damage_types_json",
+          "maze_group_id",
+          "boss_monster_id",
+          "npc_monster_ids_json",
+          "tags_json",
+          "buffs_json",
+          "phase_json",
+          "maze_group_id2",
+          "boss_skill_json"
+        ]
+      },
+      "abyss_wiki_season": {
+        "count": 74,
+        "columns": [
+          "mode",
+          "season_id",
+          "period",
+          "name",
+          "begin_time",
+          "end_time",
+          "matched_by",
+          "wiki_name"
+        ]
+      },
+      "abyss_wiki_wave": {
+        "count": 2460,
+        "columns": [
+          "mode",
+          "season_id",
+          "period",
+          "group_label",
+          "team",
+          "wave",
+          "enemies",
+          "special_enemies",
+          "weakness",
+          "enemy_cap",
+          "atk_bonus",
+          "hp_bonus"
+        ]
+      },
+      "abyss_tags": {
+        "count": 640,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "tag_index",
+          "name",
+          "desc",
+          "params_json",
+          "child_json"
+        ]
+      },
+      "abyss_buffs": {
+        "count": 1379,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "buff_index",
+          "name",
+          "desc",
+          "params_json"
+        ]
+      },
+      "abyss_events": {
+        "count": 1543,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "stage_id",
+          "level",
+          "hard_level_group",
+          "elite_group",
+          "waves_json"
+        ]
+      },
+      "sqlite_sequence": {
+        "count": 2,
+        "columns": [
+          "name",
+          "seq"
+        ]
+      },
+      "abyss_wave_monsters": {
+        "count": 7806,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "wave_index",
+          "slot",
+          "monster_id",
+          "base_monster_id",
+          "monster_name",
+          "level",
+          "hp",
+          "speed",
+          "stance",
+          "status_res",
+          "toughness",
+          "weaknesses_json",
+          "spawn_count",
+          "hp_count",
+          "phase_ratios_json",
+          "is_infinite",
+          "infinite_wave_id",
+          "hp_formula_json"
+        ]
+      }
+    },
+    "emptySkills": [
+      {
+        "skill_id": 122014,
+        "character_id": 1220,
+        "name": "凿破大荒",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": "终结技期间可<color=#f29e38ff>无视弱点属性</color>削减敌方韧性，目标未被击破时飞霄<color=#f29e38ff>弱点击破效率提高</color>。\\n对敌方单体发动<color=#f29e38ff><unbreak>#3[i]</unbreak></color>次【闪裂刃舞】或【钺贯天冲】，最后造成风属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.96, 1, 6, 4.02]}, \"2\": {\"level\": 2, \"param_list\": [1.024, 1, 6, 4.318]}, \"3\": {\"level\": 3, \"param_list\": [1.088, 1, 6, 4.616]}, \"4\": {\"level\": 4, \"param_list\": [1.152, 1, 6, 4.914]}, \"5\": {\"level\": 5, \"param_list\": [1.216, 1, 6, 5.212]}, \"6\": {\"level\": 6, \"param_list\": [1.28, 1, 6, 5.51]}, \"7\": {\"level\": 7, \"param_list\": [1.36, 1, 6, 5.8825]}, \"8\": {\"level\": 8, \"param_list\": [1.44, 1, 6, 6.255]}, \"9\": {\"level\": 9, \"param_list\": [1.52, 1, 6, 6.6275]}, \"10\": {\"level\": 10, \"param_list\": [1.6, 1, 6, 7]}, \"11\": {\"level\": 11, \"param_list\": [1.664, 1, 6, 7.298]}, \"12\": {\"level\": 12, \"param_list\": [1.728, 1, 6, 7.596]}, \"13\": {\"level\": 13, \"param_list\": [1.792, 1, 6, 7.894]}, \"14\": {\"level\": 14, \"param_list\": [1.856, 1, 6, 8.192]}, \"15\": {\"level\": 15, \"param_list\": [1.92, 1, 6, 8.49]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130814,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130815,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130816,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130817,
+        "character_id": 1308,
+        "name": "黄泉返渡",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成雷属性伤害并移除所有【集真赤】。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.96]}, \"7\": {\"level\": 7, \"param_list\": [1.02]}, \"8\": {\"level\": 8, \"param_list\": [1.08]}, \"9\": {\"level\": 9, \"param_list\": [1.14]}, \"10\": {\"level\": 10, \"param_list\": [1.2]}, \"11\": {\"level\": 11, \"param_list\": [1.248]}, \"12\": {\"level\": 12, \"param_list\": [1.296]}, \"13\": {\"level\": 13, \"param_list\": [1.344]}, \"14\": {\"level\": 14, \"param_list\": [1.392]}, \"15\": {\"level\": 15, \"param_list\": [1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131708,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3, 0.6, 0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34, 0.68, 0.5]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38, 0.76, 0.5]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42, 0.84, 0.5]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46, 0.92, 0.5]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5, 1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54, 1.08, 0.5]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58, 1.16, 0.5]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62, 1.24, 0.5]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66, 1.32, 0.5]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131710,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131712,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6]}, \"2\": {\"level\": 2, \"param_list\": [0.68]}, \"3\": {\"level\": 3, \"param_list\": [0.76]}, \"4\": {\"level\": 4, \"param_list\": [0.84]}, \"5\": {\"level\": 5, \"param_list\": [0.92]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.08]}, \"8\": {\"level\": 8, \"param_list\": [1.16]}, \"9\": {\"level\": 9, \"param_list\": [1.24]}, \"10\": {\"level\": 10, \"param_list\": [1.32]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 140209,
+        "character_id": 1402,
+        "name": "高举吧，升华的名讳",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "为衣匠回复生命值。衣匠不在场时，<u>召唤忆灵</u>衣匠并使自身立即行动。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.275]}, \"3\": {\"level\": 3, \"param_list\": [0.3]}, \"4\": {\"level\": 4, \"param_list\": [0.325]}, \"5\": {\"level\": 5, \"param_list\": [0.35]}, \"6\": {\"level\": 6, \"param_list\": [0.375]}, \"7\": {\"level\": 7, \"param_list\": [0.40625]}, \"8\": {\"level\": 8, \"param_list\": [0.4375]}, \"9\": {\"level\": 9, \"param_list\": [0.46875]}, \"10\": {\"level\": 10, \"param_list\": [0.5]}, \"11\": {\"level\": 11, \"param_list\": [0.525]}, \"12\": {\"level\": 12, \"param_list\": [0.55]}, \"13\": {\"level\": 13, \"param_list\": [0.575]}, \"14\": {\"level\": 14, \"param_list\": [0.6]}, \"15\": {\"level\": 15, \"param_list\": [0.625]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 141309,
+        "character_id": 1413,
+        "name": "白昼悄然离去",
+        "tag": "Support",
+        "desc": null,
+        "simple_desc": "消耗自身生命值<u>召唤忆灵</u>「长夜」，并使<color=#f29e38ff>我方全体忆灵的暴击伤害提高</color>。若忆灵「长夜」已在场，为其回复生命值。施放时，<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#3[i]</unbreak></color>点【忆质】</color>，若处于【至暗之谜】状态，额外<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#5[i]</unbreak></color>点【忆质】</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.2, 2, 2, 0.5, 12, 0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.22, 2, 2, 0.5, 12, 0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.24, 2, 2, 0.5, 12, 0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.26, 2, 2, 0.5, 12, 0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.28, 2, 2, 0.5, 12, 0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.3, 2, 2, 0.5, 12, 0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.325, 2, 2, 0.5, 12, 0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.35, 2, 2, 0.5, 12, 0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.375, 2, 2, 0.5, 12, 0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.4, 2, 2, 0.5, 12, 0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.42, 2, 2, 0.5, 12, 0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.44, 2, 2, 0.5, 12, 0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.46, 2, 2, 0.5, 12, 0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.48, 2, 2, 0.5, 12, 0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.5, 2, 2, 0.5, 12, 0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150110,
+        "character_id": 1501,
+        "name": "百花齐放，胜者独享！",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5, 0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.6, 0.3]}, \"3\": {\"level\": 3, \"param_list\": [0.7, 0.35]}, \"4\": {\"level\": 4, \"param_list\": [0.8, 0.4]}, \"5\": {\"level\": 5, \"param_list\": [0.9, 0.45]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.1, 0.55]}, \"8\": {\"level\": 8, \"param_list\": [1.2, 0.6]}, \"9\": {\"level\": 9, \"param_list\": [1.3, 0.65]}, \"10\": {\"level\": 10, \"param_list\": [1.4, 0.7]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150610,
+        "character_id": 1506,
+        "name": "超超超大剑",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。对生命值最高的目标基于总伤害值造成<u>真实伤害</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150612,
+        "character_id": 1506,
+        "name": "爆爆爆炸蛋",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。恢复战技点。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150618,
+        "character_id": 1506,
+        "name": "怪怪怪味豆",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。获得<u>笑点</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150709,
+        "character_id": 1507,
+        "name": "刃下，归葬",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150909,
+        "character_id": 1509,
+        "name": "漫不经心",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.6]}, \"3\": {\"level\": 3, \"param_list\": [0.7]}, \"4\": {\"level\": 4, \"param_list\": [0.8]}, \"5\": {\"level\": 5, \"param_list\": [0.9]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.1]}, \"8\": {\"level\": 8, \"param_list\": [1.2]}, \"9\": {\"level\": 9, \"param_list\": [1.3]}, \"10\": {\"level\": 10, \"param_list\": [1.4]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 151014,
+        "character_id": 1510,
+        "name": "我们，亦是逐星的巨人",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "造成<color=#f29e38ff><unbreak>#2[i]</unbreak></color>次伤害，每次伤害对敌方随机单体造成火属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [3, 0.4]}, \"2\": {\"level\": 2, \"param_list\": [3, 0.44]}, \"3\": {\"level\": 3, \"param_list\": [3, 0.48]}, \"4\": {\"level\": 4, \"param_list\": [3, 0.52]}, \"5\": {\"level\": 5, \"param_list\": [3, 0.56]}, \"6\": {\"level\": 6, \"param_list\": [3, 0.6]}, \"7\": {\"level\": 7, \"param_list\": [3, 0.65]}, \"8\": {\"level\": 8, \"param_list\": [3, 0.7]}, \"9\": {\"level\": 9, \"param_list\": [3, 0.75]}, \"10\": {\"level\": 10, \"param_list\": [3, 0.8]}, \"11\": {\"level\": 11, \"param_list\": [3, 0.84]}, \"12\": {\"level\": 12, \"param_list\": [3, 0.88]}, \"13\": {\"level\": 13, \"param_list\": [3, 0.92]}, \"14\": {\"level\": 14, \"param_list\": [3, 0.96]}, \"15\": {\"level\": 15, \"param_list\": [3, 1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800709,
+        "character_id": 8007,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800809,
+        "character_id": 8008,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      }
+    ]
+  },
+  {
+    "path": "D:/HSR Analysis/核心数据库/基本数据/HSR_现有_4.5.db",
+    "meta": [
+      {
+        "key": "version",
+        "value": "4.5"
+      },
+      {
+        "key": "locale",
+        "value": "zh"
+      },
+      {
+        "key": "source",
+        "value": "nanoka.cc (static.nanoka.cc/hsr)"
+      },
+      {
+        "key": "hp_formula",
+        "value": "HP = HPBase x HPModifyRatio x <精英组表>.HPRatio x HardLevelGroup.HPRatio; 无限波次再乘 (1+ParamList[1])。三深渊的精英组全部取自 EliteGroup，逐条实际使用哪张表见 abyss_wave_monsters.hp_formula_json 的 operands.eg_source"
+      },
+      {
+        "key": "modes",
+        "value": "moc=混沌回忆(maze.json/zh/maze), pf=虚构叙事(maze_extra.json/zh/story), as=末日幻影(maze_boss.json/zh/boss)"
+      },
+      {
+        "key": "wiki_source",
+        "value": "abyss_wiki_season / abyss_wiki_wave 来自 wiki.biligame.com/sr (SMW action=ask 取起止时间，赛期模板取逐波敌名)。abyss_seasons.begin_time 由它回填，因为 nanoka 源里是空串。"
+      }
+    ],
+    "tables": {
+      "meta": {
+        "count": 6,
+        "columns": [
+          "key",
+          "value"
+        ]
+      },
+      "characters": {
+        "count": 97,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "element",
+          "element_en",
+          "sp_need",
+          "release",
+          "camp",
+          "desc",
+          "icon",
+          "enhanced_json",
+          "memosprite_json",
+          "unique_json"
+        ]
+      },
+      "character_skills": {
+        "count": 664,
+        "columns": [
+          "character_id",
+          "skill_id",
+          "name",
+          "type",
+          "type_name",
+          "tag",
+          "desc",
+          "simple_desc",
+          "sp_base",
+          "bp_need",
+          "bp_add",
+          "show_stance_list_json",
+          "params_json",
+          "extra_json"
+        ]
+      },
+      "character_ranks": {
+        "count": 582,
+        "columns": [
+          "character_id",
+          "rank_id",
+          "name",
+          "desc",
+          "param_list_json",
+          "icon"
+        ]
+      },
+      "character_traces": {
+        "count": 1771,
+        "columns": [
+          "character_id",
+          "point_key",
+          "point_id",
+          "anchor",
+          "point_type",
+          "point_type_name",
+          "point_name",
+          "point_desc",
+          "max_level",
+          "default_unlock",
+          "avatar_promotion_limit",
+          "level_up_skill_id_json",
+          "status_add_list_json",
+          "param_list_json",
+          "pre_point_json",
+          "material_list_json",
+          "levels_json",
+          "icon"
+        ]
+      },
+      "character_stats": {
+        "count": 679,
+        "columns": [
+          "character_id",
+          "promotion",
+          "hp_base",
+          "hp_add",
+          "attack_base",
+          "attack_add",
+          "defence_base",
+          "defence_add",
+          "speed_base",
+          "critical_chance",
+          "critical_damage",
+          "base_aggro"
+        ]
+      },
+      "character_relics": {
+        "count": 97,
+        "columns": [
+          "character_id",
+          "set4_ids_json",
+          "set2_ids_json",
+          "property_list3_json",
+          "property_list4_json"
+        ]
+      },
+      "character_lightcones": {
+        "count": 268,
+        "columns": [
+          "character_id",
+          "lightcone_id",
+          "weight"
+        ]
+      },
+      "lightcones": {
+        "count": 169,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "skill_name",
+          "skill_desc",
+          "skill_params_json",
+          "desc"
+        ]
+      },
+      "lightcone_stats": {
+        "count": 1183,
+        "columns": [
+          "lightcone_id",
+          "promotion",
+          "max_level",
+          "base_hp",
+          "base_attack",
+          "base_defence",
+          "base_hp_add",
+          "base_attack_add",
+          "base_defence_add",
+          "player_level_require",
+          "world_level_require"
+        ]
+      },
+      "relicsets": {
+        "count": 60,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "set2_desc",
+          "set2_params_json",
+          "set4_desc",
+          "set4_params_json"
+        ]
+      },
+      "monsters": {
+        "count": 628,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rank",
+          "camp",
+          "camp_name",
+          "weak_json",
+          "desc",
+          "icon"
+        ]
+      },
+      "monster_stats": {
+        "count": 628,
+        "columns": [
+          "monster_id",
+          "attack_base",
+          "defence_base",
+          "hp_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "critical_damage_base",
+          "initial_delay_ratio",
+          "minimum_fatigue_ratio",
+          "stance_count"
+        ]
+      },
+      "monster_childs": {
+        "count": 2649,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "elite_group",
+          "hard_level_group",
+          "hp_modify_ratio",
+          "attack_modify_ratio",
+          "defence_modify_ratio",
+          "speed_modify_ratio",
+          "speed_modify_value",
+          "stance_modify_ratio",
+          "stance_modify_value",
+          "stance_weak_json",
+          "damage_type_resistance_json"
+        ]
+      },
+      "monster_skills": {
+        "count": 8052,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "skill_id",
+          "skill_name",
+          "skill_desc",
+          "damage_type",
+          "sp_hit_base",
+          "extra_json"
+        ]
+      },
+      "monster_values": {
+        "count": 628,
+        "columns": [
+          "monster_id",
+          "hp_base",
+          "attack_base",
+          "defence_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "rank"
+        ]
+      },
+      "elite_groups": {
+        "count": 1406,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "hard_level_groups": {
+        "count": 745,
+        "columns": [
+          "hard_level_group",
+          "level",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "infinite_elite_groups": {
+        "count": 40,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "abyss_seasons": {
+        "count": 92,
+        "columns": [
+          "mode",
+          "season_id",
+          "name",
+          "buff_name",
+          "buff_desc",
+          "buff_params_json",
+          "begin_time",
+          "end_time",
+          "version",
+          "option_json",
+          "sub_option_json"
+        ]
+      },
+      "abyss_floors": {
+        "count": 708,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "floor_name",
+          "is_boss",
+          "hard_name",
+          "challenge_json",
+          "damage_types_json",
+          "maze_group_id",
+          "boss_monster_id",
+          "npc_monster_ids_json",
+          "tags_json",
+          "buffs_json",
+          "phase_json",
+          "maze_group_id2",
+          "boss_skill_json"
+        ]
+      },
+      "abyss_wiki_season": {
+        "count": 74,
+        "columns": [
+          "mode",
+          "season_id",
+          "period",
+          "name",
+          "begin_time",
+          "end_time",
+          "matched_by",
+          "wiki_name"
+        ]
+      },
+      "abyss_wiki_wave": {
+        "count": 2460,
+        "columns": [
+          "mode",
+          "season_id",
+          "period",
+          "group_label",
+          "team",
+          "wave",
+          "enemies",
+          "special_enemies",
+          "weakness",
+          "enemy_cap",
+          "atk_bonus",
+          "hp_bonus"
+        ]
+      },
+      "abyss_tags": {
+        "count": 640,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "tag_index",
+          "name",
+          "desc",
+          "params_json",
+          "child_json"
+        ]
+      },
+      "abyss_buffs": {
+        "count": 1379,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "buff_index",
+          "name",
+          "desc",
+          "params_json"
+        ]
+      },
+      "abyss_events": {
+        "count": 1543,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "stage_id",
+          "level",
+          "hard_level_group",
+          "elite_group",
+          "waves_json"
+        ]
+      },
+      "sqlite_sequence": {
+        "count": 2,
+        "columns": [
+          "name",
+          "seq"
+        ]
+      },
+      "abyss_wave_monsters": {
+        "count": 7806,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "wave_index",
+          "slot",
+          "monster_id",
+          "base_monster_id",
+          "monster_name",
+          "level",
+          "hp",
+          "speed",
+          "stance",
+          "status_res",
+          "toughness",
+          "weaknesses_json",
+          "spawn_count",
+          "hp_count",
+          "phase_ratios_json",
+          "is_infinite",
+          "infinite_wave_id",
+          "hp_formula_json"
+        ]
+      }
+    },
+    "emptySkills": [
+      {
+        "skill_id": 122014,
+        "character_id": 1220,
+        "name": "凿破大荒",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": "终结技期间可<color=#f29e38ff>无视弱点属性</color>削减敌方韧性，目标未被击破时飞霄<color=#f29e38ff>弱点击破效率提高</color>。\\n对敌方单体发动<color=#f29e38ff><unbreak>#3[i]</unbreak></color>次【闪裂刃舞】或【钺贯天冲】，最后造成风属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.96, 1, 6, 4.02]}, \"2\": {\"level\": 2, \"param_list\": [1.024, 1, 6, 4.318]}, \"3\": {\"level\": 3, \"param_list\": [1.088, 1, 6, 4.616]}, \"4\": {\"level\": 4, \"param_list\": [1.152, 1, 6, 4.914]}, \"5\": {\"level\": 5, \"param_list\": [1.216, 1, 6, 5.212]}, \"6\": {\"level\": 6, \"param_list\": [1.28, 1, 6, 5.51]}, \"7\": {\"level\": 7, \"param_list\": [1.36, 1, 6, 5.8825]}, \"8\": {\"level\": 8, \"param_list\": [1.44, 1, 6, 6.255]}, \"9\": {\"level\": 9, \"param_list\": [1.52, 1, 6, 6.6275]}, \"10\": {\"level\": 10, \"param_list\": [1.6, 1, 6, 7]}, \"11\": {\"level\": 11, \"param_list\": [1.664, 1, 6, 7.298]}, \"12\": {\"level\": 12, \"param_list\": [1.728, 1, 6, 7.596]}, \"13\": {\"level\": 13, \"param_list\": [1.792, 1, 6, 7.894]}, \"14\": {\"level\": 14, \"param_list\": [1.856, 1, 6, 8.192]}, \"15\": {\"level\": 15, \"param_list\": [1.92, 1, 6, 8.49]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130814,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130815,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130816,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130817,
+        "character_id": 1308,
+        "name": "黄泉返渡",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成雷属性伤害并移除所有【集真赤】。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.96]}, \"7\": {\"level\": 7, \"param_list\": [1.02]}, \"8\": {\"level\": 8, \"param_list\": [1.08]}, \"9\": {\"level\": 9, \"param_list\": [1.14]}, \"10\": {\"level\": 10, \"param_list\": [1.2]}, \"11\": {\"level\": 11, \"param_list\": [1.248]}, \"12\": {\"level\": 12, \"param_list\": [1.296]}, \"13\": {\"level\": 13, \"param_list\": [1.344]}, \"14\": {\"level\": 14, \"param_list\": [1.392]}, \"15\": {\"level\": 15, \"param_list\": [1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131708,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3, 0.6, 0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34, 0.68, 0.5]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38, 0.76, 0.5]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42, 0.84, 0.5]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46, 0.92, 0.5]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5, 1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54, 1.08, 0.5]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58, 1.16, 0.5]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62, 1.24, 0.5]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66, 1.32, 0.5]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131710,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131712,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6]}, \"2\": {\"level\": 2, \"param_list\": [0.68]}, \"3\": {\"level\": 3, \"param_list\": [0.76]}, \"4\": {\"level\": 4, \"param_list\": [0.84]}, \"5\": {\"level\": 5, \"param_list\": [0.92]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.08]}, \"8\": {\"level\": 8, \"param_list\": [1.16]}, \"9\": {\"level\": 9, \"param_list\": [1.24]}, \"10\": {\"level\": 10, \"param_list\": [1.32]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 140209,
+        "character_id": 1402,
+        "name": "高举吧，升华的名讳",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "为衣匠回复生命值。衣匠不在场时，<u>召唤忆灵</u>衣匠并使自身立即行动。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.275]}, \"3\": {\"level\": 3, \"param_list\": [0.3]}, \"4\": {\"level\": 4, \"param_list\": [0.325]}, \"5\": {\"level\": 5, \"param_list\": [0.35]}, \"6\": {\"level\": 6, \"param_list\": [0.375]}, \"7\": {\"level\": 7, \"param_list\": [0.40625]}, \"8\": {\"level\": 8, \"param_list\": [0.4375]}, \"9\": {\"level\": 9, \"param_list\": [0.46875]}, \"10\": {\"level\": 10, \"param_list\": [0.5]}, \"11\": {\"level\": 11, \"param_list\": [0.525]}, \"12\": {\"level\": 12, \"param_list\": [0.55]}, \"13\": {\"level\": 13, \"param_list\": [0.575]}, \"14\": {\"level\": 14, \"param_list\": [0.6]}, \"15\": {\"level\": 15, \"param_list\": [0.625]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 141309,
+        "character_id": 1413,
+        "name": "白昼悄然离去",
+        "tag": "Support",
+        "desc": null,
+        "simple_desc": "消耗自身生命值<u>召唤忆灵</u>「长夜」，并使<color=#f29e38ff>我方全体忆灵的暴击伤害提高</color>。若忆灵「长夜」已在场，为其回复生命值。施放时，<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#3[i]</unbreak></color>点【忆质】</color>，若处于【至暗之谜】状态，额外<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#5[i]</unbreak></color>点【忆质】</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.2, 2, 2, 0.5, 12, 0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.22, 2, 2, 0.5, 12, 0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.24, 2, 2, 0.5, 12, 0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.26, 2, 2, 0.5, 12, 0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.28, 2, 2, 0.5, 12, 0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.3, 2, 2, 0.5, 12, 0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.325, 2, 2, 0.5, 12, 0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.35, 2, 2, 0.5, 12, 0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.375, 2, 2, 0.5, 12, 0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.4, 2, 2, 0.5, 12, 0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.42, 2, 2, 0.5, 12, 0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.44, 2, 2, 0.5, 12, 0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.46, 2, 2, 0.5, 12, 0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.48, 2, 2, 0.5, 12, 0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.5, 2, 2, 0.5, 12, 0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150110,
+        "character_id": 1501,
+        "name": "百花齐放，胜者独享！",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5, 0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.6, 0.3]}, \"3\": {\"level\": 3, \"param_list\": [0.7, 0.35]}, \"4\": {\"level\": 4, \"param_list\": [0.8, 0.4]}, \"5\": {\"level\": 5, \"param_list\": [0.9, 0.45]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.1, 0.55]}, \"8\": {\"level\": 8, \"param_list\": [1.2, 0.6]}, \"9\": {\"level\": 9, \"param_list\": [1.3, 0.65]}, \"10\": {\"level\": 10, \"param_list\": [1.4, 0.7]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150610,
+        "character_id": 1506,
+        "name": "超超超大剑",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。对生命值最高的目标基于总伤害值造成<u>真实伤害</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150612,
+        "character_id": 1506,
+        "name": "爆爆爆炸蛋",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。恢复战技点。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150618,
+        "character_id": 1506,
+        "name": "怪怪怪味豆",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。获得<u>笑点</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150709,
+        "character_id": 1507,
+        "name": "刃下，归葬",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150909,
+        "character_id": 1509,
+        "name": "漫不经心",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.6]}, \"3\": {\"level\": 3, \"param_list\": [0.7]}, \"4\": {\"level\": 4, \"param_list\": [0.8]}, \"5\": {\"level\": 5, \"param_list\": [0.9]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.1]}, \"8\": {\"level\": 8, \"param_list\": [1.2]}, \"9\": {\"level\": 9, \"param_list\": [1.3]}, \"10\": {\"level\": 10, \"param_list\": [1.4]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 151014,
+        "character_id": 1510,
+        "name": "我们，亦是逐星的巨人",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "造成<color=#f29e38ff><unbreak>#2[i]</unbreak></color>次伤害，每次伤害对敌方随机单体造成火属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [3, 0.4]}, \"2\": {\"level\": 2, \"param_list\": [3, 0.44]}, \"3\": {\"level\": 3, \"param_list\": [3, 0.48]}, \"4\": {\"level\": 4, \"param_list\": [3, 0.52]}, \"5\": {\"level\": 5, \"param_list\": [3, 0.56]}, \"6\": {\"level\": 6, \"param_list\": [3, 0.6]}, \"7\": {\"level\": 7, \"param_list\": [3, 0.65]}, \"8\": {\"level\": 8, \"param_list\": [3, 0.7]}, \"9\": {\"level\": 9, \"param_list\": [3, 0.75]}, \"10\": {\"level\": 10, \"param_list\": [3, 0.8]}, \"11\": {\"level\": 11, \"param_list\": [3, 0.84]}, \"12\": {\"level\": 12, \"param_list\": [3, 0.88]}, \"13\": {\"level\": 13, \"param_list\": [3, 0.92]}, \"14\": {\"level\": 14, \"param_list\": [3, 0.96]}, \"15\": {\"level\": 15, \"param_list\": [3, 1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800709,
+        "character_id": 8007,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800809,
+        "character_id": 8008,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      }
+    ]
+  },
+  {
+    "path": "D:/HSR Analysis/核心数据库/基本数据/HSR_现有_4.4.db",
+    "meta": [
+      {
+        "key": "version",
+        "value": "4.4"
+      },
+      {
+        "key": "locale",
+        "value": "zh"
+      },
+      {
+        "key": "source",
+        "value": "nanoka.cc (static.nanoka.cc/hsr)"
+      },
+      {
+        "key": "hp_formula",
+        "value": "HP = HPBase x HPModifyRatio x EliteGroup.HPRatio x HardLevelGroup.HPRatio; 无限波次再乘 (1+ParamList[1])"
+      },
+      {
+        "key": "modes",
+        "value": "moc=混沌回忆(maze.json/zh/maze), pf=虚构叙事(maze_extra.json/zh/story), as=末日幻影(maze_boss.json/zh/boss)"
+      }
+    ],
+    "tables": {
+      "meta": {
+        "count": 5,
+        "columns": [
+          "key",
+          "value"
+        ]
+      },
+      "characters": {
+        "count": 95,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "element",
+          "element_en",
+          "sp_need",
+          "release",
+          "camp",
+          "desc",
+          "icon",
+          "enhanced_json",
+          "memosprite_json",
+          "unique_json"
+        ]
+      },
+      "character_skills": {
+        "count": 650,
+        "columns": [
+          "character_id",
+          "skill_id",
+          "name",
+          "type",
+          "type_name",
+          "tag",
+          "desc",
+          "simple_desc",
+          "sp_base",
+          "bp_need",
+          "bp_add",
+          "show_stance_list_json",
+          "params_json",
+          "extra_json"
+        ]
+      },
+      "character_ranks": {
+        "count": 570,
+        "columns": [
+          "character_id",
+          "rank_id",
+          "name",
+          "desc",
+          "param_list_json",
+          "icon"
+        ]
+      },
+      "character_traces": {
+        "count": 1732,
+        "columns": [
+          "character_id",
+          "point_id",
+          "anchor",
+          "point_type",
+          "point_type_name",
+          "point_name",
+          "point_desc",
+          "max_level",
+          "default_unlock",
+          "avatar_promotion_limit",
+          "level_up_skill_id_json",
+          "status_add_list_json",
+          "param_list_json",
+          "pre_point_json",
+          "material_list_json"
+        ]
+      },
+      "character_stats": {
+        "count": 665,
+        "columns": [
+          "character_id",
+          "promotion",
+          "hp_base",
+          "hp_add",
+          "attack_base",
+          "attack_add",
+          "defence_base",
+          "defence_add",
+          "speed_base",
+          "critical_chance",
+          "critical_damage",
+          "base_aggro"
+        ]
+      },
+      "character_relics": {
+        "count": 95,
+        "columns": [
+          "character_id",
+          "set4_ids_json",
+          "set2_ids_json",
+          "property_list3_json",
+          "property_list4_json"
+        ]
+      },
+      "character_lightcones": {
+        "count": 262,
+        "columns": [
+          "character_id",
+          "lightcone_id",
+          "weight"
+        ]
+      },
+      "lightcones": {
+        "count": 165,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "skill_name",
+          "skill_desc",
+          "skill_params_json",
+          "desc"
+        ]
+      },
+      "lightcone_stats": {
+        "count": 1155,
+        "columns": [
+          "lightcone_id",
+          "promotion",
+          "max_level",
+          "base_hp",
+          "base_attack",
+          "base_defence",
+          "base_hp_add",
+          "base_attack_add",
+          "base_defence_add",
+          "player_level_require",
+          "world_level_require"
+        ]
+      },
+      "relicsets": {
+        "count": 60,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "set2_desc",
+          "set2_params_json",
+          "set4_desc",
+          "set4_params_json"
+        ]
+      },
+      "monsters": {
+        "count": 613,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rank",
+          "camp",
+          "camp_name",
+          "weak_json",
+          "desc",
+          "icon"
+        ]
+      },
+      "monster_stats": {
+        "count": 613,
+        "columns": [
+          "monster_id",
+          "attack_base",
+          "defence_base",
+          "hp_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "critical_damage_base",
+          "initial_delay_ratio",
+          "minimum_fatigue_ratio",
+          "stance_count"
+        ]
+      },
+      "monster_childs": {
+        "count": 2590,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "elite_group",
+          "hard_level_group",
+          "hp_modify_ratio",
+          "attack_modify_ratio",
+          "defence_modify_ratio",
+          "speed_modify_ratio",
+          "speed_modify_value",
+          "stance_modify_ratio",
+          "stance_modify_value",
+          "stance_weak_json",
+          "damage_type_resistance_json"
+        ]
+      },
+      "monster_skills": {
+        "count": 8052,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "skill_id",
+          "skill_name",
+          "skill_desc",
+          "damage_type",
+          "sp_hit_base",
+          "extra_json"
+        ]
+      },
+      "monster_values": {
+        "count": 613,
+        "columns": [
+          "monster_id",
+          "hp_base",
+          "attack_base",
+          "defence_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "rank"
+        ]
+      },
+      "elite_groups": {
+        "count": 1394,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "hard_level_groups": {
+        "count": 741,
+        "columns": [
+          "hard_level_group",
+          "level",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "infinite_elite_groups": {
+        "count": 40,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "abyss_seasons": {
+        "count": 90,
+        "columns": [
+          "mode",
+          "season_id",
+          "name",
+          "buff_name",
+          "buff_desc",
+          "buff_params_json",
+          "begin_time",
+          "end_time",
+          "version"
+        ]
+      },
+      "abyss_floors": {
+        "count": 690,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "floor_name",
+          "is_boss",
+          "hard_name",
+          "challenge_json",
+          "damage_types_json",
+          "maze_group_id",
+          "boss_monster_id",
+          "npc_monster_ids_json",
+          "tags_json",
+          "buffs_json",
+          "phase_json"
+        ]
+      },
+      "abyss_tags": {
+        "count": 640,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "tag_index",
+          "name",
+          "desc",
+          "params_json",
+          "child_json"
+        ]
+      },
+      "abyss_buffs": {
+        "count": 1352,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "buff_index",
+          "name",
+          "desc",
+          "params_json"
+        ]
+      },
+      "abyss_events": {
+        "count": 1511,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "stage_id",
+          "level",
+          "hard_level_group",
+          "elite_group",
+          "waves_json"
+        ]
+      },
+      "sqlite_sequence": {
+        "count": 2,
+        "columns": [
+          "name",
+          "seq"
+        ]
+      },
+      "abyss_wave_monsters": {
+        "count": 7619,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "wave_index",
+          "slot",
+          "monster_id",
+          "base_monster_id",
+          "monster_name",
+          "level",
+          "hp",
+          "speed",
+          "stance",
+          "status_res",
+          "toughness",
+          "weaknesses_json",
+          "spawn_count",
+          "hp_count",
+          "phase_ratios_json",
+          "is_infinite",
+          "infinite_wave_id",
+          "hp_formula_json"
+        ]
+      }
+    },
+    "emptySkills": [
+      {
+        "skill_id": 122014,
+        "character_id": 1220,
+        "name": "凿破大荒",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": "终结技期间可<color=#f29e38ff>无视弱点属性</color>削减敌方韧性，目标未被击破时飞霄<color=#f29e38ff>弱点击破效率提高</color>。\\n对敌方单体发动<color=#f29e38ff><unbreak>#3[i]</unbreak></color>次【闪裂刃舞】或【钺贯天冲】，最后造成风属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.96, 1, 6, 4.02]}, \"2\": {\"level\": 2, \"param_list\": [1.024, 1, 6, 4.318]}, \"3\": {\"level\": 3, \"param_list\": [1.088, 1, 6, 4.616]}, \"4\": {\"level\": 4, \"param_list\": [1.152, 1, 6, 4.914]}, \"5\": {\"level\": 5, \"param_list\": [1.216, 1, 6, 5.212]}, \"6\": {\"level\": 6, \"param_list\": [1.28, 1, 6, 5.51]}, \"7\": {\"level\": 7, \"param_list\": [1.36, 1, 6, 5.8825]}, \"8\": {\"level\": 8, \"param_list\": [1.44, 1, 6, 6.255]}, \"9\": {\"level\": 9, \"param_list\": [1.52, 1, 6, 6.6275]}, \"10\": {\"level\": 10, \"param_list\": [1.6, 1, 6, 7]}, \"11\": {\"level\": 11, \"param_list\": [1.664, 1, 6, 7.298]}, \"12\": {\"level\": 12, \"param_list\": [1.728, 1, 6, 7.596]}, \"13\": {\"level\": 13, \"param_list\": [1.792, 1, 6, 7.894]}, \"14\": {\"level\": 14, \"param_list\": [1.856, 1, 6, 8.192]}, \"15\": {\"level\": 15, \"param_list\": [1.92, 1, 6, 8.49]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130814,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130815,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130816,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130817,
+        "character_id": 1308,
+        "name": "黄泉返渡",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成雷属性伤害并移除所有【集真赤】。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.96]}, \"7\": {\"level\": 7, \"param_list\": [1.02]}, \"8\": {\"level\": 8, \"param_list\": [1.08]}, \"9\": {\"level\": 9, \"param_list\": [1.14]}, \"10\": {\"level\": 10, \"param_list\": [1.2]}, \"11\": {\"level\": 11, \"param_list\": [1.248]}, \"12\": {\"level\": 12, \"param_list\": [1.296]}, \"13\": {\"level\": 13, \"param_list\": [1.344]}, \"14\": {\"level\": 14, \"param_list\": [1.392]}, \"15\": {\"level\": 15, \"param_list\": [1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131708,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3, 0.6, 0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34, 0.68, 0.5]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38, 0.76, 0.5]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42, 0.84, 0.5]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46, 0.92, 0.5]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5, 1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54, 1.08, 0.5]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58, 1.16, 0.5]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62, 1.24, 0.5]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66, 1.32, 0.5]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131710,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131712,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6]}, \"2\": {\"level\": 2, \"param_list\": [0.68]}, \"3\": {\"level\": 3, \"param_list\": [0.76]}, \"4\": {\"level\": 4, \"param_list\": [0.84]}, \"5\": {\"level\": 5, \"param_list\": [0.92]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.08]}, \"8\": {\"level\": 8, \"param_list\": [1.16]}, \"9\": {\"level\": 9, \"param_list\": [1.24]}, \"10\": {\"level\": 10, \"param_list\": [1.32]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 140209,
+        "character_id": 1402,
+        "name": "高举吧，升华的名讳",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "为衣匠回复生命值。衣匠不在场时，<u>召唤忆灵</u>衣匠并使自身立即行动。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.275]}, \"3\": {\"level\": 3, \"param_list\": [0.3]}, \"4\": {\"level\": 4, \"param_list\": [0.325]}, \"5\": {\"level\": 5, \"param_list\": [0.35]}, \"6\": {\"level\": 6, \"param_list\": [0.375]}, \"7\": {\"level\": 7, \"param_list\": [0.40625]}, \"8\": {\"level\": 8, \"param_list\": [0.4375]}, \"9\": {\"level\": 9, \"param_list\": [0.46875]}, \"10\": {\"level\": 10, \"param_list\": [0.5]}, \"11\": {\"level\": 11, \"param_list\": [0.525]}, \"12\": {\"level\": 12, \"param_list\": [0.55]}, \"13\": {\"level\": 13, \"param_list\": [0.575]}, \"14\": {\"level\": 14, \"param_list\": [0.6]}, \"15\": {\"level\": 15, \"param_list\": [0.625]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 141309,
+        "character_id": 1413,
+        "name": "白昼悄然离去",
+        "tag": "Support",
+        "desc": null,
+        "simple_desc": "消耗自身生命值<u>召唤忆灵</u>「长夜」，并使<color=#f29e38ff>我方全体忆灵的暴击伤害提高</color>。若忆灵「长夜」已在场，为其回复生命值。施放时，<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#3[i]</unbreak></color>点【忆质】</color>，若处于【至暗之谜】状态，额外<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#5[i]</unbreak></color>点【忆质】</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.2, 2, 2, 0.5, 12, 0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.22, 2, 2, 0.5, 12, 0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.24, 2, 2, 0.5, 12, 0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.26, 2, 2, 0.5, 12, 0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.28, 2, 2, 0.5, 12, 0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.3, 2, 2, 0.5, 12, 0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.325, 2, 2, 0.5, 12, 0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.35, 2, 2, 0.5, 12, 0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.375, 2, 2, 0.5, 12, 0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.4, 2, 2, 0.5, 12, 0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.42, 2, 2, 0.5, 12, 0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.44, 2, 2, 0.5, 12, 0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.46, 2, 2, 0.5, 12, 0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.48, 2, 2, 0.5, 12, 0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.5, 2, 2, 0.5, 12, 0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150110,
+        "character_id": 1501,
+        "name": "百花齐放，胜者独享！",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5, 0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.6, 0.3]}, \"3\": {\"level\": 3, \"param_list\": [0.7, 0.35]}, \"4\": {\"level\": 4, \"param_list\": [0.8, 0.4]}, \"5\": {\"level\": 5, \"param_list\": [0.9, 0.45]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.1, 0.55]}, \"8\": {\"level\": 8, \"param_list\": [1.2, 0.6]}, \"9\": {\"level\": 9, \"param_list\": [1.3, 0.65]}, \"10\": {\"level\": 10, \"param_list\": [1.4, 0.7]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150610,
+        "character_id": 1506,
+        "name": "超超超大剑",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。对生命值最高的目标基于总伤害值造成<u>真实伤害</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150612,
+        "character_id": 1506,
+        "name": "爆爆爆炸蛋",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。恢复战技点。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150618,
+        "character_id": 1506,
+        "name": "怪怪怪味豆",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。获得<u>笑点</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150709,
+        "character_id": 1507,
+        "name": "刃下，归葬",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150909,
+        "character_id": 1509,
+        "name": "漫不经心",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.6]}, \"3\": {\"level\": 3, \"param_list\": [0.7]}, \"4\": {\"level\": 4, \"param_list\": [0.8]}, \"5\": {\"level\": 5, \"param_list\": [0.9]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.1]}, \"8\": {\"level\": 8, \"param_list\": [1.2]}, \"9\": {\"level\": 9, \"param_list\": [1.3]}, \"10\": {\"level\": 10, \"param_list\": [1.4]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 151014,
+        "character_id": 1510,
+        "name": "我们，亦是逐星的巨人",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "造成<color=#f29e38ff><unbreak>#2[i]</unbreak></color>次伤害，每次伤害对敌方随机单体造成火属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [3, 0.4]}, \"2\": {\"level\": 2, \"param_list\": [3, 0.44]}, \"3\": {\"level\": 3, \"param_list\": [3, 0.48]}, \"4\": {\"level\": 4, \"param_list\": [3, 0.52]}, \"5\": {\"level\": 5, \"param_list\": [3, 0.56]}, \"6\": {\"level\": 6, \"param_list\": [3, 0.6]}, \"7\": {\"level\": 7, \"param_list\": [3, 0.65]}, \"8\": {\"level\": 8, \"param_list\": [3, 0.7]}, \"9\": {\"level\": 9, \"param_list\": [3, 0.75]}, \"10\": {\"level\": 10, \"param_list\": [3, 0.8]}, \"11\": {\"level\": 11, \"param_list\": [3, 0.84]}, \"12\": {\"level\": 12, \"param_list\": [3, 0.88]}, \"13\": {\"level\": 13, \"param_list\": [3, 0.92]}, \"14\": {\"level\": 14, \"param_list\": [3, 0.96]}, \"15\": {\"level\": 15, \"param_list\": [3, 1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800709,
+        "character_id": 8007,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800809,
+        "character_id": 8008,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      }
+    ]
+  },
+  {
+    "path": "D:/HSR Analysis/核心数据库/基本数据/HSR_测试服_4.4.55.db",
+    "meta": [
+      {
+        "key": "version",
+        "value": "4.4.55"
+      },
+      {
+        "key": "locale",
+        "value": "zh"
+      },
+      {
+        "key": "source",
+        "value": "nanoka.cc (static.nanoka.cc/hsr)"
+      },
+      {
+        "key": "hp_formula",
+        "value": "HP = HPBase x HPModifyRatio x EliteGroup.HPRatio x HardLevelGroup.HPRatio; 无限波次再乘 (1+ParamList[1])"
+      },
+      {
+        "key": "modes",
+        "value": "moc=混沌回忆(maze.json/zh/maze), pf=虚构叙事(maze_extra.json/zh/story), as=末日幻影(maze_boss.json/zh/boss)"
+      }
+    ],
+    "tables": {
+      "meta": {
+        "count": 5,
+        "columns": [
+          "key",
+          "value"
+        ]
+      },
+      "characters": {
+        "count": 97,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "element",
+          "element_en",
+          "sp_need",
+          "release",
+          "camp",
+          "desc",
+          "icon",
+          "enhanced_json",
+          "memosprite_json",
+          "unique_json"
+        ]
+      },
+      "character_skills": {
+        "count": 664,
+        "columns": [
+          "character_id",
+          "skill_id",
+          "name",
+          "type",
+          "type_name",
+          "tag",
+          "desc",
+          "simple_desc",
+          "sp_base",
+          "bp_need",
+          "bp_add",
+          "show_stance_list_json",
+          "params_json",
+          "extra_json"
+        ]
+      },
+      "character_ranks": {
+        "count": 582,
+        "columns": [
+          "character_id",
+          "rank_id",
+          "name",
+          "desc",
+          "param_list_json",
+          "icon"
+        ]
+      },
+      "character_traces": {
+        "count": 1771,
+        "columns": [
+          "character_id",
+          "point_id",
+          "anchor",
+          "point_type",
+          "point_type_name",
+          "point_name",
+          "point_desc",
+          "max_level",
+          "default_unlock",
+          "avatar_promotion_limit",
+          "level_up_skill_id_json",
+          "status_add_list_json",
+          "param_list_json",
+          "pre_point_json",
+          "material_list_json"
+        ]
+      },
+      "character_stats": {
+        "count": 679,
+        "columns": [
+          "character_id",
+          "promotion",
+          "hp_base",
+          "hp_add",
+          "attack_base",
+          "attack_add",
+          "defence_base",
+          "defence_add",
+          "speed_base",
+          "critical_chance",
+          "critical_damage",
+          "base_aggro"
+        ]
+      },
+      "character_relics": {
+        "count": 97,
+        "columns": [
+          "character_id",
+          "set4_ids_json",
+          "set2_ids_json",
+          "property_list3_json",
+          "property_list4_json"
+        ]
+      },
+      "character_lightcones": {
+        "count": 268,
+        "columns": [
+          "character_id",
+          "lightcone_id",
+          "weight"
+        ]
+      },
+      "lightcones": {
+        "count": 169,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rarity",
+          "path",
+          "path_en",
+          "skill_name",
+          "skill_desc",
+          "skill_params_json",
+          "desc"
+        ]
+      },
+      "lightcone_stats": {
+        "count": 1183,
+        "columns": [
+          "lightcone_id",
+          "promotion",
+          "max_level",
+          "base_hp",
+          "base_attack",
+          "base_defence",
+          "base_hp_add",
+          "base_attack_add",
+          "base_defence_add",
+          "player_level_require",
+          "world_level_require"
+        ]
+      },
+      "relicsets": {
+        "count": 60,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "set2_desc",
+          "set2_params_json",
+          "set4_desc",
+          "set4_params_json"
+        ]
+      },
+      "monsters": {
+        "count": 628,
+        "columns": [
+          "id",
+          "name",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "rank",
+          "camp",
+          "camp_name",
+          "weak_json",
+          "desc",
+          "icon"
+        ]
+      },
+      "monster_stats": {
+        "count": 628,
+        "columns": [
+          "monster_id",
+          "attack_base",
+          "defence_base",
+          "hp_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "critical_damage_base",
+          "initial_delay_ratio",
+          "minimum_fatigue_ratio",
+          "stance_count"
+        ]
+      },
+      "monster_childs": {
+        "count": 2648,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "elite_group",
+          "hard_level_group",
+          "hp_modify_ratio",
+          "attack_modify_ratio",
+          "defence_modify_ratio",
+          "speed_modify_ratio",
+          "speed_modify_value",
+          "stance_modify_ratio",
+          "stance_modify_value",
+          "stance_weak_json",
+          "damage_type_resistance_json"
+        ]
+      },
+      "monster_skills": {
+        "count": 8194,
+        "columns": [
+          "monster_id",
+          "child_id",
+          "skill_id",
+          "skill_name",
+          "skill_desc",
+          "damage_type",
+          "sp_hit_base",
+          "extra_json"
+        ]
+      },
+      "monster_values": {
+        "count": 628,
+        "columns": [
+          "monster_id",
+          "hp_base",
+          "attack_base",
+          "defence_base",
+          "speed_base",
+          "stance_base",
+          "status_resistance_base",
+          "rank"
+        ]
+      },
+      "elite_groups": {
+        "count": 1406,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "hard_level_groups": {
+        "count": 745,
+        "columns": [
+          "hard_level_group",
+          "level",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "infinite_elite_groups": {
+        "count": 40,
+        "columns": [
+          "elite_group",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "stance_ratio"
+        ]
+      },
+      "abyss_seasons": {
+        "count": 92,
+        "columns": [
+          "mode",
+          "season_id",
+          "name",
+          "buff_name",
+          "buff_desc",
+          "buff_params_json",
+          "begin_time",
+          "end_time",
+          "version"
+        ]
+      },
+      "abyss_floors": {
+        "count": 708,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "floor_name",
+          "is_boss",
+          "hard_name",
+          "challenge_json",
+          "damage_types_json",
+          "maze_group_id",
+          "boss_monster_id",
+          "npc_monster_ids_json",
+          "tags_json",
+          "buffs_json",
+          "phase_json"
+        ]
+      },
+      "abyss_tags": {
+        "count": 640,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "tag_index",
+          "name",
+          "desc",
+          "params_json",
+          "child_json"
+        ]
+      },
+      "abyss_buffs": {
+        "count": 1379,
+        "columns": [
+          "mode",
+          "season_id",
+          "floor_id",
+          "buff_index",
+          "name",
+          "desc",
+          "params_json"
+        ]
+      },
+      "abyss_events": {
+        "count": 1543,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "stage_id",
+          "level",
+          "hard_level_group",
+          "elite_group",
+          "waves_json"
+        ]
+      },
+      "sqlite_sequence": {
+        "count": 2,
+        "columns": [
+          "name",
+          "seq"
+        ]
+      },
+      "abyss_wave_monsters": {
+        "count": 7806,
+        "columns": [
+          "id",
+          "mode",
+          "season_id",
+          "floor_id",
+          "side",
+          "event_index",
+          "wave_index",
+          "slot",
+          "monster_id",
+          "base_monster_id",
+          "monster_name",
+          "level",
+          "hp",
+          "speed",
+          "stance",
+          "status_res",
+          "toughness",
+          "weaknesses_json",
+          "spawn_count",
+          "hp_count",
+          "phase_ratios_json",
+          "is_infinite",
+          "infinite_wave_id",
+          "hp_formula_json"
+        ]
+      }
+    },
+    "emptySkills": [
+      {
+        "skill_id": 122014,
+        "character_id": 1220,
+        "name": "凿破大荒",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": "终结技期间可<color=#f29e38ff>无视弱点属性</color>削减敌方韧性，目标未被击破时飞霄<color=#f29e38ff>弱点击破效率提高</color>。\\n对敌方单体发动<color=#f29e38ff><unbreak>#3[i]</unbreak></color>次【闪裂刃舞】或【钺贯天冲】，最后造成风属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.96, 1, 6, 4.02]}, \"2\": {\"level\": 2, \"param_list\": [1.024, 1, 6, 4.318]}, \"3\": {\"level\": 3, \"param_list\": [1.088, 1, 6, 4.616]}, \"4\": {\"level\": 4, \"param_list\": [1.152, 1, 6, 4.914]}, \"5\": {\"level\": 5, \"param_list\": [1.216, 1, 6, 5.212]}, \"6\": {\"level\": 6, \"param_list\": [1.28, 1, 6, 5.51]}, \"7\": {\"level\": 7, \"param_list\": [1.36, 1, 6, 5.8825]}, \"8\": {\"level\": 8, \"param_list\": [1.44, 1, 6, 6.255]}, \"9\": {\"level\": 9, \"param_list\": [1.52, 1, 6, 6.6275]}, \"10\": {\"level\": 10, \"param_list\": [1.6, 1, 6, 7]}, \"11\": {\"level\": 11, \"param_list\": [1.664, 1, 6, 7.298]}, \"12\": {\"level\": 12, \"param_list\": [1.728, 1, 6, 7.596]}, \"13\": {\"level\": 13, \"param_list\": [1.792, 1, 6, 7.894]}, \"14\": {\"level\": 14, \"param_list\": [1.856, 1, 6, 8.192]}, \"15\": {\"level\": 15, \"param_list\": [1.92, 1, 6, 8.49]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130814,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130815,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130816,
+        "character_id": 1308,
+        "name": "啼泽雨斩",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方单体造成少量雷属性伤害，并消去目标最多3层【集真赤】。消去【集真赤】时，对敌方全体造成1次少量雷属性伤害，每消去1层【集真赤】本次伤害倍率提高。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.144, 0.09, 0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.1536, 0.096, 0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.1632, 0.102, 0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.1728, 0.108, 0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.1824, 0.114, 0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.192, 0.12, 0.96]}, \"7\": {\"level\": 7, \"param_list\": [0.204, 0.1275, 1.02]}, \"8\": {\"level\": 8, \"param_list\": [0.216, 0.135, 1.08]}, \"9\": {\"level\": 9, \"param_list\": [0.228, 0.1425, 1.14]}, \"10\": {\"level\": 10, \"param_list\": [0.24, 0.15, 1.2]}, \"11\": {\"level\": 11, \"param_list\": [0.2496, 0.156, 1.248]}, \"12\": {\"level\": 12, \"param_list\": [0.2592, 0.162, 1.296]}, \"13\": {\"level\": 13, \"param_list\": [0.2688, 0.168, 1.344]}, \"14\": {\"level\": 14, \"param_list\": [0.2784, 0.174, 1.392]}, \"15\": {\"level\": 15, \"param_list\": [0.288, 0.18, 1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 130817,
+        "character_id": 1308,
+        "name": "黄泉返渡",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成雷属性伤害并移除所有【集真赤】。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.72]}, \"2\": {\"level\": 2, \"param_list\": [0.768]}, \"3\": {\"level\": 3, \"param_list\": [0.816]}, \"4\": {\"level\": 4, \"param_list\": [0.864]}, \"5\": {\"level\": 5, \"param_list\": [0.912]}, \"6\": {\"level\": 6, \"param_list\": [0.96]}, \"7\": {\"level\": 7, \"param_list\": [1.02]}, \"8\": {\"level\": 8, \"param_list\": [1.08]}, \"9\": {\"level\": 9, \"param_list\": [1.14]}, \"10\": {\"level\": 10, \"param_list\": [1.2]}, \"11\": {\"level\": 11, \"param_list\": [1.248]}, \"12\": {\"level\": 12, \"param_list\": [1.296]}, \"13\": {\"level\": 13, \"param_list\": [1.344]}, \"14\": {\"level\": 14, \"param_list\": [1.392]}, \"15\": {\"level\": 15, \"param_list\": [1.44]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131708,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3, 0.6, 0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34, 0.68, 0.5]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38, 0.76, 0.5]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42, 0.84, 0.5]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46, 0.92, 0.5]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5, 1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54, 1.08, 0.5]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58, 1.16, 0.5]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62, 1.24, 0.5]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66, 1.32, 0.5]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131710,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": "对指定敌方单体造成少量虚数属性伤害，并对其相邻目标造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6, 0.3]}, \"2\": {\"level\": 2, \"param_list\": [0.68, 0.34]}, \"3\": {\"level\": 3, \"param_list\": [0.76, 0.38]}, \"4\": {\"level\": 4, \"param_list\": [0.84, 0.42]}, \"5\": {\"level\": 5, \"param_list\": [0.92, 0.46]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.08, 0.54]}, \"8\": {\"level\": 8, \"param_list\": [1.16, 0.58]}, \"9\": {\"level\": 9, \"param_list\": [1.24, 0.62]}, \"10\": {\"level\": 10, \"param_list\": [1.32, 0.66]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 131712,
+        "character_id": 1317,
+        "name": "忍具•降魔花弁",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成少量虚数属性伤害。攻击没有虚数弱点的敌人也可以削减韧性。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.6]}, \"2\": {\"level\": 2, \"param_list\": [0.68]}, \"3\": {\"level\": 3, \"param_list\": [0.76]}, \"4\": {\"level\": 4, \"param_list\": [0.84]}, \"5\": {\"level\": 5, \"param_list\": [0.92]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.08]}, \"8\": {\"level\": 8, \"param_list\": [1.16]}, \"9\": {\"level\": 9, \"param_list\": [1.24]}, \"10\": {\"level\": 10, \"param_list\": [1.32]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 140209,
+        "character_id": 1402,
+        "name": "高举吧，升华的名讳",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "为衣匠回复生命值。衣匠不在场时，<u>召唤忆灵</u>衣匠并使自身立即行动。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.275]}, \"3\": {\"level\": 3, \"param_list\": [0.3]}, \"4\": {\"level\": 4, \"param_list\": [0.325]}, \"5\": {\"level\": 5, \"param_list\": [0.35]}, \"6\": {\"level\": 6, \"param_list\": [0.375]}, \"7\": {\"level\": 7, \"param_list\": [0.40625]}, \"8\": {\"level\": 8, \"param_list\": [0.4375]}, \"9\": {\"level\": 9, \"param_list\": [0.46875]}, \"10\": {\"level\": 10, \"param_list\": [0.5]}, \"11\": {\"level\": 11, \"param_list\": [0.525]}, \"12\": {\"level\": 12, \"param_list\": [0.55]}, \"13\": {\"level\": 13, \"param_list\": [0.575]}, \"14\": {\"level\": 14, \"param_list\": [0.6]}, \"15\": {\"level\": 15, \"param_list\": [0.625]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 141309,
+        "character_id": 1413,
+        "name": "白昼悄然离去",
+        "tag": "Support",
+        "desc": null,
+        "simple_desc": "消耗自身生命值<u>召唤忆灵</u>「长夜」，并使<color=#f29e38ff>我方全体忆灵的暴击伤害提高</color>。若忆灵「长夜」已在场，为其回复生命值。施放时，<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#3[i]</unbreak></color>点【忆质】</color>，若处于【至暗之谜】状态，额外<color=#f29e38ff>获得<color=#f29e38ff><unbreak>#5[i]</unbreak></color>点【忆质】</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.2, 2, 2, 0.5, 12, 0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.22, 2, 2, 0.5, 12, 0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.24, 2, 2, 0.5, 12, 0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.26, 2, 2, 0.5, 12, 0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.28, 2, 2, 0.5, 12, 0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.3, 2, 2, 0.5, 12, 0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.325, 2, 2, 0.5, 12, 0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.35, 2, 2, 0.5, 12, 0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.375, 2, 2, 0.5, 12, 0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.4, 2, 2, 0.5, 12, 0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.42, 2, 2, 0.5, 12, 0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.44, 2, 2, 0.5, 12, 0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.46, 2, 2, 0.5, 12, 0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.48, 2, 2, 0.5, 12, 0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.5, 2, 2, 0.5, 12, 0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150110,
+        "character_id": 1501,
+        "name": "百花齐放，胜者独享！",
+        "tag": "Blast",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5, 0.25]}, \"2\": {\"level\": 2, \"param_list\": [0.6, 0.3]}, \"3\": {\"level\": 3, \"param_list\": [0.7, 0.35]}, \"4\": {\"level\": 4, \"param_list\": [0.8, 0.4]}, \"5\": {\"level\": 5, \"param_list\": [0.9, 0.45]}, \"6\": {\"level\": 6, \"param_list\": [1, 0.5]}, \"7\": {\"level\": 7, \"param_list\": [1.1, 0.55]}, \"8\": {\"level\": 8, \"param_list\": [1.2, 0.6]}, \"9\": {\"level\": 9, \"param_list\": [1.3, 0.65]}, \"10\": {\"level\": 10, \"param_list\": [1.4, 0.7]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150610,
+        "character_id": 1506,
+        "name": "超超超大剑",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。对生命值最高的目标基于总伤害值造成<u>真实伤害</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150612,
+        "character_id": 1506,
+        "name": "爆爆爆炸蛋",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。恢复战技点。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150618,
+        "character_id": 1506,
+        "name": "怪怪怪味豆",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "对敌方全体造成大量虚数属性<u>欢愉伤害</u>，由敌方全体均分。获得<u>笑点</u>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150709,
+        "character_id": 1507,
+        "name": "刃下，归葬",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.1]}, \"2\": {\"level\": 2, \"param_list\": [0.1]}, \"3\": {\"level\": 3, \"param_list\": [0.1]}, \"4\": {\"level\": 4, \"param_list\": [0.1]}, \"5\": {\"level\": 5, \"param_list\": [0.1]}, \"6\": {\"level\": 6, \"param_list\": [0.1]}, \"7\": {\"level\": 7, \"param_list\": [0.1]}, \"8\": {\"level\": 8, \"param_list\": [0.1]}, \"9\": {\"level\": 9, \"param_list\": [0.1]}, \"10\": {\"level\": 10, \"param_list\": [0.1]}, \"11\": {\"level\": 11, \"param_list\": [0.1]}, \"12\": {\"level\": 12, \"param_list\": [0.1]}, \"13\": {\"level\": 13, \"param_list\": [0.1]}, \"14\": {\"level\": 14, \"param_list\": [0.1]}, \"15\": {\"level\": 15, \"param_list\": [0.1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 150909,
+        "character_id": 1509,
+        "name": "漫不经心",
+        "tag": "SingleAttack",
+        "desc": null,
+        "simple_desc": null,
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [0.5]}, \"2\": {\"level\": 2, \"param_list\": [0.6]}, \"3\": {\"level\": 3, \"param_list\": [0.7]}, \"4\": {\"level\": 4, \"param_list\": [0.8]}, \"5\": {\"level\": 5, \"param_list\": [0.9]}, \"6\": {\"level\": 6, \"param_list\": [1]}, \"7\": {\"level\": 7, \"param_list\": [1.1]}, \"8\": {\"level\": 8, \"param_list\": [1.2]}, \"9\": {\"level\": 9, \"param_list\": [1.3]}, \"10\": {\"level\": 10, \"param_list\": [1.4]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 151014,
+        "character_id": 1510,
+        "name": "我们，亦是逐星的巨人",
+        "tag": "AoEAttack",
+        "desc": null,
+        "simple_desc": "造成<color=#f29e38ff><unbreak>#2[i]</unbreak></color>次伤害，每次伤害对敌方随机单体造成火属性伤害。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": [3, 0.4]}, \"2\": {\"level\": 2, \"param_list\": [3, 0.44]}, \"3\": {\"level\": 3, \"param_list\": [3, 0.48]}, \"4\": {\"level\": 4, \"param_list\": [3, 0.52]}, \"5\": {\"level\": 5, \"param_list\": [3, 0.56]}, \"6\": {\"level\": 6, \"param_list\": [3, 0.6]}, \"7\": {\"level\": 7, \"param_list\": [3, 0.65]}, \"8\": {\"level\": 8, \"param_list\": [3, 0.7]}, \"9\": {\"level\": 9, \"param_list\": [3, 0.75]}, \"10\": {\"level\": 10, \"param_list\": [3, 0.8]}, \"11\": {\"level\": 11, \"param_list\": [3, 0.84]}, \"12\": {\"level\": 12, \"param_list\": [3, 0.88]}, \"13\": {\"level\": 13, \"param_list\": [3, 0.92]}, \"14\": {\"level\": 14, \"param_list\": [3, 0.96]}, \"15\": {\"level\": 15, \"param_list\": [3, 1]}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800709,
+        "character_id": 8007,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      },
+      {
+        "skill_id": 800809,
+        "character_id": 8008,
+        "name": "就决定是你了！",
+        "tag": "Restore",
+        "desc": null,
+        "simple_desc": "<color=#f29e38ff><u>召唤忆灵</u></color>迷迷。若迷迷已在场，为迷迷回复生命值，并使迷迷获得<color=#f29e38ff>充能</color>。",
+        "params_json": "{\"1\": {\"level\": 1, \"param_list\": []}, \"2\": {\"level\": 2, \"param_list\": []}, \"3\": {\"level\": 3, \"param_list\": []}, \"4\": {\"level\": 4, \"param_list\": []}, \"5\": {\"level\": 5, \"param_list\": []}, \"6\": {\"level\": 6, \"param_list\": []}, \"7\": {\"level\": 7, \"param_list\": []}, \"8\": {\"level\": 8, \"param_list\": []}, \"9\": {\"level\": 9, \"param_list\": []}, \"10\": {\"level\": 10, \"param_list\": []}, \"11\": {\"level\": 11, \"param_list\": []}, \"12\": {\"level\": 12, \"param_list\": []}, \"13\": {\"level\": 13, \"param_list\": []}, \"14\": {\"level\": 14, \"param_list\": []}, \"15\": {\"level\": 15, \"param_list\": []}}",
+        "extra_json": "{}"
+      }
+    ]
+  },
+  {
+    "path": "D:/HSR Analysis/异相仲裁/peak.db",
+    "meta": [
+      {
+        "k": "version",
+        "v": "4.5"
+      },
+      {
+        "k": "source",
+        "v": "nanoka.cc（static.nanoka.cc CDN）+ biligame 星铁 Wiki"
+      },
+      {
+        "k": "seasons",
+        "v": "1~9（3.6 ~ 4.5）"
+      },
+      {
+        "k": "note",
+        "v": "stage_hp 为推算原料，公式未经对拍验证，见 README"
+      },
+      {
+        "k": "built_at",
+        "v": "2026-09-17T11:30:33"
+      }
+    ],
+    "tables": {
+      "meta": {
+        "count": 5,
+        "columns": [
+          "k",
+          "v"
+        ]
+      },
+      "season": {
+        "count": 9,
+        "columns": [
+          "id",
+          "name_zh",
+          "name_en",
+          "name_ja",
+          "name_ko",
+          "version",
+          "pre_level_count",
+          "has_boss_config"
+        ]
+      },
+      "stage": {
+        "count": 36,
+        "columns": [
+          "season_id",
+          "slot",
+          "seq",
+          "level_id",
+          "name",
+          "battle_level",
+          "stage_id",
+          "damage_type_json",
+          "damage_type_zh",
+          "monster_list_json",
+          "wave_count"
+        ]
+      },
+      "stage_tag": {
+        "count": 56,
+        "columns": [
+          "season_id",
+          "slot",
+          "seq",
+          "tag_id",
+          "name",
+          "desc_template",
+          "param_json",
+          "desc_text"
+        ]
+      },
+      "stage_wave": {
+        "count": 66,
+        "columns": [
+          "season_id",
+          "slot",
+          "seq",
+          "wave_id",
+          "monster_group_json",
+          "max_monster_count",
+          "max_teammate_count",
+          "elite_group",
+          "ability",
+          "param_list_json",
+          "hp_base_sum",
+          "eg_hp_ratio",
+          "eg_source",
+          "hp_estimated"
+        ]
+      },
+      "stage_monster": {
+        "count": 167,
+        "columns": [
+          "season_id",
+          "slot",
+          "seq",
+          "wave_id",
+          "monster_id",
+          "name_zh",
+          "name_en",
+          "rank",
+          "weak_json",
+          "weak_zh"
+        ]
+      },
+      "boss_config": {
+        "count": 9,
+        "columns": [
+          "season_id",
+          "hard_name",
+          "buff_list_json",
+          "event_id_list_json",
+          "tag_list_json",
+          "infinite_list_json"
+        ]
+      },
+      "stage_hp": {
+        "count": 36,
+        "columns": [
+          "season_id",
+          "slot",
+          "seq",
+          "battle_level",
+          "hard_level_group",
+          "hp_base_sum",
+          "monster_count",
+          "hlg_hp_ratio",
+          "hp_estimated"
+        ]
+      },
+      "bg_season": {
+        "count": 9,
+        "columns": [
+          "period",
+          "name",
+          "start_time",
+          "end_time"
+        ]
+      },
+      "bg_knight": {
+        "count": 27,
+        "columns": [
+          "period",
+          "knight",
+          "damage_type",
+          "pollution"
+        ]
+      },
+      "bg_wave": {
+        "count": 108,
+        "columns": [
+          "period",
+          "knight",
+          "wave",
+          "kind",
+          "enemies_json"
+        ]
+      },
+      "bg_tag": {
+        "count": 90,
+        "columns": [
+          "period",
+          "subject",
+          "seq",
+          "name",
+          "desc"
+        ]
+      },
+      "bg_quadrant": {
+        "count": 27,
+        "columns": [
+          "period",
+          "seq",
+          "name",
+          "desc"
+        ]
+      },
+      "bg_boss": {
+        "count": 9,
+        "columns": [
+          "period",
+          "boss_name",
+          "damage_type",
+          "elite_enemies_json",
+          "wave2_enemies_json"
+        ]
+      },
+      "xcheck": {
+        "count": 81,
+        "columns": [
+          "period",
+          "item",
+          "nanoka_value",
+          "biligame_value",
+          "match",
+          "note"
+        ]
+      }
+    },
+    "emptySkills": []
+  },
+  {
+    "path": "D:/HSR Analysis/核心数据库/差分宇宙/divergent_universe.db",
+    "meta": [
+      {
+        "key": "version",
+        "value": "4.5"
+      },
+      {
+        "key": "locale",
+        "value": "zh"
+      },
+      {
+        "key": "source",
+        "value": "wiki.biligame.com/sr （Semantic MediaWiki action=ask）"
+      },
+      {
+        "key": "modes",
+        "value": "人间喜剧、千面英雄、乐园漫记"
+      },
+      {
+        "key": "paths",
+        "value": "存护、记忆、虚无、丰饶、巡猎、毁灭、欢愉、繁育、智识、同谐"
+      },
+      {
+        "key": "note",
+        "value": "效果/选项文本里的 SMW 悬浮框已剥离，术语释义另存 term 表；分类:祝福/奇物/事件 中的模拟宇宙条目已按 `差分宇宙` 属性剔除。"
+      }
+    ],
+    "tables": {
+      "meta": {
+        "count": 6,
+        "columns": [
+          "key",
+          "value"
+        ]
+      },
+      "mode": {
+        "count": 3,
+        "columns": [
+          "name",
+          "version",
+          "start_time",
+          "end_time",
+          "rule"
+        ]
+      },
+      "path": {
+        "count": 10,
+        "columns": [
+          "name",
+          "blessing_count",
+          "equation_count"
+        ]
+      },
+      "equation": {
+        "count": 324,
+        "columns": [
+          "id",
+          "name",
+          "rarity",
+          "path1",
+          "path1_req",
+          "path2",
+          "path2_req",
+          "effect",
+          "version"
+        ]
+      },
+      "equation_mode": {
+        "count": 324,
+        "columns": [
+          "equation_id",
+          "mode"
+        ]
+      },
+      "blessing": {
+        "count": 306,
+        "columns": [
+          "id",
+          "name",
+          "path",
+          "rarity",
+          "type",
+          "effect",
+          "effect_enhanced",
+          "version"
+        ]
+      },
+      "blessing_mode": {
+        "count": 450,
+        "columns": [
+          "blessing_id",
+          "mode"
+        ]
+      },
+      "blessing_tag": {
+        "count": 171,
+        "columns": [
+          "blessing_id",
+          "tag"
+        ]
+      },
+      "curio": {
+        "count": 273,
+        "columns": [
+          "id",
+          "name",
+          "rarity",
+          "type",
+          "is_weighted",
+          "effect",
+          "obtain_json",
+          "version"
+        ]
+      },
+      "curio_mode": {
+        "count": 582,
+        "columns": [
+          "curio_id",
+          "mode"
+        ]
+      },
+      "curio_tag": {
+        "count": 304,
+        "columns": [
+          "curio_id",
+          "tag"
+        ]
+      },
+      "occurrence": {
+        "count": 152,
+        "columns": [
+          "id",
+          "name",
+          "icon",
+          "type",
+          "options",
+          "version"
+        ]
+      },
+      "occurrence_mode": {
+        "count": 533,
+        "columns": [
+          "occurrence_id",
+          "mode"
+        ]
+      },
+      "goldblood": {
+        "count": 84,
+        "columns": [
+          "id",
+          "aeon",
+          "tier",
+          "name",
+          "effect",
+          "group_key"
+        ]
+      },
+      "du_difficulty": {
+        "count": 13,
+        "columns": [
+          "mode",
+          "tier",
+          "points",
+          "fit_points",
+          "first_clear",
+          "note"
+        ]
+      },
+      "du_fit_level": {
+        "count": 220,
+        "columns": [
+          "mode",
+          "level",
+          "reward"
+        ]
+      },
+      "du_talent": {
+        "count": 24,
+        "columns": [
+          "item",
+          "volume",
+          "name",
+          "effect",
+          "story"
+        ]
+      },
+      "du_titan": {
+        "count": 36,
+        "columns": [
+          "aeon",
+          "talent",
+          "effect",
+          "story",
+          "table_idx"
+        ]
+      },
+      "term": {
+        "count": 25,
+        "columns": [
+          "term",
+          "definition"
+        ]
+      }
+    },
+    "emptySkills": []
+  },
+  {
+    "path": "D:/HSR Analysis/核心数据库/货币战争/currency_war.db",
+    "meta": [
+      {
+        "key": "source",
+        "value": "https://nanoka.cc (hsr.nanoka.cc)"
+      },
+      {
+        "key": "dataVersion",
+        "value": "4.5.54"
+      },
+      {
+        "key": "liveVersion",
+        "value": "4.5"
+      },
+      {
+        "key": "fetchedAt",
+        "value": "2026-09-17T01:41:18.432Z"
+      },
+      {
+        "key": "builtAt",
+        "value": "2026-09-17T14:09:35.665Z"
+      },
+      {
+        "key": "note",
+        "value": "技能/道具描述中的数值占位符已按站点自身渲染规则还原为明文；descTemplate 保留带占位符的原文。跨表引用已替换成名称。"
+      },
+      {
+        "key": "difficultySource",
+        "value": "difficulty.source.json（外部资料，非 nanoka.cc）"
+      },
+      {
+        "key": "difficultyVerifiedAt",
+        "value": "2026-09-17"
+      },
+      {
+        "key": "counts",
+        "value": "{\"roles\":75,\"skills\":803,\"traits\":33,\"items\":166,\"buffs\":84,\"augments\":334}"
+      }
+    ],
+    "tables": {
+      "meta": {
+        "count": 9,
+        "columns": [
+          "key",
+          "value"
+        ]
+      },
+      "role": {
+        "count": 75,
+        "columns": [
+          "id",
+          "name_zh",
+          "name_en",
+          "front_back_type",
+          "rarity",
+          "heal_or_shield",
+          "charge_type",
+          "is_expert",
+          "max_star",
+          "skill_count"
+        ]
+      },
+      "trait": {
+        "count": 33,
+        "columns": [
+          "id",
+          "name_zh",
+          "name_en",
+          "activation_type",
+          "desc_zh",
+          "desc_en",
+          "simple_desc_zh",
+          "simple_desc_en",
+          "param_list",
+          "icon_path",
+          "layer_count",
+          "sub_trait_count",
+          "refs"
+        ]
+      },
+      "trait_layer": {
+        "count": 102,
+        "columns": [
+          "trait_id",
+          "threshold",
+          "buff_name",
+          "buff_desc_zh",
+          "buff_desc_en",
+          "param_list",
+          "refs"
+        ]
+      },
+      "role_trait": {
+        "count": 175,
+        "columns": [
+          "role_id",
+          "trait_id",
+          "resolves"
+        ]
+      },
+      "role_star": {
+        "count": 260,
+        "columns": [
+          "role_id",
+          "star",
+          "front_one_word_desc_zh",
+          "front_one_word_desc_en",
+          "back_one_word_desc_zh",
+          "back_one_word_desc_en",
+          "front_power_base",
+          "back_power_base",
+          "luck_chance",
+          "luck_damage",
+          "extra_heal_base",
+          "extra_shield_base",
+          "back_speed_rewrite",
+          "back_speed_added_ratio",
+          "back_energy_bar",
+          "back_max_sp",
+          "back_initial_sp",
+          "back_initial_energy_bar",
+          "stance_damage_display"
+        ]
+      },
+      "role_star_property": {
+        "count": 1040,
+        "columns": [
+          "role_id",
+          "star",
+          "idx",
+          "property_type",
+          "name",
+          "value"
+        ]
+      },
+      "skill": {
+        "count": 803,
+        "columns": [
+          "row_id",
+          "id",
+          "role_id",
+          "star",
+          "slot",
+          "sort_order",
+          "name_zh",
+          "name_en",
+          "tag",
+          "type",
+          "sp_base",
+          "bp_need",
+          "bp_add",
+          "desc_template_zh",
+          "desc_template_en",
+          "desc_text_zh",
+          "desc_text_en",
+          "desc_text_lv1_zh",
+          "desc_text_lv1_en",
+          "desc_text_lvmax_zh",
+          "desc_text_lvmax_en",
+          "simple_desc_zh",
+          "simple_desc_en",
+          "max_level",
+          "display_level",
+          "level1_param_list",
+          "display_param_list",
+          "show_stance_list",
+          "refs"
+        ]
+      },
+      "skill_level": {
+        "count": 3349,
+        "columns": [
+          "skill_row_id",
+          "level",
+          "param_list_zh",
+          "param_list_en"
+        ]
+      },
+      "item": {
+        "count": 166,
+        "columns": [
+          "id",
+          "type",
+          "name_zh",
+          "name_en",
+          "desc_zh",
+          "desc_en",
+          "desc_template_zh",
+          "desc_template_en",
+          "param_list",
+          "icon_path",
+          "equip_category",
+          "func_type",
+          "forge_type_desc",
+          "refs"
+        ]
+      },
+      "buff": {
+        "count": 84,
+        "columns": [
+          "id",
+          "name_zh",
+          "name_en",
+          "desc_zh",
+          "desc_en",
+          "desc_template_zh",
+          "desc_template_en",
+          "param_list",
+          "icon_path",
+          "bonus"
+        ]
+      },
+      "augment": {
+        "count": 334,
+        "columns": [
+          "id",
+          "category_id",
+          "quality",
+          "name_zh",
+          "name_en",
+          "desc_zh",
+          "desc_en",
+          "desc_template_zh",
+          "desc_template_en",
+          "param_list",
+          "icon_path",
+          "chapter_limit_list",
+          "refs"
+        ]
+      },
+      "difficulty_plane": {
+        "count": 3,
+        "columns": [
+          "plane",
+          "atk_coef",
+          "hp_ratio_base",
+          "spd_coef"
+        ]
+      },
+      "difficulty_stage": {
+        "count": 92,
+        "columns": [
+          "rank",
+          "rank_index",
+          "stage",
+          "base_difficulty"
+        ]
+      },
+      "difficulty_modifier": {
+        "count": 12,
+        "columns": [
+          "kind",
+          "name",
+          "value",
+          "value_desc",
+          "note"
+        ]
+      },
+      "difficulty_enemy_base": {
+        "count": 1,
+        "columns": [
+          "level",
+          "hard_level_group",
+          "equivalent_groups",
+          "hp_ratio",
+          "attack_ratio",
+          "defence_ratio",
+          "speed_ratio",
+          "confidence",
+          "caveat"
+        ]
+      },
+      "difficulty_anchor": {
+        "count": 17,
+        "columns": [
+          "stage",
+          "plane",
+          "atk_pct",
+          "hp_pct",
+          "spd_pct",
+          "source"
+        ]
+      }
+    },
+    "emptySkills": []
+  }
+]

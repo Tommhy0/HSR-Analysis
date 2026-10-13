@@ -1,0 +1,16 @@
+{
+  "name": "hsr-analysis",
+  "version": "0.4.6",
+  "private": true,
+  "description": "Honkai: Star Rail damage workbench, relic editor and combat rule simulator",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "engines": {"node": ">=24"},
+  "scripts": {
+    "start": "node hsr_server.mjs",
+    "build": "node _scripts/build_data.mjs && node hsr_build.mjs",
+    "test": "node _scripts/verify.mjs && node _scripts/test_upgrade.mjs && python _scripts/test_updater.py",
+    "test:mutations": "node _rev.mjs",
+    "update": "python _scripts/update_database.py && node _scripts/build_data.mjs && node hsr_build.mjs"
+  }
+}

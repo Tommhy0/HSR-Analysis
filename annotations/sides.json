@@ -1,0 +1,89 @@
+{
+  "note": "三深渊层标签（abyss_tags）的敌我归类种子表。按**文本片段**匹配，不按 id —— 层标签按 (期,层) 各有一份，id 有 640 个，但含数字的文本形态只有 12 种，按文本匹配才能覆盖到未来新期。",
+  "whyThisFileExists": "层标签里出现最多的一句是「首领幻影受到的伤害降低#1[i]%」（152 次）。那是**敌方减伤**，当成队伍增益用会把 −60% 算成 +60%，方向直接反掉。所以没有一条规则命中的标签一律**排除并告警**，绝不默认 ally。",
+  "default": {
+    "side": "unknown",
+    "action": "exclude",
+    "warn": true,
+    "note": "没匹配到任何规则 → 排除，并在结果里报一条缺口。宁可漏算，不可算反。"
+  },
+  "paramPick": "nearest-after —— 取「匹配片段结束位置之后最近」的占位符。同一条标签里可能有多个效果（降低#1 / 提高#2），按片段位置各取各的。",
+  "signConvention": "effects 里的 value 恒为**正的量级**，`direction` 只是文本极性记录（提高=1/降低=-1），**不进数值**。符号由属性键在 core/damage.mjs 里承载：增伤 1+dmgBoost、易伤 1+vuln、减伤 1-dmgReduction、减防 1-defShred。句子的极性和「对伤害是正是负」不是一回事 —— 「防御力降低」与「受到的伤害降低」都叫降低，一个增伤一个减伤，按句子极性定符号必然搞反一个。",
+  "rules": [
+    {
+      "id": "abyss.enemy.dmgReduction",
+      "contains": ["受到的伤害降低", "受到的伤害额外降低"],
+      "effects": [
+        {
+          "key": "dmgReduction",
+          "side": "enemy",
+          "op": "add",
+          "direction": 1,
+          "provenance": "known",
+          "label": "敌方受到的伤害降低"
+        }
+      ]
+    },
+    {
+      "id": "abyss.enemy.vulnWhenBroken",
+      "contains": ["受到的伤害提高", "受到的伤害额外提高"],
+      "effects": [
+        {
+          "key": "vuln",
+          "side": "enemy",
+          "op": "add",
+          "direction": 1,
+          "condition": { "trigger": "after_weakness_break" },
+          "provenance": "known",
+          "label": "弱点击破后敌方受到的伤害提高"
+        }
+      ]
+    },
+    {
+      "id": "abyss.enemy.resUpNonWeakness",
+      "contains": "属性抗性提高",
+      "effects": [
+        {
+          "key": "enemyResUp",
+          "side": "enemy",
+          "op": "add",
+          "direction": 1,
+          "provenance": "unknown",
+          "note": "「非对应弱点的属性抗性提高」只对非弱点属性生效，需要按当前攻击属性与敌人弱点比对才能算准。v1 不静默近似，标 unknown 并告警。",
+          "label": "非对应弱点属性抗性提高"
+        }
+      ]
+    },
+    {
+      "id": "abyss.ignored.toughness",
+      "contains": "韧性提高",
+      "effects": []
+    },
+    {
+      "id": "abyss.ignored.toughnessCap",
+      "contains": "韧性上限提高",
+      "effects": []
+    },
+    {
+      "id": "abyss.ignored.hpCap",
+      "contains": "生命上限提高",
+      "effects": []
+    },
+    {
+      "id": "abyss.ignored.summonHeal",
+      "contains": "回复召唤物",
+      "effects": []
+    },
+    {
+      "id": "abyss.ignored.durationExtend",
+      "contains": "持续时间延长",
+      "effects": []
+    },
+    {
+      "id": "abyss.ignored.untargetable",
+      "contains": "不可被攻击",
+      "effects": []
+    }
+  ],
+  "emptyEffectsMeans": "effects 为空数组 = 「已确认这条标签不影响伤害」，不告警也不计入。和「没匹配到规则」是两回事 —— 后者要告警。"
+}

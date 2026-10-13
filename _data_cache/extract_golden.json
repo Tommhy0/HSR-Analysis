@@ -1,0 +1,23 @@
+{
+  "generatedAtNote": "由 extract_buffs.mjs 生成；verify 第 5 节用它做「不倒退」基线",
+  "totals": {
+    "skill_total": 466,
+    "attack_tag": 310,
+    "attack_tag_parsed": 295,
+    "attack_tag_unparsed": 15,
+    "empty_desc": 15,
+    "empty_desc_nonattack": 4,
+    "extra": 30,
+    "nonattack_skipped": 122,
+    "buff_clauses": 135
+  },
+  "review": {
+    "OK": 55,
+    "SIDE_INFERRED": 72,
+    "FLAT_UNIT": 4,
+    "DURATION_ONLY": 1,
+    "NO_SIDE": 1,
+    "MULTI_TERM": 2
+  },
+  "proposed": 479
+}

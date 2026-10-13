@@ -1,0 +1,76 @@
+{
+  "_说明": "外部实测锚点。这是整个项目里【唯一】能证明最终伤害数字正确的东西 —— 库里的数据没有任何一列是游戏内实际打出的伤害，所以 verify 的第 1~7 节加起来也只能证明「输入对、面板对、乘区自洽」。要证明数字对，只能把你游戏里实测到的数字填到这里。",
+
+  "_怎么填": [
+    "1. 挑一个能算的技能：  node _scripts/make_anchor.mjs 1001",
+    "2. 生成骨架：          node _scripts/make_anchor.mjs 1001 100101 --observed <游戏里打出的数> --append",
+    "3. 跑验证：            node _scripts/verify.mjs    看第 8 节",
+    "骨架里的 panel / ability 是代码算出来的，别手抄 —— 抄错一个 paramIndex 会让锚点失败，而失败看起来像「公式错了」。"
+  ],
+
+  "_agg_最容易漏": [
+    "游戏里打出那个数的一瞬间，身上通常带着一堆增益（队友给的、光锥给的、深渊 buff 给的）。",
+    "这些必须填进 agg 里，否则增伤/易伤/减伤/减防乘区全取 0，锚点【必然】对不上，",
+    "而失败信息看起来像「公式算错了」，实际是锚点没把增益喂进来。",
+    "agg 的字段名与 core/buffs.mjs 的 aggregate() 输出一致：dmgBoost / elemDmg / abilityDmg /",
+    "resPen / defShred / defIgnore / vuln / dmgReduction / atkPct / atkFlat / hpPct / defPct /",
+    "critRate / critDmg。数值都是【分数不是百分数】：伤害提高 50% 写 0.5。"
+  ],
+
+  "_critMode": "expected（默认，1+暴击率×暴伤）/ crit（1+暴伤，游戏里真暴击了用这个）/ noncrit（1，没暴击用这个）。想验证公式就优先用 noncrit，它不含任何期望值假设。",
+
+  "_每条字段": {
+    "id": "随便起，报告里用它指认是哪条",
+    "panel": "局外、未叠加任何增益的最终面板；atk/hp/def/critRate/critDmg 是分数",
+    "ability": "make_anchor 生成的 {terms, hits, element, type, tag, name}，直接抄",
+    "enemy": "至少要有 def 和 res；def 是防御值本身（不是乘区结果），res 按七属性给",
+    "agg": "上面说的增益聚合，可省略但省略了基本对不上",
+    "state": "{broken: false} —— 击破乘区用的是社区公式，库里没有可对拍的结算记录",
+    "observed": "游戏里实际打出的那个数（打出来的原始数字，别自己反推）",
+    "tolerance": "相对误差容差，默认 0.02（2%）"
+  },
+
+  "anchors": [],
+
+  "_示例_照这个形状填": {
+    "id": "三月七.普攻.对训练场木桩",
+    "critMode": "noncrit",
+    "attackerLevel": 80,
+    "panel": {
+      "atk": 511.56,
+      "hp": 1448.0,
+      "def": 573.0,
+      "speed": 101,
+      "critRate": 0.05,
+      "critDmg": 0.5
+    },
+    "ability": {
+      "terms": [{ "scaling": "atk", "multiplier": 1.0, "flatAdd": 0 }],
+      "hits": 1,
+      "element": "Ice",
+      "type": "Normal",
+      "tag": "SingleAttack",
+      "name": "极寒的弓矢"
+    },
+    "enemy": {
+      "source": "manual",
+      "def": 1000,
+      "res": { "Physical": 0, "Fire": 0, "Ice": 0, "Thunder": 0, "Wind": 0, "Quantum": 0, "Imaginary": 0 },
+      "hp": null,
+      "label": "手动填的敌人 —— def 从界面的防御乘区那一行抄，或按 L80 取 1000"
+    },
+    "agg": {
+      "atkPct": 0,
+      "dmgBoost": 0,
+      "elemDmg": { "Ice": 0 },
+      "resPen": { "Ice": 0 },
+      "defShred": 0,
+      "vuln": 0,
+      "dmgReduction": 0
+    },
+    "state": { "broken": false },
+    "observed": 0,
+    "tolerance": 0.02,
+    "_注意": "这条是【形状示例，数字是编的】，observed=0 会被 verify 判 FAIL。别直接留着它。"
+  }
+}

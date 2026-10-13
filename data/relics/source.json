@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/Mar-7th/StarRailRes",
+  "treeSha": "dbe8cdfcfb0bf657b9fe1cf92d5537f118ccb487",
+  "files": [
+    {
+      "path": "index_new/cn/relic_main_affixes.json",
+      "sha256": "34fdbb0976a7127476e950e366ef516dedab9ab961cb95a7b6f5cc5b5988300d"
+    },
+    {
+      "path": "index_new/cn/relic_sub_affixes.json",
+      "sha256": "798632175d21c91a67de30121b2825d90a0954a1354fa2cd908c01d9667f43fc"
+    }
+  ]
+}
