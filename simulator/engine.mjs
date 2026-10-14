@@ -4,6 +4,7 @@ import { computeHit } from '../core/damage.mjs';
 export const ACTION_DISTANCE=10000;
 const EPS=1e-8, clone=(o)=>JSON.parse(JSON.stringify(o));
 const finite=(v,label,min=0)=>{if(!Number.isFinite(v)||v<min)throw new Error(label+'无效');return v;};
+const object=v=>v!=null&&typeof v==='object'&&!Array.isArray(v);
 const BUFF_KEYS=new Set(['atk','def','hp','speed','critRate','critDmg','breakEffect','effectHit','effectRes','energyRegen','healingBoost','incomingHeal','speedPct','atkPct','hpPct','defPct','dmgBoost','defIgnore','defShred','vuln','dmgReduction','resPen',...['Physical','Fire','Ice','Thunder','Wind','Quantum','Imaginary'].map(e=>'elemDmg.'+e)]);
 export function validateBattle(config) {
   if(!config||typeof config!=='object'||!Array.isArray(config.units))return ['战斗配置的 units 须为数组'];
@@ -13,24 +14,36 @@ export function validateBattle(config) {
   if(units.filter(u=>u?.side==='ally').length>4)errors.push('我方最多四个角色');
   const ids=new Set();
   for(const u of units){
-    if(!u||typeof u!=='object'){errors.push('单位须为对象');continue;}
-    if(!u.id||ids.has(u.id))errors.push('单位 ID 必须唯一');ids.add(u.id);
+    if(!object(u)){errors.push('单位须为对象');continue;}
+    if(typeof u.id!=='string'||!u.id||ids.has(u.id))errors.push('单位 ID 必须为唯一字符串');ids.add(u.id);
     if(!['ally','enemy'].includes(u.side))errors.push(u.id+'阵营无效');
     for(const k of ['hp','atk','def','speed'])if(!Number.isFinite(u.panel?.[k])||u.panel[k]<(k==='hp'||k==='speed'?EPS:0))errors.push(u.id+'面板 '+k+' 无效');
     if(!Number.isFinite(u.level)||u.level<1||u.level>100)errors.push(u.id+'等级无效');
     if(!u.actions?.basic)errors.push(u.id+'缺少基础动作');
-    if((u.energy??0)<0||(u.energy??0)>(u.energyMax??0))errors.push(u.id+'初始能量无效');
+    if(!Number.isFinite(u.energyMax??0)||(u.energyMax??0)<0)errors.push(u.id+'能量上限无效');
+    if(!Number.isFinite(u.energy??0)||(u.energy??0)<0||(u.energy??0)>(u.energyMax??0))errors.push(u.id+'初始能量无效');
+    for(const k of ['energyRegen','effectHit','effectRes','healingBoost'])if(u.panel?.[k]!=null&&(!Number.isFinite(u.panel[k])||u.panel[k]<0||(k==='effectRes'&&u.panel[k]>1)))errors.push(u.id+'面板 '+k+' 无效');
+    for(const k of ['critRate','critDmg'])if(u.panel?.[k]!=null&&!Number.isFinite(u.panel[k]))errors.push(u.id+'面板 '+k+' 无效');
+    for(const k of ['aggro','toughnessMax','onHitEnergy','killEnergy'])if(u[k]!=null&&(!Number.isFinite(u[k])||u[k]<0))errors.push(u.id+'.'+k+' 无效');
+    if(u.initialAdvance!=null&&(!Number.isFinite(u.initialAdvance)||u.initialAdvance<0||u.initialAdvance>1))errors.push(u.id+'初始行动提前须为 0～1');
     if(u.currentHp!=null&&(!Number.isFinite(u.currentHp)||u.currentHp<=0||u.currentHp>(u.panel?.hp??0)))errors.push(u.id+'初始生命值无效');
     if(u.unsupported!=null&&!Array.isArray(u.unsupported))errors.push(u.id+'机制缺口须为数组');
     if(config.strict && Array.isArray(u.unsupported) && u.unsupported.length)errors.push(u.name+'：'+u.unsupported.join('、'));
-    for(const [key,a] of Object.entries(u.actions??{})){
-      if(!a||typeof a!=='object'){errors.push(u.id+'动作须为对象');continue;}
+    if(!object(u.actions)){errors.push(u.id+'动作集合须为对象');continue;}
+    const rotation=u.policy?.rotation;
+    if(rotation!=null&&(!Array.isArray(rotation)||!rotation.length||rotation.some(k=>typeof k!=='string'||!object(u.actions[k])||k==='ultimate')))errors.push(u.id+'动作循环须引用已配置的普通动作');
+    for(const [key,a] of Object.entries(u.actions)){
+      if(!object(a)){errors.push(u.id+'动作须为对象');continue;}
       if(a.target!=null&&!['self','allies','lowestAlly','all','blast','single'].includes(a.target))errors.push(u.id+'动作目标无效');
-      for(const k of ['energyCost','energyGain','spCost','spGain','hpCostRatio'])if(a[k]!=null&&(!Number.isFinite(a[k])||a[k]<0))errors.push(`${u.id}.${key}.${k} 无效`);
+      for(const k of ['energyCost','energyGain','spCost','spGain','hpCostRatio','toughness','adjacentToughness','bounceToughness'])if(a[k]!=null&&(!Number.isFinite(a[k])||a[k]<0))errors.push(`${u.id}.${key}.${k} 无效`);
+      if(key==='ultimate'&&(!Number.isFinite(a.energyCost)||a.energyCost<=0||a.energyCost>(u.energyMax??0)))errors.push(u.id+'终结技必须指定有效的能量消耗');
+      if(a.hpCostRatio>1)errors.push(u.id+'生命消耗比例不能超过 1');
+      if(a.targetId!=null&&!units.some(t=>t?.id===a.targetId&&t.side===((a.target==='allies'||a.target==='lowestAlly'||a.target==='self')?u.side:tSide(u))))errors.push(u.id+'动作目标不存在或阵营错误');
       if(a.terms!=null&&!Array.isArray(a.terms)){errors.push(u.id+'伤害项须为数组');continue;}
       for(const term of a.terms??[])if(!term||!['atk','hp','def'].includes(term.scaling)||!Number.isFinite(term.multiplier)||term.multiplier<0)errors.push(`${u.id}.${key} 倍率无效`);
       if(a.hitShares&&(!Array.isArray(a.hitShares)||a.hitShares.some(x=>!Number.isFinite(x)||x<=0)||Math.abs(a.hitShares.reduce((x,y)=>x+y,0)-1)>EPS))errors.push(u.id+'分段比例总和须为 1');
       if(a.bounceCount!=null&&(!Number.isInteger(a.bounceCount)||a.bounceCount<0))errors.push(u.id+'弹射次数无效');
+      if(a.bounceTerms!=null&&(!Array.isArray(a.bounceTerms)||a.bounceTerms.some(t=>!object(t)||!['atk','hp','def'].includes(t.scaling)||!Number.isFinite(t.multiplier)||t.multiplier<0)))errors.push(u.id+'弹射倍率无效');
       if(a.effects!=null&&!Array.isArray(a.effects)){errors.push(u.id+'动作效果须为数组');continue;}
       for(const e of a.effects??[]){
         if(!e||typeof e!=='object'){errors.push(u.id+'效果须为对象');continue;}
@@ -38,11 +51,21 @@ export function validateBattle(config) {
         if(e.type==='buff'&&!BUFF_KEYS.has(e.key))errors.push(u.id+'未知增益属性 '+e.key);
         if(e.tickAt!=null&&!['start','end'].includes(e.tickAt))errors.push(u.id+'回合计时方式无效');
         if(e.target!=null&&!['self','allies','enemies','lowestAlly'].includes(e.target))errors.push(u.id+'效果目标无效');
+        for(const k of ['value','multiplier','flat'])if(e[k]!=null&&(!Number.isFinite(e[k])||(e.type!=='buff'&&e[k]<0)))errors.push(u.id+'效果 '+k+' 无效');
+        if(['buff','shield','dot'].includes(e.type)&&(!Number.isInteger(e.duration)||e.duration<1))errors.push(u.id+'持续回合数须为正整数');
+        if(e.type==='dot'&&e.terms!=null&&(!Array.isArray(e.terms)||e.terms.some(t=>!object(t)||!['atk','hp','def'].includes(t.scaling)||!Number.isFinite(t.multiplier)||t.multiplier<0)))errors.push(u.id+'持续伤害倍率无效');
+        if(['extra','followup'].includes(e.type)){
+          const recipients=e.target==='allies'?units.filter(t=>t?.side===u.side):e.target==='enemies'?units.filter(t=>t?.side===tSide(u)):e.target==='self'?[u]:[];
+          if(!recipients.length||recipients.some(t=>!object(t.actions?.[e.action])))errors.push(u.id+'追加或额外动作必须指定有对应动作的阵营 / 自身目标');
+        }
       }
     }
   }
   if(!Number.isFinite(config.maxAV)||config.maxAV<=0||config.maxAV>3000)errors.push('行动值范围须为 0～3000');
   if(!Number.isInteger(config.sp??3)||(config.sp??3)<0||(config.sp??3)>(config.maxSP??5))errors.push('初始战技点无效');
+  if(!Number.isInteger(config.maxSP??5)||(config.maxSP??5)<1)errors.push('战技点上限须为正整数');
+  if(config.critMode!=null&&!['expected','random','crit','noncrit'].includes(config.critMode))errors.push('暴击模式无效');
+  if(config.seed!=null&&!Number.isInteger(config.seed))errors.push('随机种子须为整数');
   return [...new Set(errors)];
 }
 export function seededRandom(seed=1){let n=seed>>>0;return ()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;};}
@@ -76,7 +99,7 @@ function selectedTargets(b,u,action){
   const pool=targets(b,u,action.target==='allies'||action.target==='lowestAlly'?'ally':'enemy');if(!pool.length)return [];
   if(action.target==='all'||action.target==='allies')return pool;
   if(action.target==='lowestAlly')return [pool.reduce((a,c)=>a.hp/a.panel.hp<c.hp/c.panel.hp?a:c)];
-    if(action.targetId){const target=pool.find(t=>t.id===action.targetId);return target?[target]:[];}
+  if(action.targetId){const target=pool.find(t=>t.id===action.targetId);if(target)return [target];}
   return [u.side==='enemy'?weightedTarget(b,pool):pool[0]];
 }
 function expiredTick(b,owner,at){
@@ -96,10 +119,10 @@ function receiveDamage(b,from,to,amount,kind){
   if(!alive(to)){record(b,'death',to);if(from)energy(b,from,from.killEnergy??10,from.killEnergyFixed??false);}
   if(kind!=='dot'&&alive(to)&&to.reactions?.onAttacked&&!b.queue.some(q=>q.actor===to.id&&q.key===to.reactions.onAttacked))b.queue.push({actor:to.id,key:to.reactions.onAttacked,kind:'followup',targetId:from?.id});
 }
-function breakTarget(b,from,to){
+function breakTarget(b,from,to,element=from.element){
   to.broken=true;record(b,'break',from,{target:to.id});
-  const rule=to.breakRule?.[from.element]??to.breakRule?.all;
-  if(!rule){if(b.config.strict)throw new Error(to.name+'缺少 '+from.element+' 击破规则');record(b,'assumption',from,{message:'未实现该敌人的元素击破附加效果'});return;}
+  const rule=to.breakRule?.[element]??to.breakRule?.all;
+  if(!rule){if(b.config.strict)throw new Error(to.name+'缺少 '+element+' 击破规则');record(b,'assumption',from,{message:'未实现该敌人的元素击破附加效果'});return;}
   if(rule.damage!=null)receiveDamage(b,from,to,rule.damage,'break');
   delay(b,to.id,rule.delay??0.25);
   if(rule.skipTurn)to.skipTurns=(to.skipTurns??0)+rule.skipTurn;
@@ -134,7 +157,7 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
   for(const effect of u.buffs){
     if(effect.sourceSide&&effect.sourceSide!==u.side)continue;
     if(['dmgBoost','defIgnore'].includes(effect.key))agg[effect.key]+=effect.value;
-    else if(effect.key==='resPen')agg.resPen[u.element]=(agg.resPen[u.element]??0)+effect.value;
+    else if(effect.key==='resPen'){const element=action.element??u.element;agg.resPen[element]=(agg.resPen[element]??0)+effect.value;}
   }
   for(const effect of to.buffs)if(['defShred','vuln','dmgReduction'].includes(effect.key))agg[effect.key]+=effect.value;
   const skill={terms,hits:1,type:action.type??'Normal',element:action.element??u.element,targetRole:role,includeConditional:true,multiplierBasis:'per-term'};
@@ -145,7 +168,7 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
   if(kind!=='dot'&&alive(to)&&!to.broken&&(to.toughnessMax??0)>0&&(to.weaknesses??[]).includes(skill.element)){
     const reduction=(role==='adjacent'?action.adjacentToughness??action.toughness:action.toughness)??0;
     to.toughness=Math.max(0,to.toughness-reduction*share);
-    record(b,'toughness',u,{target:to.id,value:to.toughness});if(to.toughness<=EPS)breakTarget(b,u,to);
+    record(b,'toughness',u,{target:to.id,value:to.toughness});if(to.toughness<=EPS)breakTarget(b,u,to,skill.element);
   }
 }
 function useAction(b,u,key,kind='normal',targetId=null){
@@ -199,7 +222,11 @@ export function stepBattle(b){
     const healing=u.policy?.healBelow!=null&&targets(b,u,'ally').some(t=>t.hp/t.panel.hp<u.policy.healBelow);
     const skill=u.actions.skill;
     const useSkill=skill&&u.policy?.basicOnly!==true&&(u.side==='enemy'||b.sp>=(skill.spCost??0))&&(u.policy?.healBelow==null||healing);
-    useAction(b,u,useSkill?'skill':'basic');
+    const rotation=u.policy?.rotation;
+    let key=rotation?rotation[(u.turns-1)%rotation.length]:useSkill?'skill':'basic';
+    const chosen=u.actions[key];
+    if((u.side==='ally'&&(chosen.spCost??0)>b.sp)||(chosen.energyCost??0)>u.energy+EPS)key='basic';
+    useAction(b,u,key);
   }
   expiredTick(b,u,'end');record(b,'turn_end',u);enqueueUltimates(b);flush(b);return true;
 }

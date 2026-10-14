@@ -38,6 +38,7 @@ class UpdaterTests(unittest.TestCase):
   with patch.object(legacy.urllib.request,'urlopen',side_effect=err):
    status,_=legacy.fetch_one('https://example.invalid/data.json',str(p),info={'etag':'v1'})
   self.assertEqual(status,'unchanged');self.assertEqual(p.read_bytes(),b'{"known":1}')
+  err.close()
  def test_beta_is_not_a_formal_database(self):
   with patch.object(legacy.urllib.request,'urlopen',return_value=Response(b'https://static.nanoka.cc/hsr/4.6.51/character.json')),patch.object(legacy,'http_probe_exists',side_effect=lambda url:'/4.6.51/' in url),patch.object(legacy,'log'):
    with self.assertRaisesRegex(RuntimeError,'正式服'):legacy.discover_versions()
