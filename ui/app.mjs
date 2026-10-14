@@ -24,8 +24,6 @@ import { emptyPanel, suggestPanel } from '../core/panel.mjs';
 import { defaultRelics, relicContributions, applyRelics } from '../core/relics.mjs';
 import { renderRelics } from './relic-view.mjs';
 import { initTheme } from './theme.mjs';
-import { renderSimulator } from './simulator-view.mjs';
-import { actorFromCalculator } from '../simulator/profiles.mjs';
 import { renderDashboard } from './dashboard.mjs';
 import { renderResults } from './results.mjs';
 import { renderDataView } from './data-view.mjs';
@@ -81,7 +79,6 @@ const first = CHARS[0];
 
 const st = {
   view: 'setup',
-  simulator: {},
   characterId: first.id,
   eidolon: 0,
   level: 80,
@@ -1329,13 +1326,11 @@ function renderAll() {
   renderSceneEffects();
   renderDataPanel();
   renderRelicPanel();
-  renderSimulator({host:$('sec-simulator'),state:st.simulator,importActor:()=>actorFromCalculator({ctx,characterId:st.characterId,panel:st.panel,level:st.level,eidolon:st.eidolon,levels:st.skillLevels,baked:DATA.abilities,overrides:ANN.multipliers})});
   renderBanner();
 }
 
 autoFillPanel();
 initTheme();
-if(document.documentElement?.dataset?.defaultView==='sim') st.view='sim';
 syncSelfPicks();
 renderAll();
 renderOutput();
@@ -1346,7 +1341,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') {
     e.preventDefault();
     e.target.onchange?.(e);
-    if(st.view==='sim') $('sim-run')?.onclick?.(); else compute();
+    compute();
   }
 });
 

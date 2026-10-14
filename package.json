@@ -8,9 +8,9 @@
   "engines": {"node": ">=24"},
   "scripts": {
     "start": "node hsr_server.mjs",
-    "build": "node _scripts/build_data.mjs && node hsr_build.mjs",
+    "build": "node _scripts/build_data.mjs && node hsr_build.mjs && node hsr_build.mjs --battle",
     "test": "node _scripts/verify.mjs && node _scripts/test_upgrade.mjs && python _scripts/test_updater.py",
     "test:mutations": "node _rev.mjs",
-    "update": "python _scripts/update_database.py && node _scripts/build_data.mjs && node hsr_build.mjs"
+    "update": "python _scripts/update_database.py && node _scripts/build_data.mjs && node hsr_build.mjs && node hsr_build.mjs --battle"
   }
 }

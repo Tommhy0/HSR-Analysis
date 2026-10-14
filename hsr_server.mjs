@@ -41,15 +41,15 @@ function inject(tpl, marker, payload, what) {
 }
 
 /** 用模板 + 开发期注入拼出首页。 */
-function page() {
-  const tpl = fs.readFileSync(path.join(ROOT, 'ui', 'template.html'), 'utf8');
+function page(mode='calculator') {
+  const tpl = fs.readFileSync(path.join(ROOT, 'ui', mode==='battle'?'battle-template.html':'template.html'), 'utf8');
   const css = fs.readFileSync(path.join(ROOT, 'ui', 'style.css'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'ui', 'theme-light.css'), 'utf8');
   const data = fs.existsSync(path.join(ROOT, '_data_cache', 'hsr_core.json'))
     ? '<script src="/_data_cache/data.inline.js"></script>'
     : '<div class="card">缺少 _data_cache/data.inline.js，先跑 <code>node _scripts/build_data.mjs</code></div>';
   let out = inject(tpl, '/*__CSS__*/', css, '样式');
   out = inject(out, '<!--__DATA__-->', data, '数据');
-  return inject(out, '<!--__BOOT__-->', '<script type="module" src="/ui/app.mjs"></script>', '启动');
+  return inject(out, '<!--__BOOT__-->', '<script type="module" src="/ui/'+(mode==='battle'?'battle-app':'app')+'.mjs"></script>', '启动');
 }
 
 const server = http.createServer((req, res) => {
@@ -64,9 +64,12 @@ const server = http.createServer((req, res) => {
       res.end('window.__HSR_DATA__ = JSON.parse('+JSON.stringify(raw)+');');
       return;
     }
-    if (url === '/' || url === '/index.html') {
+    if (url === '/' || url === '/index.html' || url==='/calculator' || url==='/battle') {
       res.writeHead(200, { 'Content-Type': MIME['.html'] });
-      res.end(page());
+      if(url==='/'||url==='/index.html'){
+        const tpl=fs.readFileSync(path.join(ROOT,'ui','mode-template.html'),'utf8'),css=fs.readFileSync(path.join(ROOT,'ui','style.css'),'utf8')+'\n'+fs.readFileSync(path.join(ROOT,'ui','theme-light.css'),'utf8');
+        res.end(inject(tpl,'/*__CSS__*/',css,'样式').replace('./崩铁伤害计算器.html','/calculator').replace('./战斗模拟器.html','/battle'));
+      }else res.end(page(url==='/battle'?'battle':'calculator'));
       return;
     }
     // 只允许访问仓库内的文件，挡住 ../

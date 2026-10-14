@@ -12,6 +12,7 @@ export function validateBattle(config) {
   if(!units.length||units.length>12)errors.push('需要 1～12 个单位');
   if(!units.some(u=>u?.side==='ally')||!units.some(u=>u?.side==='enemy'))errors.push('需要我方与敌方单位');
   if(units.filter(u=>u?.side==='ally').length>4)errors.push('我方最多四个角色');
+  if(config.requiredAllies===4&&units.filter(u=>u?.side==='ally').length!==4)errors.push('四人自动战斗必须配置四名队员');
   const ids=new Set();
   for(const u of units){
     if(!object(u)){errors.push('单位须为对象');continue;}
@@ -238,7 +239,7 @@ export function simulateBattle(config){
   while(stepBattle(battle)){}
   const allyAlive=battle.units.some(u=>alive(u)&&u.side==='ally'),enemyAlive=battle.units.some(u=>alive(u)&&u.side==='enemy');
   return {config:clone(config),av:battle.av,sp:battle.sp,turns:battle.turns,outcome:!allyAlive?'defeat':!enemyAlive?'victory':'time_limit',
-    units:snapshot(battle),log:battle.log,unsupported:config.units.flatMap(u=>u.unsupported??[]),
+    units:snapshot(battle),log:battle.log,unsupported:[...new Set(config.units.flatMap(u=>u.unsupported??[]))],
     damage:battle.log.filter(x=>x.type==='damage'&&config.units.find(u=>u.id===x.actor)?.side==='ally').reduce((s,x)=>s+x.damage,0),
     healing:battle.log.filter(x=>x.type==='heal').reduce((s,x)=>s+x.amount,0)};
 }

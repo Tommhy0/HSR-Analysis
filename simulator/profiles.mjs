@@ -12,6 +12,11 @@ export function referenceBattle(){
       actions:{basic:{name:'敌人攻击',terms:[{scaling:'atk',multiplier:1.8}],target:'single'}},policy:{basicOnly:true,autoUltimate:false}},
   ]};
 }
+export function fourMemberBattle(){
+  const old=referenceBattle(),base=old.units[0];
+  const units=[134,125,115,105].map((speed,i)=>({...JSON.parse(JSON.stringify(base)),id:'slot-'+(i+1),name:'测试队员 '+(i+1),panel:{...JSON.parse(JSON.stringify(base.panel)),speed,atk:2200-i*200},policy:{autoUltimate:true,rotation:i%2?['basic','skill']:['skill','basic']}}));
+  return {...old,requiredAllies:4,description:'四人输出规则基准：四个独立行动与输出单位，无预设生存位；数值为测试规则。',units:[...units,old.units[2]]};
+}
 export function actorFromCalculator({ctx,characterId,panel,level=80,eidolon=0,levels={},baked,overrides=[]}){
   const ch=ctx.charById.get(characterId);if(!ch)throw new Error('角色不存在');
   const abs=listAbilities(ctx,characterId,{eidolon,levels,baked,overrides,element:ch.element});

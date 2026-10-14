@@ -7,4 +7,6 @@ if errorlevel 1 exit /b 1
 node _scripts\build_data.mjs
 if errorlevel 1 exit /b 1
 node hsr_build.mjs
+if errorlevel 1 exit /b 1
+node hsr_build.mjs --battle
 exit /b %errorlevel%

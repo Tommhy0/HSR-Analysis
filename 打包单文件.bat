@@ -54,6 +54,13 @@ if errorlevel 1 (
   exit /b 1
 )
 
+node hsr_build.mjs --battle %*
+if errorlevel 1 (
+  echo [X] Battle bundle failed.
+  pause
+  exit /b 1
+)
+
 REM Do NOT echo the output file name here - it is Chinese, and this file must
 REM stay pure ASCII.  hsr_build.mjs already printed the full path above.
 echo.

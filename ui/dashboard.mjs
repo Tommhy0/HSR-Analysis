@@ -5,7 +5,6 @@ export const VIEWS = {
   buffs: { label: '增益管理', heading: '每一份加成都有来处。', description: '逐条选择自身与辅助增益，按来源、属性和作用对象管理。' },
   battle: { label: '战斗情境', heading: '把伤害放进真实情境。', description: '选择赛期、敌人与战斗状态，对比血量和辅助收益。' },
   data: { label: '数据与来源', heading: '让每个数字有据可查。', description: '查看本地数据库覆盖、已补齐的效果，以及仍需输入或核实的内容。' },
-  sim: { label: '战斗模拟', heading: '沿着行动轴验证。', description: '配置双向交互，检查逐项伤害、资源变化和队伍生存。' },
 };
 export function renderDashboard({ st, character, ability, picked, data }) {
   const get = (id) => document.getElementById(id);

@@ -20,8 +20,9 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const ENTRY = 'ui/app.mjs';
-const OUT = path.join(ROOT, '崩铁伤害计算器.html');
+const BATTLE=process.argv.includes('--battle');
+const ENTRY = BATTLE?'ui/battle-app.mjs':'ui/app.mjs';
+const OUT = path.join(ROOT, BATTLE?'战斗模拟器.html':'崩铁伤害计算器.html');
 const TMP_BUNDLE = path.join(ROOT, '_data_cache', '_bundle_check.mjs');
 const CHECK = !process.argv.includes('--no-check');
 
@@ -170,7 +171,7 @@ if (CHECK) {
   }
 
   const dataJson = fs.readFileSync(path.join(ROOT, '_data_cache', 'hsr_core.json'), 'utf8');
-  const harness = `
+  const harness = BATTLE?battleHarness():`
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -780,7 +781,7 @@ if (failed.length) process.exit(2);
 // ---------------------------------------------------------------------------
 // 4. 出成品
 // ---------------------------------------------------------------------------
-const tpl = fs.readFileSync(path.join(ROOT, 'ui', 'template.html'), 'utf8');
+const tpl = fs.readFileSync(path.join(ROOT, 'ui', BATTLE?'battle-template.html':'template.html'), 'utf8');
 const css = fs.readFileSync(path.join(ROOT, 'ui', 'style.css'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'ui', 'theme-light.css'), 'utf8');
 const core = fs.readFileSync(path.join(ROOT, '_data_cache', 'hsr_core.json'), 'utf8');
 
@@ -816,8 +817,8 @@ html = inject(html, '<!--__BOOT__-->', `<script>${bundle}
 })();</script>`);
 
 fs.writeFileSync(OUT, html, 'utf8');
-fs.writeFileSync(path.join(ROOT,'崩铁伤害计算器_浅色.html'),html.replace('<html lang="zh-CN">','<html lang="zh-CN" data-default-theme="light" data-theme="light">'),'utf8');
-fs.writeFileSync(path.join(ROOT,'战斗模拟器.html'),html.replace('<html lang="zh-CN">','<html lang="zh-CN" data-default-view="sim">'),'utf8');
+if(!BATTLE)fs.writeFileSync(path.join(ROOT,'崩铁伤害计算器_浅色.html'),html.replace('<html lang="zh-CN">','<html lang="zh-CN" data-default-theme="light" data-theme="light">'),'utf8');
+fs.writeFileSync(path.join(ROOT,'模式选择.html'),inject(fs.readFileSync(path.join(ROOT,'ui','mode-template.html'),'utf8'),'/*__CSS__*/',css,'样式'),'utf8');
 
 const mb = (n) => (n / 1024 / 1024).toFixed(2) + ' MB';
 console.log(`\n打包完成: ${OUT}`);
@@ -826,3 +827,15 @@ console.log(`    ├ 数据    ${mb(core.length)} → gzip ${mb(gz.length)} → 
 console.log(`    ├ 代码    ${mb(Buffer.byteLength(bundle))}（${order.length} 个模块）`);
 console.log(`    └ 样式+骨架 ${mb(Buffer.byteLength(css) + 900)}`);
 console.log('\n双击它就能用 —— 没有服务器、没有依赖、没有构建。');
+function battleHarness(){return `
+import fs from 'node:fs';
+const nodes=new Map();function node(id){if(!nodes.has(id))nodes.set(id,{id,innerHTML:'',value:'',textContent:'',style:{},dataset:{},querySelectorAll:()=>[],querySelector:()=>node('_selector'),setAttribute:()=>{},contains:()=>false});return nodes.get(id);}
+globalThis.document={getElementById:node,addEventListener:()=>{},documentElement:node('root')};globalThis.window=globalThis;
+globalThis.__HSR_DATA__=JSON.parse(fs.readFileSync(${JSON.stringify(path.join(ROOT,'_data_cache','hsr_core.json'))},'utf8'));
+await import(${JSON.stringify('file:///'+TMP_BUNDLE.replace(/\\/g,'/'))});window.__HSR_BOOT__();
+const S=window.__HSR_BATTLE__;if(!S||S.state.config.units.filter(u=>u.side==='ally').length!==4)throw new Error('独立战斗入口不是四人队伍');
+node('sim-run').onclick();if(S.state.error)throw new Error(S.state.error);if(!(S.state.result.damage>0))throw new Error('四人输出为空');
+if(!node('battle-runtime').innerHTML.includes('sim-contributions'))throw new Error('缺少各队员贡献统计');
+if(window.__HSR)throw new Error('独立战斗入口意外启动单次伤害计算器');
+console.log('  独立四人战斗：启动 / 四人行动 / 全队伤害 / 独立贡献统计通过');
+`;}

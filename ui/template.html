@@ -34,8 +34,8 @@
       <button id="nav-buffs" class="nav-item"><span class="nav-icon">⌘</span>增益管理<span class="nav-index">03</span></button>
       <button id="nav-battle" class="nav-item"><span class="nav-icon">◎</span>战斗情境<span class="nav-index">04</span></button>
       <button id="nav-data" class="nav-item"><span class="nav-icon">▤</span>数据与来源<span class="nav-index">05</span></button>
-      <button id="nav-sim" class="nav-item"><span class="nav-icon">▷</span>战斗模拟<span class="nav-index">06</span></button>
     </nav>
+    <div class="mode-switch"><a class="mode-link active" href="./崩铁伤害计算器.html">单次伤害计算</a><a class="mode-link" href="./战斗模拟器.html">四人自动战斗 →</a></div>
     <div class="sidebar-selection"><div class="nav-caption">当前计算</div><strong id="shell-character">载入中</strong><span id="shell-ability"></span><div class="sidebar-divider"></div><span id="shell-selected"></span></div>
     <div class="sidebar-footer"><span class="live-dot"></span> 本地计算 · 离线可用<small>常规环境 / 单次技能伤害</small></div>
   </aside>
@@ -50,7 +50,6 @@
         <div class="workspace-group" id="view-buffs" hidden><div class="card" id="sec-globals"></div><div class="card" id="sec-self"></div><div class="card" id="sec-team"></div></div>
         <div class="workspace-group" id="view-battle" hidden><div class="card" id="sec-scenario"></div><div class="card" id="sec-scene-effects"></div><div class="card" id="sec-metrics"></div></div>
         <div class="workspace-group" id="view-data" hidden><div class="card" id="sec-data"></div></div>
-        <div class="workspace-group" id="view-sim" hidden><div class="card" id="sec-simulator"></div></div>
       </section>
       <aside id="right" aria-label="伤害结果"><div class="card result-card" id="result"></div></aside>
     </main>
