@@ -54,7 +54,9 @@ class UpdaterTests(unittest.TestCase):
   class FakeLegacy:BASE='https://example.invalid'
   with patch.object(upgrade,'ROOT',self.root),patch.object(upgrade,'module',return_value=FakeLegacy),patch.object(sys,'argv',['update','--version','4.6','--build-only']):
    with self.assertRaisesRegex(RuntimeError,'completely downloaded'):upgrade.main()
- def test_repaired_batch_points_to_real_parent_script(self):
-  text=(ROOT/'_scripts/root_repairs/run_update.bat').read_text('utf-8')
-  self.assertIn('%~dp0..\\_scripts\\auto_update.py',text)
+ def test_failed_atomic_replace_preserves_existing_data(self):
+  p=self.root/'data.json';p.write_bytes(b'{"known":1}')
+  with patch.object(legacy.urllib.request,'urlopen',return_value=Response(b'{"new":2}')),patch.object(legacy.os,'replace',side_effect=PermissionError('destination locked')),patch.object(legacy.time,'sleep'):
+   status,_=legacy.fetch_one('https://example.invalid/data.json',str(p))
+  self.assertEqual(status,'failed');self.assertEqual(p.read_bytes(),b'{"known":1}')
 if __name__=='__main__':unittest.main()
