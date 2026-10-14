@@ -195,11 +195,14 @@ function useAction(b,u,key,kind='normal',targetId=null){
   record(b,'action_end',u,{kind,state:snapshot(b)});
 }
 function enqueueUltimates(b){
+  if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy'))return;
   const queued=new Set(b.queue.filter(q=>q.kind==='ultimate').map(q=>q.actor));
   for(const u of b.units)if(alive(u)&&u.policy?.autoUltimate!==false&&u.actions.ultimate&&!queued.has(u.id)&&(u.actions.ultimate.energyCost??u.energyMax)>0&&u.energy+EPS>=(u.actions.ultimate.energyCost??u.energyMax))b.queue.push({actor:u.id,key:'ultimate',kind:'ultimate'});
 }
 function flush(b){
-  while(b.queue.length){const q=b.queue.shift(),u=b.units.find(u=>u.id===q.actor);if(!u||!alive(u))continue;
+  while(b.queue.length){
+    if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy')){b.queue=[];break;}
+    const q=b.queue.shift(),u=b.units.find(u=>u.id===q.actor);if(!u||!alive(u))continue;
     if(q.kind==='ultimate'&&u.energy+EPS<(u.actions[q.key].energyCost??0))continue;
     // Extra turns/ultimates/follow-ups do not reset the normal action gauge.
     useAction(b,u,q.key,q.kind,q.targetId);enqueueUltimates(b);
