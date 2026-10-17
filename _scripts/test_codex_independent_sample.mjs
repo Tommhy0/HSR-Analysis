@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {createContext} from '../core/ctx.mjs';
+import {newBattleBuild,buildBattleActor} from '../simulator/builds.mjs';
+import {createBattle,stepBattle} from '../simulator/engine.mjs';
+const raw=JSON.parse(fs.readFileSync(new URL('../_data_cache/hsr_core.json',import.meta.url)));
+const ctx=createContext(raw);
+const panel=(atk=1000,speed=100)=>({hp:10000,atk,def:1000,speed,critRate:0,critDmg:1,energyRegen:1,effectHit:0,effectRes:0,breakEffect:0,baseStats:{hp:1000,atk,def:1000},elemDmg:{}});
+const actor=id=>{const a=buildBattleActor(ctx,{...newBattleBuild(),characterId:id,relicAuto:false,panel:panel()});a.energy=0;a.policy={...a.policy,autoUltimate:false,basicOnly:true};return a;};
+const dummy=(id,side='ally',atk=1000)=>({id,name:id,side,level:80,element:'Physical',panel:panel(atk,1),energy:0,energyMax:100,res:{},actions:{basic:{name:'probe',type:'Normal',terms:[{scaling:'atk',multiplier:1}],toughness:0,hitEnergy:10,spGain:0,energyGain:0},followup:{name:'probe followup',type:'Talent',terms:[{scaling:'atk',multiplier:1}],toughness:0,hitEnergy:10}},policy:{autoUltimate:false,basicOnly:true}});
+const battle=(id)=>createBattle({strict:true,maxAV:500,sp:3,maxSP:9,seed:42,critMode:'noncrit',units:[actor(id),dummy('mate'),{...dummy('enemy','enemy'),panel:panel(1000,1),hp:1e9}]});
+const force=(b,u,key,kind='normal')=>{b.units.forEach(t=>t.distance=10000);b.summons.forEach(t=>t.distance=10000);u.distance=0;if(kind==='normal'){u.policy={...u.policy,turnPlan:[{turn:u.turns+1,key}]};}else b.queue.push({actor:u.id,key,kind,targetId:b.units.at(-1).id});stepBattle(b);};
+const results=[];
+function test(name,fn){try{const evidence=fn();results.push({name,pass:true,evidence});}catch(e){results.push({name,pass:false,error:e.message});}}
+test('饮月：3战技点+2逆鳞应优先消耗逆鳞，剩余2战技点',()=>{const b=battle(1213),u=b.units[0];u.resources['逆鳞']=2;force(b,u,'basic');assert.equal(b.sp,2);assert.equal(u.resources['逆鳞'],0);});
+test('饮月：二段强化普攻对相邻应削韧30',()=>{const b=battle(1213),u=b.units[0];b.sp=2;const adj={...dummy('adj','enemy'),toughnessMax:1000,rank:'normal',standardBreak:true,weaknesses:['Imaginary']};const cfg={...b.config,sp:2,units:[...b.config.units,adj]};const c=createBattle(cfg);force(c,c.units[0],'basic');assert.equal(c.units.at(-1).toughness,970);});
+test('托帕：未开终结时队友追击应使账账提前50%',()=>{const b=battle(1112),u=b.units[0],mate=b.units[1],s=b.summons[0];force(b,mate,'basic');assert.ok(b.units.at(-1).buffs.some(e=>e.tag==='topazDebt'));force(b,mate,'followup','followup');assert.equal(s.distance,5000);});
+test('托帕：负债证明属于追击易伤乘区',()=>{const b=battle(1112),mate=b.units[1];force(b,mate,'basic');force(b,mate,'followup','followup');const hit=b.log.filter(e=>e.type==='damage'&&e.actor===mate.id&&e.kind==='followup').at(-1);assert.equal(hit.formula.find(f=>f.zone==='vuln').value,1.5);});
+test('卡芙卡：同一自身回合间，两名队友普攻只触发一次天赋',()=>{const b=battle(1005),m1=b.units[1],m2=dummy('mate2');const c=createBattle({...b.config,units:[...b.config.units.slice(0,-1),m2,b.config.units.at(-1)]});force(c,c.units[1],'basic');force(c,c.units[2],'basic');const n=c.log.filter(e=>e.type==='action'&&e.actor===c.units[0].id&&e.key==='followup').length;assert.equal(n,1);});
+test('卡芙卡：引爆队友DoT应使用该队友攻击力',()=>{const b=battle(1005),u=b.units[0],m=b.units[1],en=b.units.at(-1);m.panel.atk=3000;en.dots.push({id:'external-dot',source:m.id,name:'external burn',element:'Fire',terms:[{scaling:'atk',multiplier:1}],remaining:3});force(b,u,'skill');const hit=b.log.find(e=>e.type==='damage'&&e.kind==='dot');assert.equal(hit.formula.find(f=>f.zone==='base').value,2250);});
+test('饮月：三段强化普攻主目标7段，倍率使用原始6级技能数据',()=>{const b=battle(1213),u=b.units[0];force(b,u,'basic');const hits=b.log.filter(e=>e.type==='damage'&&e.actor===u.id&&e.kind==='direct');assert.equal(hits.length,7);const expected=raw.skills.find(s=>s.id===121312).params['6'].param_list[0]*1000;assert.ok(Math.abs(hits.reduce((n,e)=>n+e.formula.find(f=>f.zone==='base').value,0)-expected)<1e-6);return {hits:7,baseTotal:expected};});
+test('托帕：账账初始速度与原始10级天赋相同',()=>{const b=battle(1112);const expected=raw.skills.find(s=>s.id===111204).params['10'].param_list[0];assert.equal(b.summons[0].speed,expected);return {speed:expected};});
+test('同谐主：E0战技一次主命中加四次弹射，倍率对照原始10级数据',()=>{const b=battle(8005),u=b.units[0];force(b,u,'skill');const hits=b.log.filter(e=>e.type==='damage'&&e.actor===u.id&&e.kind==='direct');assert.equal(hits.length,5);const expected=raw.skills.find(s=>s.id===800502).params['10'].param_list[0]*5*1000;assert.ok(Math.abs(hits.reduce((n,e)=>n+e.formula.find(f=>f.zone==='base').value,0)-expected)<1e-6);return {hits:5,baseTotal:expected};});
+test('同谐主：终结为全队添加30%击破特攻',()=>{const b=battle(8005),u=b.units[0];u.energy=u.energyMax;force(b,u,'ultimate','ultimate');for(const t of b.units.filter(t=>t.side==='ally')){const buff=t.buffs.find(e=>e.tag==='hmcDance');assert.ok(buff,'伴舞缺失');assert.equal(buff.value,.3);}});
+fs.writeFileSync(new URL('../outputs/codex-independent-results.json',import.meta.url),JSON.stringify(results,null,2));
+for(const r of results)console.log(`${r.pass?'PASS':'FAIL'} ${r.name}${r.error?' :: '+r.error:''}`);
+console.log(JSON.stringify({passed:results.filter(r=>r.pass).length,failed:results.filter(r=>!r.pass).length}));
+process.exitCode=results.some(r=>!r.pass)?1:0;

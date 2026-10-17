@@ -1,0 +1,490 @@
+{
+  "revision": "312b4597691e0a29cf9828a15b592757dba86949",
+  "characters": {
+    "1001": {
+      "filename": "Avatar_Mar_7th_00_Ability.json",
+      "sha256": "3824a4ae696ae4719b3de3db752d35ca8241293f0bcd776bc7cc457255da8796",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Mar_7th_00_Ability.json"
+    },
+    "1002": {
+      "filename": "Avatar_DanHeng_00_Ability.json",
+      "sha256": "3e73a9ec96610b42725970e09699c38a3426f2bceccc77c0d9949ef9757109e7",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_DanHeng_00_Ability.json"
+    },
+    "1003": {
+      "filename": "Avatar_Himeko_00_Ability.json",
+      "sha256": "b69fc366d6adaf0cf6d755acb9fa0e13018fe97763f7a7b08762039e2744b606",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Himeko_00_Ability.json"
+    },
+    "1004": {
+      "filename": "Avatar_Welt_00_Ability.json",
+      "sha256": "6045bf12e5b9d3f9f60c7d6eee35fed099bab45b78fa07cdab41827ba704875b",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Welt_00_Ability.json"
+    },
+    "1005": {
+      "filename": "Avatar_Kafka_00_Ability.json",
+      "sha256": "c9cc440f2dc843f46dcf1b3c264fa26a60aabe7d2738cc1340687be99cc13a24",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Kafka_00_Ability.json"
+    },
+    "1006": {
+      "filename": "Avatar_Silwolf_00_Ability.json",
+      "sha256": "8fb623daf2a5ad09ab284b0ac6db0a5aa1e7299847f0bfaef9a1a731cb3fae6d",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Silwolf_00_Ability.json"
+    },
+    "1008": {
+      "filename": "Avatar_Arlan_00_Ability.json",
+      "sha256": "286e548b0cdc6d30a3060f7e5c04469ba4bdb9fd8b68dcd8629cd6e7fe009c16",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Arlan_00_Ability.json"
+    },
+    "1009": {
+      "filename": "Avatar_Asta_00_Ability.json",
+      "sha256": "82634643cf13d4290698b10d5b8f17e507e086d4d96770f9662513676d0e30ea",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Asta_00_Ability.json"
+    },
+    "1013": {
+      "filename": "Avatar_Herta_00_Ability.json",
+      "sha256": "578a22253071aad29fe799eddbe12d0b5f37cbf1bd555a9d7de29412f9ba5eca",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Herta_00_Ability.json"
+    },
+    "1014": {
+      "filename": "Avatar_Saber_00_Ability.json",
+      "sha256": "88dc40b6000d1b3f0763e002cdef5510b2aaa7b8a99c6e2dc623ff11227d533c",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Saber_00_Ability.json"
+    },
+    "1015": {
+      "filename": "Avatar_Archer_00_Ability.json",
+      "sha256": "7eeb9b4c4375687fbba4d016a4bc32b4fac8e67057bf5684e9254e52f7cc29e3",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Archer_00_Ability.json"
+    },
+    "1101": {
+      "filename": "Avatar_Bronya_00_Ability.json",
+      "sha256": "2756fe44e50551f8a20505e4e3c894bf89654f43adb1d80ab8975b55ab279c94",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Bronya_00_Ability.json"
+    },
+    "1102": {
+      "filename": "Avatar_Seele_00_Ability.json",
+      "sha256": "8cb452e0e2479f90812129609c936be6291cbf7e8fb30b905fb38c19668d2449",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Seele_00_Ability.json"
+    },
+    "1103": {
+      "filename": "Avatar_Serval_00_Ability.json",
+      "sha256": "31d7a5a20ed86e324bd6866b9ad27fba9756829b6f80c627911f0ff44ce7ecec",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Serval_00_Ability.json"
+    },
+    "1104": {
+      "filename": "Avatar_Gepard_00_Ability.json",
+      "sha256": "5f0d4627fb7a4407ef017e1fe5cc0204b7ff8cbf7b06223b01570da9e434bda3",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Gepard_00_Ability.json"
+    },
+    "1105": {
+      "filename": "Avatar_Natasha_00_Ability.json",
+      "sha256": "edc9fe58b25d082662ac07b6180df0c1bc3ab5d4cbcc43495aa577381564f10d",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Natasha_00_Ability.json"
+    },
+    "1106": {
+      "filename": "Avatar_Pela_00_Ability.json",
+      "sha256": "673e610388665d9ee08c0408ee214b0aaeffb6d7ec4851069ac47924effaf90a",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Pela_00_Ability.json"
+    },
+    "1107": {
+      "filename": "Avatar_Klara_00_Ability.json",
+      "sha256": "0c4992c96a16d09fc7bd6085232a25f7c2a996ce970f6350ed1f1e5e1bb2cf3e",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Klara_00_Ability.json"
+    },
+    "1108": {
+      "filename": "Avatar_Sampo_00_Ability.json",
+      "sha256": "92aa4e09b098bd91a5ff16e8639f670fa7fbfdeb88cd53faa09abd8ca0964e3b",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Sampo_00_Ability.json"
+    },
+    "1109": {
+      "filename": "Avatar_Hook_00_Ability.json",
+      "sha256": "1d1895fc5d739f133390a3ca504e6d6df9b93286e4ccd348e216d29be60eeac2",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Hook_00_Ability.json"
+    },
+    "1110": {
+      "filename": "Avatar_Lynx_00_Ability.json",
+      "sha256": "49eb0f868bec5050d24918edfc4a2a55869a134a7a6b71b2756fab4ea662e4cb",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Lynx_00_Ability.json"
+    },
+    "1111": {
+      "filename": "Avatar_Luka_00_Ability.json",
+      "sha256": "9404c76a73a40fb37bdaba2cef100cb56a9d45bccf20a80acdcec8540ea67cd1",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Luka_00_Ability.json"
+    },
+    "1112": {
+      "filename": "Avatar_Topaz_00_Ability.json",
+      "sha256": "d1cc935c0d293c5006ca34ebf35f85e5042e32d21fcc4caf3902b4f3a732aae2",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Topaz_00_Ability.json"
+    },
+    "1201": {
+      "filename": "Avatar_Qingque_00_Ability.json",
+      "sha256": "d4c9d5480a40ccf9470c079fc32b11fb802ebfc07dc916fcda7f464ecd484cb1",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Qingque_00_Ability.json"
+    },
+    "1202": {
+      "filename": "Avatar_Tingyun_00_Ability.json",
+      "sha256": "39024823156bfb625e9bd3d4cbca4065b75a437a8209d09800013520deb3e414",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Tingyun_00_Ability.json"
+    },
+    "1203": {
+      "filename": "Avatar_Luocha_00_Ability.json",
+      "sha256": "09483d5e2a682839665ddca307aaafc30d14154f55cea46f8eeaa9def7bd851d",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Luocha_00_Ability.json"
+    },
+    "1204": {
+      "filename": "Avatar_JingYuan_00_Ability.json",
+      "sha256": "c1dc4306e42d35463fbab4261756b73099550f9d33a87d1236482a9236ae2d12",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_JingYuan_00_Ability.json"
+    },
+    "1205": {
+      "filename": "Avatar_Ren_00_Ability.json",
+      "sha256": "7f2e59e37102e310edc89fbe0781e5fe5b47f1763d01d624be5a926c7bc3ebd3",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Ren_00_Ability.json"
+    },
+    "1206": {
+      "filename": "Avatar_Sushang_00_Ability.json",
+      "sha256": "3497f44fb71eb4dc1e7d7daed51e08346766bd8683f014ee8052d758200c9ea8",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Sushang_00_Ability.json"
+    },
+    "1207": {
+      "filename": "Avatar_Yukong_00_Ability.json",
+      "sha256": "0fbf11db72747db6aee1349869c0fba3ff824f8c69aaf13aaa35f4eb7018bee2",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Yukong_00_Ability.json"
+    },
+    "1208": {
+      "filename": "Avatar_FuXuan_00_Ability.json",
+      "sha256": "2076bc2ad80c0a51ee4f93324dbf4b2306034ccbe3c31f5e770819d3e20a0df3",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_FuXuan_00_Ability.json"
+    },
+    "1209": {
+      "filename": "Avatar_Yanqing_00_Ability.json",
+      "sha256": "be073be6e6d461d725d302fefdd948a7beedcd60d25fb0143d3dfcac614dc74b",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Yanqing_00_Ability.json"
+    },
+    "1210": {
+      "filename": "Avatar_Guinaifen_00_Ability.json",
+      "sha256": "f43c0cc1e68eb9da6441d49fb9bdd469f4bd13a88dfa7a7f50fef1d25684e7fb",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Guinaifen_00_Ability.json"
+    },
+    "1211": {
+      "filename": "Avatar_Bailu_00_Ability.json",
+      "sha256": "45a2f66be1a491bcbf2bd72a0b9089c038ac9a5712f5a117ee7e6064569695f8",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Bailu_00_Ability.json"
+    },
+    "1212": {
+      "filename": "Avatar_Jingliu_00_Ability.json",
+      "sha256": "eae0afb469e26dbfc10f2b9aa7fe9d0c591594e1649113653efd406bd1ef19df",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Jingliu_00_Ability.json"
+    },
+    "1213": {
+      "filename": "Avatar_DanHengIL_00_Ability.json",
+      "sha256": "729c4319a071405d2d3fdc4aacb449d8f56b5c3ce11fbba029031477362b68d5",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_DanHengIL_00_Ability.json"
+    },
+    "1214": {
+      "filename": "Avatar_Xueyi_00_Ability.json",
+      "sha256": "e4304eacb9aafebcf166349a5c0eac5ef8ee3a8305ef5458bdb1dc5c50e5f00a",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Xueyi_00_Ability.json"
+    },
+    "1215": {
+      "filename": "Avatar_Hanya_00_Ability.json",
+      "sha256": "68100720e3776252e0336a2c84e742c2593e2c7760db9f4b3e6803f606dc2a70",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Hanya_00_Ability.json"
+    },
+    "1217": {
+      "filename": "Avatar_Huohuo_00_Ability.json",
+      "sha256": "7960f9ce949354fbfc3c9eb88f5dc9f6cd16c26a687b0d2bc57a2bfcfe165e2f",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Huohuo_00_Ability.json"
+    },
+    "1218": {
+      "filename": "Avatar_Jiaoqiu_00_Ability.json",
+      "sha256": "673d3483ef4c0ecabdbe566c5c69bcd3f38d192508bceb4bff8b02d8140c8c7d",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Jiaoqiu_00_Ability.json"
+    },
+    "1220": {
+      "filename": "Avatar_Feixiao_00_Ability.json",
+      "sha256": "8139ab8f053a2afff72609eab7e303ce9702ad200faa96e2b56bbdfdefdaced0",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Feixiao_00_Ability.json"
+    },
+    "1221": {
+      "filename": "Avatar_Yunli_00_Ability.json",
+      "sha256": "ef1171a07346f601b34427dcefd021c8e09fd9b87529d325dbce017a44196362",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Yunli_00_Ability.json"
+    },
+    "1222": {
+      "filename": "Avatar_Lingsha_00_Ability.json",
+      "sha256": "bc5d7df06c9ae39c114c2cb3a0321d9d6c9917170d980cab5ad7368840d5b224",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Lingsha_00_Ability.json"
+    },
+    "1223": {
+      "filename": "Avatar_Moze_00_Ability.json",
+      "sha256": "01d74d6af3139cf5f9942a47894702ccd09f0bd32e6086c5b7c9ffd28645e412",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Moze_00_Ability.json"
+    },
+    "1224": {
+      "filename": "Avatar_Mar_7th_10_Ability.json",
+      "sha256": "c3acc7a8cbc819abb85bb6f0d748e7b72fc82c9a2b3b70bcec4ec36fa6662f3f",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Mar_7th_10_Ability.json"
+    },
+    "1225": {
+      "filename": "Avatar_Fugue_00_Ability.json",
+      "sha256": "09a29502feb14ec19d9818dc5a708feb9cf3d711f5e42ce4374e2b7c7763bf33",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Fugue_00_Ability.json"
+    },
+    "1301": {
+      "filename": "Avatar_Gallagher_00_Ability.json",
+      "sha256": "66721d14c01b6a28955c96cdd32ec2538a888d06b95d2c8f848d1bff530bd033",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Gallagher_00_Ability.json"
+    },
+    "1302": {
+      "filename": "Avatar_Argenti_00_Ability.json",
+      "sha256": "cc663b2f2ff34ea193798f017b5b2379b3c4c8115c082dc6c19d2b92d3722019",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Argenti_00_Ability.json"
+    },
+    "1303": {
+      "filename": "Avatar_RuanMei_00_Ability.json",
+      "sha256": "2b3d435677b02f5b1b95edd43a1875180f3c25bc0f0f0aea92bc5850801fce4a",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_RuanMei_00_Ability.json"
+    },
+    "1304": {
+      "filename": "Avatar_Aventurine_00_Ability.json",
+      "sha256": "3702f1e6ebd611b18e68bcee0c58fe2f13d6790e3ca9dbb4ef9e7b9293e855a8",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Aventurine_00_Ability.json"
+    },
+    "1305": {
+      "filename": "Avatar_Dr_Ratio_00_Ability.json",
+      "sha256": "9de5a9c2ab71f3b1507e21e9307577914e2d6db7731ea4afed5538ac4742e383",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Dr_Ratio_00_Ability.json"
+    },
+    "1306": {
+      "filename": "Avatar_Sparkle_00_Ability.json",
+      "sha256": "3466b5c084e760e795d535249198fe9d73018a11863e8c91edb77fb790c7baef",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Sparkle_00_Ability.json"
+    },
+    "1307": {
+      "filename": "Avatar_BlackSwan_00_Ability.json",
+      "sha256": "a8cc41930c3997fc6469e53b965302779fb994d4964e56b66970aeb7dea48261",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_BlackSwan_00_Ability.json"
+    },
+    "1308": {
+      "filename": "Avatar_Acheron_00_Ability.json",
+      "sha256": "e516aa640be1b980a37484fb7f6ed82cb300cf47934d748870ff0b915f87a12c",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Acheron_00_Ability.json"
+    },
+    "1309": {
+      "filename": "Avatar_Robin_00_Ability.json",
+      "sha256": "93c70b007b1c5d590bf7fd283d7ab59123180c71f387de81e21fc77b38655b52",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Robin_00_Ability.json"
+    },
+    "1310": {
+      "filename": "Avatar_Sam_00_Ability.json",
+      "sha256": "4305e247687a8d9a37f2089d94c3efd355e3640fccf769af099d919e6ce8b6d8",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Sam_00_Ability.json"
+    },
+    "1312": {
+      "filename": "Avatar_Misha_00_Ability.json",
+      "sha256": "c3d79625109d34167f2572cd2bfce12663eb11b88050d0c7002003a49dd2786b",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Misha_00_Ability.json"
+    },
+    "1313": {
+      "filename": "Avatar_Sunday_10_Ability.json",
+      "sha256": "384ed0e72d4b65f41f464b277c5104d0200e618eb533767f317d1057c7f4610c",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Sunday_10_Ability.json"
+    },
+    "1314": {
+      "filename": "Avatar_Jade_00_Ability.json",
+      "sha256": "238e058249715ef1c388f7d2f55d7566a468f75a070e3d6bf2cbb6d03adf3073",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Jade_00_Ability.json"
+    },
+    "1315": {
+      "filename": "Avatar_Boothill_00_Ability.json",
+      "sha256": "289cb31ba8862f571f63558a3626277e15a80bbe950931cb41d58b03a27fe374",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Boothill_00_Ability.json"
+    },
+    "1317": {
+      "filename": "Avatar_Rappa_00_Ability.json",
+      "sha256": "d0cf08dcb4a0d13725945005d6ac6b7005376acfb53c97adb2b42973828121ee",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Rappa_00_Ability.json"
+    },
+    "1321": {
+      "filename": "Avatar_Constance_00_Ability.json",
+      "sha256": "c1748eebd2cf2c0895e80f22ee05f0c54a542c90469900777b09dce6e39b1620",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Constance_00_Ability.json"
+    },
+    "1401": {
+      "filename": "Avatar_TheHerta_00_Ability.json",
+      "sha256": "f39c956bce2299fd6a93bf09cc11a8ecc568c2d1045dd35b443bc4049ef2f72c",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_TheHerta_00_Ability.json"
+    },
+    "1402": {
+      "filename": "Avatar_Aglaea_00_Ability.json",
+      "sha256": "d102961dc78df067bbefa739c8b32d2ae8e7011050bd73e786d5992412572f4e",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Aglaea_00_Ability.json"
+    },
+    "1403": {
+      "filename": "Avatar_Tribbie_00_Ability.json",
+      "sha256": "0714eb90e80d96d84448e4970bad54cf4cb3fce857e3c6433704d88fc17dc0d4",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Tribbie_00_Ability.json"
+    },
+    "1404": {
+      "filename": "Avatar_Mydeimos_00_Ability.json",
+      "sha256": "25d6b19115289df3ef94708cc7ef18adea5c98822400cad3cceaf4f94b86fadb",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Mydeimos_00_Ability.json"
+    },
+    "1405": {
+      "filename": "Avatar_Anaxa_00_Ability.json",
+      "sha256": "06b35500b9edfa156c57dc25fc35532f1473629047ee602202de470098663f37",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Anaxa_00_Ability.json"
+    },
+    "1406": {
+      "filename": "Avatar_Cipher_00_Ability.json",
+      "sha256": "9bd0e18753242cb8f773ddba032287245b9d748d3161ac1154ed0702ea138df7",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Cipher_00_Ability.json"
+    },
+    "1407": {
+      "filename": "Avatar_Castorice_00_Ability.json",
+      "sha256": "8ddff337651e9b1cfd24f1e74fca0c01592944110a24fa85b939bae06bd72683",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Castorice_00_Ability.json"
+    },
+    "1408": {
+      "filename": "Avatar_Phainon_00_Ability.json",
+      "sha256": "62705a8c076af05458e2d8c4465dd47c4c335fa7fe287a14abfcf1d9c447fb1b",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Phainon_00_Ability.json"
+    },
+    "1409": {
+      "filename": "Avatar_Hyacine_00_Ability.json",
+      "sha256": "fe85e6bd87f817307dd4ca005db40575cc13c06e77cb6c536b1fc22235ab9705",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Hyacine_00_Ability.json"
+    },
+    "1410": {
+      "filename": "Avatar_Harscyline_00_Ability.json",
+      "sha256": "1da2a7cd12b7f7ba9b2822acc5f0f74811d4d4cf03b49e7bc42f91585de01edb",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Harscyline_00_Ability.json"
+    },
+    "1412": {
+      "filename": "Avatar_Cerydra_00_Ability.json",
+      "sha256": "bf54a9ee6bf4fc22d69d432a82721b8ef98ea5d2f7163f8c71d7a3e1b6299e9e",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Cerydra_00_Ability.json"
+    },
+    "1413": {
+      "filename": "Avatar_Evernight_00_Ability.json",
+      "sha256": "50cb415721bcfd7ec2069817bd40c977611abb4a8bccd4937863b569560320f5",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Evernight_00_Ability.json"
+    },
+    "1414": {
+      "filename": "Avatar_DanHengPT_00_Ability.json",
+      "sha256": "8ac5199c5e58d117e856128dcac2769ac50daee33b28d57382980fc738fb2ee0",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_DanHengPT_00_Ability.json"
+    },
+    "1415": {
+      "filename": "Avatar_Cyrene_00_Ability.json",
+      "sha256": "b4a3fccb10191490c818be653d878b39069953cf89cd99754f1bf4e5543e676e",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Cyrene_00_Ability.json"
+    },
+    "1501": {
+      "filename": "Avatar_Sparxie_00_Ability.json",
+      "sha256": "f4d43d7b0393f4a9fe63f3d9c661773abd1501e8462487811df6d7248595d979",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Sparxie_00_Ability.json"
+    },
+    "1502": {
+      "filename": "Avatar_YaoGuang_00_Ability.json",
+      "sha256": "c6fc18d9a2bee45aed20105a8692d6e3e7cf95d5364af127833db1d8a3dfae60",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_YaoGuang_00_Ability.json"
+    },
+    "1504": {
+      "filename": "Avatar_Ashveil_00_Ability.json",
+      "sha256": "f2cfaf66937ee8026fb1a749cf44d2c1d0ff827e0d18134ad3d95fa9ee083648",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Ashveil_00_Ability.json"
+    },
+    "1505": {
+      "filename": "Avatar_Evanescia_00_Ability.json",
+      "sha256": "7ffe8e137e7eddba2bf94e0714bc0e9b258b8715c2e73e9623c145bd9dfa44b7",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Evanescia_00_Ability.json"
+    },
+    "1506": {
+      "filename": "Avatar_SilverWolf999_00_Ability.json",
+      "sha256": "cb8208565047e95a7af2cf4cce6c77b44cecd1199aed514f1fdcd8dbd303a7a2",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_SilverWolf999_00_Ability.json"
+    },
+    "1507": {
+      "filename": "Avatar_MortenaxBlade_00_Ability.json",
+      "sha256": "2bd907013d0658197f189b94b8214215df7f241ae38c8242d0b6f2cdd8d247c6",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_MortenaxBlade_00_Ability.json"
+    },
+    "1508": {
+      "filename": "Avatar_TohsakaRin_00_Ability.json",
+      "sha256": "bbf8c9404cf8d70a1248e11293514e823c09c3c363b1af60bb1940e688c1a267",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_TohsakaRin_00_Ability.json"
+    },
+    "1509": {
+      "filename": "Avatar_Gilgamesh_00_Ability.json",
+      "sha256": "41678b6757a259704acd353b58223914e4a6c8c42672943421d33ea2060d6bb7",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Gilgamesh_00_Ability.json"
+    },
+    "1510": {
+      "filename": "Avatar_HimekoNova_00_Ability.json",
+      "sha256": "93b0c904396bab25352fad139646f2f6a7c22e30e804e5458f4665b38cb0693f",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_HimekoNova_00_Ability.json"
+    },
+    "1512": {
+      "filename": "Avatar_RobinS_00_Ability.json",
+      "sha256": "55005e13c7c55ef595c6e18c542ea7b19996ce37a1ef4ec3f8fab55091a55994",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_RobinS_00_Ability.json"
+    },
+    "1513": {
+      "filename": "Avatar_AventurineW_00_Ability.json",
+      "sha256": "4a1d03e93a521b22821651416df779cc8bd98404e09eb60f59fc4dbec227efaa",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_AventurineW_00_Ability.json"
+    },
+    "8001": {
+      "filename": "Avatar_PlayerBoy_00_Ability.json",
+      "sha256": "975ee6a3fba6da80689583ff3b9e0b9941bcb2f37495f7333710bdc792d22ae8",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerBoy_00_Ability.json"
+    },
+    "8002": {
+      "filename": "Avatar_PlayerGirl_00_Ability.json",
+      "sha256": "f5db74bb74cb7a958f1fb28b366a5dda269e340cc21192d43668aa461bfc6eb9",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerGirl_00_Ability.json"
+    },
+    "8003": {
+      "filename": "Avatar_PlayerBoy_10_Ability.json",
+      "sha256": "13a0b8b4d2df669cdc623286febb6c46954d3d46c46376e1630a6d8aa3b5fab5",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerBoy_10_Ability.json"
+    },
+    "8004": {
+      "filename": "Avatar_PlayerGirl_10_Ability.json",
+      "sha256": "1e87d8052ad165a03f89c3bf6fa5a717e1fedaca10f57a3748173bd53c44b594",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerGirl_10_Ability.json"
+    },
+    "8005": {
+      "filename": "Avatar_PlayerBoy_20_Ability.json",
+      "sha256": "5f3906aea7386d298a4d98ca3a0210b48e869293c7d6dcf0d226e1bc571bec2b",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerBoy_20_Ability.json"
+    },
+    "8006": {
+      "filename": "Avatar_PlayerGirl_20_Ability.json",
+      "sha256": "65d01ffca5a61733ad9871476428911c7ad41ebc9495ee8b4d41dd8b3f6d56b8",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerGirl_20_Ability.json"
+    },
+    "8007": {
+      "filename": "Avatar_PlayerBoy_30_Ability.json",
+      "sha256": "dbbf4aac7d8049ffe894170f71de51c7e81f672b45b0fa7c504fa2bf7ccfd080",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerBoy_30_Ability.json"
+    },
+    "8008": {
+      "filename": "Avatar_PlayerGirl_30_Ability.json",
+      "sha256": "ce69ab2a13091d0fd722cfae2e3820a2135e55713de2100d21b084eb8e8ae895",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerGirl_30_Ability.json"
+    },
+    "8009": {
+      "filename": "Avatar_PlayerBoy_40_Ability.json",
+      "sha256": "d5351ead59f14ed9198d461471a004a791ed43f767642465259178171f0baff3",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerBoy_40_Ability.json"
+    },
+    "8010": {
+      "filename": "Avatar_PlayerGirl_40_Ability.json",
+      "sha256": "ffc7f902ada5b720dfb03e4997d6a05e563e7438faf1be95cafac1b86def68d5",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_PlayerGirl_40_Ability.json"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "hsr-analysis/team-v1",
+  "datasetVersion": "4.6",
+  "members": [
+    {"character":"花火","variant":"enhanced","eidolon":0,"lightcone":"专武","superimpose":1,"sets":"风翁","statsBasis":"out-of-combat","stats":{"speed":160,"critDmg":"200%"},"policy":{"allyTargetSlot":3}},
+    {"character":"红A","eidolon":0,"lightcone":"专武","superimpose":1,"sets":[{"name":"量子套","count":4},{"name":"都蓝","count":2}]},
+    {"character":"盾丹","eidolon":0,"lightcone":"专武","superimpose":1,"sets":[{"name":"隐士","count":4},{"name":"露莎卡","count":2}],"policy":{"allyTargetSlot":3}},
+    {"character":"刻律","eidolon":0,"lightcone":"专武","superimpose":1,"sets":"风露","policy":{"allyTargetSlot":3}}
+  ],
+  "notes": ["自然语言导入演示：四人零魂专武一叠；强化花火风翁，局外160速200暴伤；红A量子都蓝；盾丹隐士露莎卡；刻律风露；三拐红A。未提及面板、技能等级和敌人沿用当前配置，此为功能验收样例。"]
+}

@@ -1,7 +1,7 @@
 import { suggestPanel,validatePanel } from '../core/panel.mjs';
 import { defaultRelics, relicContributions, applyRelics } from '../core/relics.mjs';
 import { actorFromCalculator } from './profiles.mjs';
-export function newBattleBuild(){return {characterId:null,level:80,eidolon:0,lightconeId:null,lightconeLevel:80,superimpose:1,levels:{},relicAuto:true,relics:defaultRelics()};}
+export function newBattleBuild(){return {characterId:null,level:80,eidolon:0,lightconeId:null,lightconeLevel:80,superimpose:1,levels:{},variant:'base',technique:false,relicSets:[],relicAuto:true,relics:defaultRelics()};}
 export function buildBattleActor(ctx,build){
   if(!build.characterId)throw new Error('请先选择该位置的角色');
   for(const key of ['level','lightconeLevel'])if(!Number.isInteger(build[key])||build[key]<1||build[key]>80)throw new Error('角色与光锥等级须为 1～80 的整数');

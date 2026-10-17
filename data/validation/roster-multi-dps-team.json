@@ -1,0 +1,97 @@
+{
+  "schema": "hsr-analysis/team-v1",
+  "datasetVersion": "4.6",
+  "members": [
+    {
+      "slot": 1,
+      "character": "黑塔",
+      "level": 80,
+      "eidolon": 2,
+      "lightcone": null,
+      "technique": true,
+      "sets": [],
+      "statsBasis": "engine-input",
+      "stats": {
+        "hp": 4000,
+        "atk": 1500,
+        "def": 1100,
+        "speed": 115,
+        "critRate": "50%",
+        "critDmg": "100%",
+        "energyRegen": 1.194394
+      },
+      "policy": {
+        "autoUltimate": true
+      }
+    },
+    {
+      "slot": 2,
+      "character": "希露瓦",
+      "level": 80,
+      "eidolon": 2,
+      "lightcone": null,
+      "technique": true,
+      "sets": [],
+      "statsBasis": "engine-input",
+      "stats": {
+        "hp": 4000,
+        "atk": 1500,
+        "def": 1100,
+        "speed": 125,
+        "critRate": "50%",
+        "critDmg": "100%",
+        "energyRegen": 1.194394
+      },
+      "policy": {
+        "autoUltimate": true
+      }
+    },
+    {
+      "slot": 3,
+      "character": "艾丝妲",
+      "level": 80,
+      "eidolon": 4,
+      "lightcone": null,
+      "technique": true,
+      "sets": [],
+      "statsBasis": "engine-input",
+      "stats": {
+        "hp": 4000,
+        "atk": 1500,
+        "def": 1100,
+        "speed": 155,
+        "critRate": "50%",
+        "critDmg": "100%",
+        "energyRegen": 1.194394
+      },
+      "policy": {
+        "autoUltimate": true
+      }
+    },
+    {
+      "slot": 4,
+      "character": "加拉赫",
+      "level": 80,
+      "eidolon": 2,
+      "lightcone": null,
+      "technique": true,
+      "sets": [],
+      "statsBasis": "engine-input",
+      "stats": {
+        "hp": 4000,
+        "atk": 1500,
+        "def": 1100,
+        "speed": 145,
+        "critRate": "50%",
+        "critDmg": "100%",
+        "energyRegen": 1.194394
+      },
+      "policy": {
+        "autoUltimate": true
+      }
+    }
+  ],
+  "notes": [
+    "换队验收：黑塔 / 希露瓦双输出，艾丝妲与加拉赫。使用明确测试面板、无光锥，不是实战录像配装；保留当前敌人。"
+  ]
+}

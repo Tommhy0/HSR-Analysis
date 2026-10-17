@@ -782,7 +782,8 @@ if (failed.length) process.exit(2);
 // 4. 出成品
 // ---------------------------------------------------------------------------
 const tpl = fs.readFileSync(path.join(ROOT, 'ui', BATTLE?'battle-template.html':'template.html'), 'utf8');
-const css = fs.readFileSync(path.join(ROOT, 'ui', 'style.css'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'ui', 'theme-light.css'), 'utf8');
+const commonCss = fs.readFileSync(path.join(ROOT, 'ui', 'style.css'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'ui', 'theme-light.css'), 'utf8');
+const css=commonCss+(BATTLE?'\n'+fs.readFileSync(path.join(ROOT,'ui','battle-replay.css'),'utf8'):'');
 const core = fs.readFileSync(path.join(ROOT, '_data_cache', 'hsr_core.json'), 'utf8');
 
 const gz = zlib.gzipSync(Buffer.from(core, 'utf8'), { level: 9 });
@@ -817,8 +818,10 @@ html = inject(html, '<!--__BOOT__-->', `<script>${bundle}
 })();</script>`);
 
 fs.writeFileSync(OUT, html, 'utf8');
+if(BATTLE)fs.writeFileSync(path.join(ROOT,'战斗可视化_验收版.html'),html.replace('<html lang="zh-CN">','<html lang="zh-CN" data-review-demo="true">'),'utf8');
+if(BATTLE)fs.writeFileSync(path.join(ROOT,'严格战斗_验收版.html'),html.replace('<html lang="zh-CN">','<html lang="zh-CN" data-strict-review="true">'),'utf8');
 if(!BATTLE)fs.writeFileSync(path.join(ROOT,'崩铁伤害计算器_浅色.html'),html.replace('<html lang="zh-CN">','<html lang="zh-CN" data-default-theme="light" data-theme="light">'),'utf8');
-fs.writeFileSync(path.join(ROOT,'模式选择.html'),inject(fs.readFileSync(path.join(ROOT,'ui','mode-template.html'),'utf8'),'/*__CSS__*/',css,'样式'),'utf8');
+fs.writeFileSync(path.join(ROOT,'模式选择.html'),inject(fs.readFileSync(path.join(ROOT,'ui','mode-template.html'),'utf8'),'/*__CSS__*/',commonCss,'样式'),'utf8');
 
 const mb = (n) => (n / 1024 / 1024).toFixed(2) + ' MB';
 console.log(`\n打包完成: ${OUT}`);
@@ -830,7 +833,7 @@ console.log('\n双击它就能用 —— 没有服务器、没有依赖、没有
 function battleHarness(){return `
 import fs from 'node:fs';
 const nodes=new Map();function node(id){if(!nodes.has(id))nodes.set(id,{id,innerHTML:'',value:'',textContent:'',style:{},dataset:{},querySelectorAll:()=>[],querySelector:()=>node('_selector'),setAttribute:()=>{},contains:()=>false});return nodes.get(id);}
-globalThis.document={getElementById:node,addEventListener:()=>{},documentElement:node('root')};globalThis.window=globalThis;
+globalThis.document={getElementById:node,addEventListener:()=>{},documentElement:node('root')};globalThis.window=globalThis;globalThis.addEventListener=()=>{};globalThis.location={hash:''};
 globalThis.__HSR_DATA__=JSON.parse(fs.readFileSync(${JSON.stringify(path.join(ROOT,'_data_cache','hsr_core.json'))},'utf8'));
 await import(${JSON.stringify('file:///'+TMP_BUNDLE.replace(/\\/g,'/'))});window.__HSR_BOOT__();
 const S=window.__HSR_BATTLE__;if(!S||S.state.config.units.filter(u=>u.side==='ally').length!==4)throw new Error('独立战斗入口不是四人队伍');

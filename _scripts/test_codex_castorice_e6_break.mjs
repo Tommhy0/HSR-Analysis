@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {ctx,dummy} from './codex_test_helpers.mjs';
+import {newBattleBuild,buildBattleActor} from '../simulator/builds.mjs';
+import {createBattle,stepBattle} from '../simulator/engine.mjs';
+const panel=(hp,atk=1000,speed=100)=>({hp,atk,def:1000,speed,baseStats:{hp,atk,def:1000},critRate:0,critDmg:1,energyRegen:1,effectHit:0,effectRes:0,breakEffect:0,elemDmg:{}});
+const owner=eidolon=>{const u=buildBattleActor(ctx,{...newBattleBuild(),characterId:1407,eidolon,level:80,technique:false,relicAuto:false,panel:panel(10000)});u.energy=0;u.policy={...u.policy,autoUltimate:false,basicOnly:true};return u;};
+const fixture=eidolon=>{
+  const u=owner(eidolon),ally=dummy('mate'),foe=dummy('foe','enemy');
+  foe.panel=panel(1e9,1000,1);foe.hp=1e9;foe.weaknesses=['Fire'];foe.rank='elite';foe.standardBreak=true;foe.toughnessMax=15;foe.toughness=15;
+  const b=createBattle({strict:false,maxAV:500,sp:3,maxSP:9,seed:17,critMode:'noncrit',units:[u,ally,foe]});
+  const c=b.units.find(x=>x.characterId===1407);b.rules.before(b,c,'summonDragon','extra',c.actions.summonDragon,[c]);
+  const d=b.units.find(x=>x.memospriteOwner===c.id);assert.ok(d);
+  for(const x of b.units)x.distance=100000;d.distance=0;
+  return {b,c,d,foe};
+};
+const b0=fixture(0);assert.equal(stepBattle(b0.b),true);assert.equal(b0.foe.toughness,15,'E0 死龙攻击非量子弱点不得削韧');assert.equal(b0.b.log.filter(e=>e.type==='break'&&e.actor===b0.d.id).length,0);
+const x=fixture(6);assert.equal(stepBattle(x.b),true);
+assert.ok(x.b.log.some(e=>e.type==='toughness'&&e.actor===x.d.id&&e.target===x.foe.id&&e.value===0),'E6 死龙应无视敌方弱点削减韧性');
+assert.ok(x.b.log.some(e=>e.type==='break'&&e.actor===x.d.id),'E6 攻击应触发真正的量子击破事件');
+assert.equal(x.b.log.filter(e=>e.type==='damage'&&e.actor===x.d.id&&e.kind==='break').length,1,'弱点击破应执行量子击破伤害');
+assert.equal(x.c.resources['死龙E6晦翼弹射'],x.c.kit.ranks[6][1],'每次真实击破应按 E6 参数增加晦翼弹射次数');
+x.d.hp=x.d.panel.hp*.2;for(const u of x.b.units)u.distance=100000;x.d.distance=0;
+const before=x.b.log.filter(e=>e.type==='damage'&&e.actor===x.d.id&&e.kind==='additional').length;
+assert.equal(stepBattle(x.b),true);
+const extra=x.b.log.filter(e=>e.type==='damage'&&e.actor===x.d.id&&e.kind==='additional').length-before;
+assert.equal(extra,6+x.c.kit.ranks[6][1],'下次晦翼应包含基础弹射数和 E6 击破奖励');
+console.log('PASS Castorice E6 actual off-weakness toughness break, Quantum break damage, and bonus Duskwing bounces');

@@ -1,5 +1,6 @@
 import { listAbilities } from '../core/abilities.mjs';
 import { characterDisplayName } from '../core/ctx.mjs';
+import { characterKit } from './kits.mjs';
 export function referenceBattle(){
   // Hand-checkable fixture, intentionally named test units rather than claiming a real kit.
   const panel=(hp,atk,def,speed)=>({hp,atk,def,speed,critRate:0.5,critDmg:1,energyRegen:1,baseStats:{hp,atk,def},elemDmg:{}});
@@ -17,7 +18,26 @@ export function fourMemberBattle(){
   const units=[134,125,115,105].map((speed,i)=>({...JSON.parse(JSON.stringify(base)),id:'slot-'+(i+1),name:'测试队员 '+(i+1),panel:{...JSON.parse(JSON.stringify(base.panel)),speed,atk:2200-i*200},policy:{autoUltimate:true,rotation:i%2?['basic','skill']:['skill','basic']}}));
   return {...old,requiredAllies:4,description:'四人输出规则基准：四个独立行动与输出单位，无预设生存位；数值为测试规则。',units:[...units,old.units[2]]};
 }
-export function actorFromCalculator({ctx,characterId,panel,level=80,eidolon=0,levels={},baked,overrides=[]}){
+export function visualBattle(){
+  const c=fourMemberBattle();c.description='可视化验收演示：四个自定义测试单位，展示伤害、双方增减益、护盾、持续伤害、治疗和击破；不是实测游戏阵容。';
+  const add=(u,effects)=>{for(const key of ['basic','skill'])u.actions[key].effects=JSON.parse(JSON.stringify(effects));};
+  add(c.units[0],[{type:'buff',name:'协同增伤',target:'allies',key:'dmgBoost',value:.25,duration:2}]);
+  add(c.units[1],[{type:'shield',name:'临时护盾',target:'allies',value:450,duration:2}]);
+  add(c.units[2],[{type:'dot',name:'灼烧演示',target:'enemies',terms:[{scaling:'atk',multiplier:.25}],duration:2},{type:'buff',name:'防御削弱',key:'defShred',value:.2,target:'enemies',duration:2,debuff:true}]);
+  add(c.units[3],[{type:'heal',name:'紧急恢复',target:'lowestAlly',value:600}]);
+  const enemy=c.units.at(-1);enemy.toughnessMax=60;enemy.weaknesses=['Fire'];enemy.breakRule={Fire:{damage:300,delay:.25}};
+  enemy.actions.basic.effects=[{type:'buff',name:'敌方蓄力',target:'self',key:'dmgBoost',value:.15,duration:2},{type:'dot',name:'创伤演示',target:'enemies',value:80,duration:2}];
+  for(const u of c.units.slice(0,4)){u.actions.basic.toughness=10;u.actions.skill.toughness=20;u.actions.ultimate.toughness=30;}
+  return c;
+}
+export function actorFromCalculator({ctx,characterId,panel,level=80,eidolon=0,levels={},baked,overrides=[],...build}){
+  const ch=ctx.charById.get(characterId);if(!ch)throw new Error('角色不存在');
+  const implemented=characterKit({ctx,characterId,panel,level,eidolon,levels,...build});if(implemented)return implemented;
+  return calculatorFallbackActor({ctx,characterId,panel,level,eidolon,levels,baked,overrides,...build});
+}
+// 计算器回退路径：只为「尚未逐条实现机制」的角色生成有限模型，并显式标注 unsupported。
+// 全部 98 名角色登记后，严格模式仍必须因 unsupported 拒绝这条路径，因此单独导出以便测试直接覆盖。
+export function calculatorFallbackActor({ctx,characterId,panel,level=80,eidolon=0,levels={},baked,overrides=[]}){
   const ch=ctx.charById.get(characterId);if(!ch)throw new Error('角色不存在');
   const abs=listAbilities(ctx,characterId,{eidolon,levels,baked,overrides,element:ch.element});
   const action=(type)=>{

@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {battle,force,ctx} from './codex_test_helpers.mjs';
+import {buildBattleActor,newBattleBuild} from '../simulator/builds.mjs';
+import {createBattle,stepBattle} from '../simulator/engine.mjs';
+let passed=0;
+const test=(name,fn)=>{fn();passed++;console.log('PASS '+name);};
+const numby=b=>b.summons.find(s=>s.name==='账账');
+const ult=b=>{const u=b.units[0];u.energy=u.energyMax;force(b,u,'ultimate');};
+test('普通状态自身战技追击使账账提前50%',()=>{const b=battle(1112);force(b,b.units[0],'skill');assert.equal(numby(b).distance,5000);});
+test('解锁透支的自身普攻追击使账账提前50%',()=>{const b=battle(1112);force(b,b.units[0],'basic');assert.equal(numby(b).distance,5000);});
+test('未解锁透支时普攻是普通伤害且不拉条',()=>{
+ const base=battle(1112).config;const old=base.units[0];
+ const u=buildBattleActor(ctx,{...newBattleBuild(),characterId:1112,level:1,relicAuto:false,panel:old.panel});u.energy=0;u.policy={autoUltimate:false,basicOnly:true};
+ const b=createBattle({...base,units:[u,...base.units.slice(1)]});force(b,b.units[0],'basic');
+ assert.equal(numby(b).distance,10000);assert.equal(b.log.filter(e=>e.type==='damage'&&e.actor===u.id&&e.kind==='followup').length,0);
+});
+test('金融动荡不向其他火伤队友扩散',()=>{const b=battle(1112),m=b.units[1];m.element='Fire';m.actions.basic.element='Fire';b.units.at(-1).weaknesses=['Fire'];force(b,m,'basic');const e=b.log.find(e=>e.type==='damage'&&e.actor===m.id);assert.equal(e.formula.find(f=>f.zone==='dmgBoost').value,1);});
+test('金融动荡仍提高托帕自身对火弱点的伤害',()=>{const b=battle(1112),u=b.units[0];b.units.at(-1).weaknesses=['Fire'];force(b,u,'basic');const e=b.log.find(e=>e.type==='damage'&&e.actor===u.id);assert.equal(e.formula.find(f=>f.zone==='dmgBoost').value,1.15);});
+test('队友两段追击只拉条一次',()=>{const b=battle(1112),m=b.units[1];m.actions.followup={name:'two-hit fua',type:'Talent',terms:[{scaling:'atk',multiplier:1}],hitShares:[.5,.5]};force(b,m,'basic');force(b,m,'followup','followup');assert.equal(numby(b).distance,5000);});
+test('普通状态队友普通攻击不拉条',()=>{const b=battle(1112);force(b,b.units[1],'basic');assert.equal(numby(b).distance,10000);});
+test('涨幅期间队友普通攻击拉条50%',()=>{const b=battle(1112);ult(b);force(b,b.units[1],'basic');assert.equal(numby(b).distance,5000);});
+test('涨幅期间自身战技同时满足两项拉条条件',()=>{const b=battle(1112);ult(b);force(b,b.units[0],'skill');assert.equal(numby(b).distance,0);});
+test('最后一次涨幅攻击仍按攻击前状态结算拉条',()=>{const b=battle(1112);ult(b);numby(b).enhanced=1;force(b,b.units[0],'skill');assert.equal(numby(b).enhanced,0);assert.equal(numby(b).distance,0);});
+test('账账自身回合不会拉动自己的行动条',()=>{const b=battle(1112);force(b,b.units[0],'skill');for(const u of b.units)u.distance=10000;numby(b).distance=0;stepBattle(b);assert.equal(numby(b).distance,10000);});
+console.log('Codex Topaz:',passed,'passed');

@@ -1,4 +1,5 @@
 // 结果视图与计算核心分离：只展示传入的结果，不重新计算乘区。
+import {HIT_SHARES} from '../core/hit-splits.mjs';
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const num = (v, digits = 0) => Number.isFinite(v) ? v.toLocaleString('zh-CN', { maximumFractionDigits: digits }) : '—';
 const ZONES = { base:'基础伤害',dmgBoost:'增伤',crit:'暴击',def:'防御',res:'抗性',vuln:'易伤',broken:'韧性',mitigation:'减伤' };
@@ -8,6 +9,8 @@ export function renderResults({ result:r, stale, critMode, character, vsHp = '',
   if (!r) return `<div class="result-label">CALCULATION RESULT <span>READY</span></div><div class="empty-state"><span class="empty-orbit">✦</span><strong>下一击，从这里开始。</strong><p>完成角色与面板配置，点击「计算伤害」查看输出和每个乘区。</p></div><div class="result-meta"><span>单次技能伤害</span><span>本地运算</span></div>`;
   if (!r.ok || !r.hit?.ok) return `<div class="result-label">CALCULATION RESULT</div>${stale?'<div class="notice">输入已修改，请重新计算。下方为上次检查结果。</div>':''}<div class="notice bad">${esc(r.error ?? r.hit?.error ?? '当前输入无法计算')}</div>`;
   const h = r.hit;
+  const shares=HIT_SHARES[r.ab?.skillId]??r.ab?.hitShares;
+  const segments=Array.isArray(shares)&&shares.length>1&&Math.abs(shares.reduce((n,v)=>n+v,0)-1)<1e-8?shares.map((s,i)=>`<span>第 ${i+1} 段 <b>${num(h.total*s,2)}</b></span>`).join(''):'';
   const gaps = [...(r.gaps ?? []), ...(r.teamGaps ?? []), ...(r.scn?.gaps ?? [])];
   const omitted = [...(r.skipped ?? []), ...(r.scn?.excluded ?? [])];
   const labels = { expected:'期望伤害',crit:'暴击伤害',noncrit:'非暴击伤害' };
@@ -21,7 +24,7 @@ export function renderResults({ result:r, stale, critMode, character, vsHp = '',
   const inputGaps = Object.entries(h.zones).filter(([k,z]) => k !== 'broken' && z.level === 'unknown');
   return `<div class="result-label">CALCULATION RESULT <span>${stale ? '<span class="badge partial">待重新计算</span>' : '<span class="badge out">按公式估算</span>'}</span></div>
     <div class="result-context">${esc(character)} <span class="faint">/ ${esc(r.ab?.name)}</span></div>
-    <div class="bignum">${num(h.total)}</div><div class="result-unit">${labels[critMode] ?? '期望伤害'} · 本次技能合计${r.ab?.tag === 'AoEAttack' ? ' · 单个敌人' : ''}</div>
+    <div class="skill-damage-summary"><div><div class="bignum">${num(h.total)}</div><div class="result-unit">${labels[critMode] ?? '期望伤害'} · 本次技能合计${r.ab?.tag === 'AoEAttack' ? ' · 单个敌人' : ''}</div></div>${segments?`<div class="skill-damage-segments" aria-label="各段伤害">${segments}<small>按动画权重拆分 · 使用当前同一面板</small></div>`:''}</div>
     <div class="subnums"><span>期望<b>${num(h.expected)}</b></span><span>必暴<b>${num(h.onCrit)}</b></span><span>不暴击<b>${num(h.nonCrit)}</b></span></div>
     <div class="result-enemy">${r.enemy ? esc(r.enemy.name) : '沙盒计算 · 尚未指定敌人'}<small>${r.enemy ? `Lv.${r.enemy.level} · ${r.enemy.side != null ? '第'+r.enemy.side+'路 · ' : ''}${r.scn ? esc(r.scn.seasonName) : ''}` : '当前防御与抗性乘区按 ×1 计算。可在「战斗情境」选定目标。'}</small></div>
     <div class="result-meta"><span>${r.active?.length ?? 0} 项已计入增益</span><span>${gaps.length} 项规则待补充</span></div>

@@ -26,7 +26,7 @@ export function removeUnit(config,id){
 export function moveUnit(config,id,direction){
   const out=clone(config),at=out.units.findIndex(u=>u.id===id);
   if(at<0||![-1,1].includes(direction))throw new Error('站位移动无效');
-  const side=out.units[at].side,slots=out.units.map((u,i)=>u.side===side?i:-1).filter(i=>i>=0),next=slots[slots.indexOf(at)+direction];
+  const side=out.units[at].side,slots=out.units.map((u,i)=>u.side===side&&(side==='ally'||(u.wave??1)===(out.units[at].wave??1))?i:-1).filter(i=>i>=0),next=slots[slots.indexOf(at)+direction];
   if(next!=null)[out.units[at],out.units[next]]=[out.units[next],out.units[at]];
   return out;
 }

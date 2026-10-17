@@ -37,6 +37,7 @@ function scalingValue(panel, scaling, term = null) {
     case 'hp': return panel.hp;
     case 'def': return panel.def;
     case 'elation': return panel.elation;   // 库内无基值，恒 null
+    case 'elationBase': return panel.elationBase;
     case 'servantHp': {
       const f = term?.servantHp;
       if (f == null) return null;
@@ -189,6 +190,8 @@ export function computeHit(input) {
     if (v == null) {
       if (t.scaling === 'elation') {
         baseMissing.push('欢愉度：库里没有角色的欢愉度基值，需要手工填');
+      } else if (t.scaling === 'elationBase') {
+        baseMissing.push('欢愉伤害基础值：需要提供角色等级基值');
       } else if (t.scaling === 'servantHp') {
         baseMissing.push('忆灵生命上限：取不到召唤者的那条生命上限公式，需要人工补录');
       } else if (t.scaling === 'servantAtk' || t.scaling === 'servantBase') {

@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {actor,dummy,force} from './codex_test_helpers.mjs';
+import {createBattle} from '../simulator/engine.mjs';
+
+const pearl=actor(1503),source=actor(1501),enemy=dummy('enemy','enemy');
+const b=createBattle({strict:false,maxAV:400,sp:3,maxSP:9,seed:72,critMode:'noncrit',units:[pearl,source,enemy]});
+const p=b.units.find(u=>u.characterId===1503),mark=b.units.find(u=>u.characterId===1501),foe=b.units.find(u=>u.side==='enemy');
+p.resources['深度学习充能']=1;
+mark.resources['美学底本']=1;
+p.resources['好活当赏']=0;
+p.buffs=p.buffs.filter(x=>x.tag!=='punchline');
+mark.panel={...mark.panel,elation:.8};
+for(const u of b.units)u.distance=1e6;
+force(b,p,'basic');
+const extras=b.log.filter(x=>x.type==='damage'&&x.kind==='elation'&&x.target===foe.id);
+assert.equal(extras.length,1,'欢愉美学底本处于深度学习时应追加一次60%冰欢愉伤害');
+const extra=extras[0];
+assert.equal(extra.actor,mark.id,'追加欢愉伤害必须使用美学底本的面板归属');
+assert.equal(extra.element,'Ice');
+assert.equal(extra.kind,'elation');
+assert.ok(!b.log.some(x=>x.type==='damage'&&x.name==='行笔，幻造星月'&&x.actor===p.id),'15%普攻天赋伤害仍须以真珠持有好活当赏为条件');
+console.log('PASS Pearl Deep Learning Elation enhanced basic uses the marked Elation unit for its unconditional 60% extra hit');

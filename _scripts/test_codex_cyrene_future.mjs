@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {actor,dummy,force,ctx} from './codex_test_helpers.mjs';
+import {createBattle,stepBattle,scheduleActionEvents} from '../simulator/engine.mjs';
+import {newBattleBuild,buildBattleActor} from '../simulator/builds.mjs';
+const make=(low=false)=>{let u=actor(1415);if(low){u=buildBattleActor(ctx,{...newBattleBuild(),characterId:1415,level:1,relicAuto:false,panel:u.panel});u.policy={autoUltimate:false,basicOnly:true};}const a=actor(1402);const b=createBattle({strict:false,maxAV:1000,sp:3,seed:42,critMode:'noncrit',units:[u,dummy('mate'),a,{...dummy('enemy','enemy'),panel:{...dummy('e').panel,hp:1e9}}]});b.units[0].resources['追忆']=0;b.units[0].energy=0;return b;};
+const token=(u,t)=>t.buffs.find(e=>e.tag==='cyreneFuture:'+u.id);
+let passed=0;const test=(n,f)=>{f();passed++;console.log('PASS',n);};
+test('opening grants other characters but not self or enemy',()=>{const b=make(),[u,m,a,e]=b.units;assert.ok(token(u,m));assert.ok(token(u,a));assert.ok(!token(u,u));assert.ok(!token(u,e));});
+test('multihit real action consumes once, subsequent action cannot consume again',()=>{const b=make(),[u,m]=b.units;m.actions.basic.hitShares=[.2,.3,.5];force(b,m,'basic');assert.equal(u.resources['追忆'],1);assert.ok(!token(u,m));force(b,m,'basic');assert.equal(u.resources['追忆'],1);});
+test('real Cyrene action grants future again; next teammate action charges again',()=>{const b=make(),[u,m]=b.units;force(b,m,'basic');force(b,u,'basic');assert.ok(token(u,m));assert.equal(u.resources['追忆'],2);force(b,m,'basic');assert.equal(u.resources['追忆'],3);});
+test('new allied servant receives future immediately with trace',()=>{const b=make(),[u,,a]=b.units;force(b,a,'skill');const s=b.units.find(t=>t.memospriteOwner===a.id);assert.ok(s);assert.ok(token(u,s));assert.ok(!token(u,a));});
+test('trace servant keeps future across real servant actions; owner token remains independent',()=>{const b=make(),[u,,a]=b.units;force(b,a,'skill');const s=b.units.find(t=>t.memospriteOwner===a.id);const old=u.resources['追忆'];force(b,s,'basic');force(b,s,'basic');assert.equal(u.resources['追忆'],old+2);assert.ok(token(u,s));assert.ok(!token(u,a));});
+test('without trace, new servant does not auto-receive; owner action grants then servant consumes',()=>{const b=make(true),[u,,a]=b.units;force(b,a,'skill');const s=b.units.find(t=>t.memospriteOwner===a.id);assert.ok(!token(u,s));force(b,u,'basic');assert.ok(token(u,s));const old=u.resources['追忆'];force(b,s,'basic');assert.equal(u.resources['追忆'],old+1);assert.ok(!token(u,s));});
+test('one independent extra action charges once without normal turns',()=>{const b=make(),[u,m]=b.units;scheduleActionEvents(b,m.id,[{key:'basic',speed:100,distance:0}]);stepBattle(b);assert.equal(u.resources['追忆'],1);assert.equal(m.turns,0);assert.ok(!token(u,m));});
+test('Cyrene own servant is excluded from future creation grants',()=>{const b=make(),[u]=b.units;u.energy=24;force(b,u,'ultimate');const s=b.units.find(t=>t.memospriteOwner===u.id);assert.ok(s);assert.ok(!token(u,s));});
+console.log('Cyrene future:',passed,'passed; other mechanics still blocked');

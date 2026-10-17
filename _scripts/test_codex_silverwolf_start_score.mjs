@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {actor,dummy} from './codex_test_helpers.mjs';
+import {createBattle,combatPanel} from '../simulator/engine.mjs';
+const u=actor(1506),m=dummy('mate'),foe=dummy('foe','enemy');
+const b=createBattle({strict:false,maxAV:300,sp:3,maxSP:9,seed:3,critMode:'noncrit',units:[u,m,foe]});
+const wolf=b.units.find(x=>x.characterId===1506);
+assert.equal(b.laughter.ally,1,'自然阿哈开局给1点累计笑点');
+assert.equal(wolf.resources['隐藏分'],1,'1506须在战斗开场同步自然阿哈笑点');
+assert.equal(wolf.energy,1,'隐藏分≤60时同步到能量镜像');
+assert.equal(combatPanel(wolf).critRate,(wolf.panel.critRate??0)+.004,'开场隐藏分必须立即影响暴击面板');
+console.log('PASS Silver Wolf LV.999 opening Aha laughter synchronizes hidden score, energy mirror, and live CRIT panel');

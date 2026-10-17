@@ -43,7 +43,7 @@ function inject(tpl, marker, payload, what) {
 /** 用模板 + 开发期注入拼出首页。 */
 function page(mode='calculator') {
   const tpl = fs.readFileSync(path.join(ROOT, 'ui', mode==='battle'?'battle-template.html':'template.html'), 'utf8');
-  const css = fs.readFileSync(path.join(ROOT, 'ui', 'style.css'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'ui', 'theme-light.css'), 'utf8');
+  const css = fs.readFileSync(path.join(ROOT, 'ui', 'style.css'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'ui', 'theme-light.css'), 'utf8')+(mode==='battle'?'\n'+fs.readFileSync(path.join(ROOT,'ui','battle-replay.css'),'utf8'):'');
   const data = fs.existsSync(path.join(ROOT, '_data_cache', 'hsr_core.json'))
     ? '<script src="/_data_cache/data.inline.js"></script>'
     : '<div class="card">缺少 _data_cache/data.inline.js，先跑 <code>node _scripts/build_data.mjs</code></div>';

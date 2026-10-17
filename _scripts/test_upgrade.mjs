@@ -6,14 +6,18 @@ import { listAbilities,toHitAbility } from '../core/abilities.mjs';
 import { computeHit } from '../core/damage.mjs';
 import { mainAffixes,mainValue,subAffixes,subValue,validateRelic,relicContributions,applyRelics } from '../core/relics.mjs';
 import { fillLegalSubs } from '../ui/relic-view.mjs';
-import { referenceBattle,fourMemberBattle,actorFromCalculator } from '../simulator/profiles.mjs';
+import { referenceBattle,fourMemberBattle,actorFromCalculator,calculatorFallbackActor } from '../simulator/profiles.mjs';
 import { battleStatistics } from '../simulator/stats.mjs';
 import { newBattleBuild,buildBattleActor } from '../simulator/builds.mjs';
 import { createBattle,simulateBattle,advance,stepBattle,compareReplay,validateBattle } from '../simulator/engine.mjs';
 import { putAlly,removeUnit,moveUnit } from '../simulator/roster.mjs';
+import { KIT_IDS } from '../simulator/kits.mjs';
 let checks=0; const check=(label,fn)=>{fn();checks++;console.log('PASS '+label);};
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} != ${b}`);
 const d=JSON.parse(fs.readFileSync(new URL('../_data_cache/hsr_core.json',import.meta.url))),ctx=createContext(d),t=d.relicTables;
+// 98 名角色均已登记，已不存在「未登记角色」可供挑选；改为直接构造计算器回退演员，
+// 覆盖同一条 unsupported 未实现机制路径，断言本身保持不变。
+const fallbackId=1003;
 check('4.6 数据版本与新增角色基线',()=>{assert.equal(d._meta.version,'4.6');assert.equal(d.characters.length,98);assert.equal(d.skills.length,673);});
 check('五星攻击躯干 +15 = 43.2%',()=>near(mainValue(mainAffixes(t,5,2).find(a=>a.property==='AttackAddedRatio'),15),0.432));
 check('五星头部 +15 = 705.6',()=>near(mainValue(mainAffixes(t,5,0)[0],15),705.6));
@@ -50,8 +54,8 @@ check('同一攻击中的击破只发生一次，后续段取消 0.9 系数',()=
 check('被击败目标从行动轴移除',()=>{const u=unit('dps','ally',200);u.actions.basic.terms=[{scaling:'atk',multiplier:2}];const enemy=unit('enemy','enemy',100);enemy.panel.hp=100;const r=simulateBattle(config([u,enemy]));assert.equal(r.outcome,'victory');assert.ok(!actions(r).some(e=>e.actor==='enemy'));});
 check('治疗不会超过生命上限',()=>{const u=unit('dps','ally',200);u.currentHp=500;u.panel.hp=1000;u.actions.basic.effects=[{type:'heal',target:'self',value:2000}];const r=simulateBattle(config([u,unit('enemy','enemy',1)],51));near(r.units[0].hp,1000);assert.equal(r.healing,500);});
 check('随机种子可重放相同伤害和目标',()=>{const c=referenceBattle();c.critMode='random';assert.deepEqual(simulateBattle(c),simulateBattle(c));});
-check('未实现角色机制不能通过严格模式',()=>{const actor=actorFromCalculator({ctx,characterId:1003,panel:suggestPanel(ctx,{characterId:1003}).panel,baked:d.abilities});assert.ok(validateBattle(config([actor,unit('enemy','enemy',100)])).length);});
-check('显式有限模型允许计算，但仍返回机制缺口',()=>{const actor=actorFromCalculator({ctx,characterId:1003,panel:suggestPanel(ctx,{characterId:1003}).panel,baked:d.abilities});const c=config([actor,unit('enemy','enemy',100)],110);c.strict=false;const r=simulateBattle(c);assert.ok(r.unsupported.length);assert.ok(r.damage>0);});
+check('未实现角色机制不能通过严格模式',()=>{const actor=calculatorFallbackActor({ctx,characterId:fallbackId,panel:suggestPanel(ctx,{characterId:1003}).panel,baked:d.abilities});assert.ok(validateBattle(config([actor,unit('enemy','enemy',100)])).length);});
+check('显式有限模型允许计算，但仍返回机制缺口',()=>{const actor=calculatorFallbackActor({ctx,characterId:fallbackId,panel:suggestPanel(ctx,{characterId:1003}).panel,baked:d.abilities});const c=config([actor,unit('enemy','enemy',100)],110);c.strict=false;const r=simulateBattle(c);assert.ok(r.unsupported.length);assert.ok(r.damage>0);});
 check('实测对照能分别定位行动轴或数值错误',()=>{const r=simulateBattle(config([unit('dps','ally',200),unit('enemy','enemy',1)],51));const a={type:'action',actor:'dps',av:50};assert.equal(compareReplay(r,[a])[0].ok,true);assert.equal(compareReplay(r,[{...a,av:60}])[0].ok,false);});
 check('未知效果类型不能被忽略',()=>{const u=unit('dps','ally');u.actions.basic.effects=[{type:'unimplemented'}];assert.ok(validateBattle(config([u,unit('enemy','enemy')])).length);});
 check('分段比例必须合计100%',()=>{const u=unit('dps','ally');u.actions.basic.hitShares=[.2,.3];assert.ok(validateBattle(config([u,unit('enemy','enemy')])).length);});

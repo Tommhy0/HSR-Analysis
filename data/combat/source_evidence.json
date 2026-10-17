@@ -1,0 +1,1378 @@
+{
+  "version": "4.6",
+  "repository": "DimbreathBot/TurnBasedGameData",
+  "revision": "312b4597691e0a29cf9828a15b592757dba86949",
+  "files": {
+    "Avatar_Sparkle_00_Ability.json": {
+      "sha256": "3466b5c084e760e795d535249198fe9d73018a11863e8c91edb77fb790c7baef",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Sparkle_00_Ability.json"
+    },
+    "Avatar_Archer_00_Ability.json": {
+      "sha256": "7eeb9b4c4375687fbba4d016a4bc32b4fac8e67057bf5684e9254e52f7cc29e3",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Archer_00_Ability.json"
+    },
+    "Avatar_Cerydra_00_Ability.json": {
+      "sha256": "bf54a9ee6bf4fc22d69d432a82721b8ef98ea5d2f7163f8c71d7a3e1b6299e9e",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_Cerydra_00_Ability.json"
+    },
+    "Avatar_DanHengPT_00_Ability.json": {
+      "sha256": "8ac5199c5e58d117e856128dcac2769ac50daee33b28d57382980fc738fb2ee0",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Avatar_DanHengPT_00_Ability.json"
+    },
+    "Avatar_Advanced_Sparkle_00_Ability.json": {
+      "sha256": "d29f2099139985303d52339aeb71f96d1f02ab2a35a0629c50b4121af387689c",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Avatar/Advanced/Avatar_Advanced_Sparkle_00_Ability.json"
+    },
+    "GlobalModifier_Common_Specific.json": {
+      "sha256": "91446909e4a66beca5af78ff4fc608381a576a9416962af5682881f5394a1fbe",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigGlobalModifier/GlobalModifier_Common_Specific.json"
+    },
+    "GameCoreConstValue.json": {
+      "sha256": "10237457271d8d231382d2681f477d562ca8a5de2ad22c27ff7b250a394c8ce5",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/GlobalConfig/GameCoreConstValue.json"
+    },
+    "EquipmemtAbility.json": {
+      "sha256": "e3912769bb7292f899f76abed6ecce7f97cc7737f70e495668c7fb24c1a61a83",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/EquipmemtAbility.json"
+    },
+    "RelicAbility.json": {
+      "sha256": "e81488a3c9d9905fec934dff483ef2af356c2c0ee1259bab5b3ea6fc888e0e52",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/RelicAbility.json"
+    },
+    "Equip30.json": {
+      "sha256": "012d8d9b7de645542b4711f4382099b3b87832f4729e87563d5bc8118113b8b9",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip30.json"
+    },
+    "Equip31.json": {
+      "sha256": "b2e08478d94452efaa34e769fc32ecfadb3bc1e0d73b3853adab43849e5e612d",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip31.json"
+    },
+    "Equip33.json": {
+      "sha256": "c61f350311c944bc608cf25bdede78b63ab3c98dcd9c0c96c43c696ede758dcb",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip33.json"
+    },
+    "Equip34.json": {
+      "sha256": "f5b5700ae20d0e9e8f24fafdb86f30061380b31ae4ea36093aeb3cf22c9ce476",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip34.json"
+    },
+    "Equip35.json": {
+      "sha256": "308c8279f2bf5b65b61b9c482068eeca42455b725e89ddebd624aebf3c2d5327",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip35.json"
+    },
+    "Equip36.json": {
+      "sha256": "9beb90f26e8964bf3127891a5c6b7302aa894f9aa3ba6419198f10b346fafea2",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip36.json"
+    },
+    "Equip37.json": {
+      "sha256": "651688b7dfaf3c3c3638ee5901319a0c779f02ffa1363ed3d0310e512cd8d670",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip37.json"
+    },
+    "Equip40.json": {
+      "sha256": "c14cf437cdda886b38e838e93fb4d140906a5592750bcd6b8977376e7401c117",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip40.json"
+    },
+    "Equip41.json": {
+      "sha256": "f623d6dfb2bf530cb89876e744f44e59d1b5b734c002691f6189ed111ee6c34a",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip41.json"
+    },
+    "Equip43.json": {
+      "sha256": "0ad55d7c2d1f92c5d2b7c23ed608e9a5c8e8db1264ac740d2308a1614a3038c0",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip43.json"
+    },
+    "Equip44.json": {
+      "sha256": "23cdf96465072659ebf5ed4afcb619c0a6b5e160f73f8e59c032ed99532d4cb3",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Equip/Equip44.json"
+    },
+    "AvatarPromotionConfig.json": {
+      "sha256": "7501192b3dc1dd32b43ec702d76b6f8462fa10760c9cad4aa6a78188a5dacd85",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/ExcelOutput/AvatarPromotionConfig.json"
+    },
+    "AvatarPromotionConfigLD.json": {
+      "sha256": "32d7ac2c590f6e65a86861da37bd36d977197cc9242ca45dc5daefd325bcdd21",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/ExcelOutput/AvatarPromotionConfigLD.json"
+    },
+    "AvatarBreakDamage.json": {
+      "sha256": "7f50434554fc5317db33842e23a773f29d401127c885fcd07eac0fa96b72381c",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/ExcelOutput/AvatarBreakDamage.json"
+    },
+    "Monster_AML_Minion02_00_Ability.json": {
+      "sha256": "0df1f83a5ceacb03ce65633c43d1d9464d89c2bcf945903c3b8bd844475d1da8",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAbility/Monster/Monster_AML_Minion02_00_Ability.json"
+    },
+    "Monster_AML_Minion02_00_Config.json": {
+      "sha256": "51acb1dcc92e20006ada2b10794b7ab06b3e3d297202738112d91b4ad0378c01",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigCharacter/Monster/Monster_AML_Minion02_00_Config.json"
+    },
+    "Monster_AML_Minion02_00_AI.json": {
+      "sha256": "15c7ee1180d86cc69dcdd0b2170c166b790f11378f47bc460af9470de2b0071e",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/Config/ConfigAI/Monster_AML_Minion02_00_AI.json"
+    },
+    "MonsterSkillConfig.json": {
+      "sha256": "89689d2b70d6c142dff83e6b117eca8208bfe135a531f3db297cebb1cf298b3e",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/ExcelOutput/MonsterSkillConfig.json"
+    },
+    "MonsterConfig.json": {
+      "sha256": "b7ddb5557a0f4d9ef0f39711523d337532d1b8c3ba83fc375946dcf2a586787c",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/ExcelOutput/MonsterConfig.json"
+    },
+    "MonsterTemplateConfig.json": {
+      "sha256": "b79658284559a78ffe5d0166986c367e8ae12f4ea3b5bd78af0f12e6408a99ca",
+      "url": "https://github.com/DimbreathBot/TurnBasedGameData/blob/312b4597691e0a29cf9828a15b592757dba86949/ExcelOutput/MonsterTemplateConfig.json"
+    }
+  },
+  "hits": {
+    "Avatar_Sparkle_00_Skill01_Phase02": [
+      1
+    ],
+    "Avatar_Archer_00_Skill01_Phase02": [
+      0.3,
+      0.35,
+      0.35
+    ],
+    "Avatar_Archer_00_Skill02_Phase02": [
+      1
+    ],
+    "Avatar_Archer_00_Skill03_Phase02": [
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.04,
+      0.44
+    ],
+    "Avatar_Archer_00_Insert_Phase02": [
+      1
+    ],
+    "Avatar_Cerydra_00_Skill01_Phase02": [
+      1
+    ],
+    "Avatar_Cerydra_00_Skill03_Phase02": [
+      1
+    ],
+    "Avatar_DanHengPT_00_Skill01_Phase02": [
+      0.3,
+      0.7
+    ],
+    "Avatar_DanHengPT_00_Skill03_Phase02": [
+      1
+    ],
+    "Avatar_DanHengPT_00_BE_InsertAttack_Phase02": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "Avatar_Advanced_Sparkle_00_Skill01_Phase02": [
+      1
+    ]
+  },
+  "aggro": {
+    "1306": 100,
+    "1412": 100,
+    "1414": 150,
+    "1015": 75
+  },
+  "breakBase": {
+    "1": 54,
+    "2": 58,
+    "3": 62,
+    "4": 67.52638,
+    "5": 70.5094,
+    "6": 73.52282,
+    "7": 76.56605,
+    "8": 79.638466,
+    "9": 82.73946,
+    "10": 85.86844,
+    "11": 91.49441,
+    "12": 97.067986,
+    "13": 102.589165,
+    "14": 108.057945,
+    "15": 113.474335,
+    "16": 118.838326,
+    "17": 124.14992,
+    "18": 129.40912,
+    "19": 134.61592,
+    "20": 139.77034,
+    "21": 149.33229,
+    "22": 158.80112,
+    "23": 168.17682,
+    "24": 177.4594,
+    "25": 186.64885,
+    "26": 195.74518,
+    "27": 204.74838,
+    "28": 213.65846,
+    "29": 222.4754,
+    "30": 231.19923,
+    "31": 246.42757,
+    "32": 261.18097,
+    "33": 275.47333,
+    "34": 289.3179,
+    "35": 302.72748,
+    "36": 315.7144,
+    "37": 328.29047,
+    "38": 340.46713,
+    "39": 352.25537,
+    "40": 363.6658,
+    "41": 408.124,
+    "42": 451.7883,
+    "43": 494.67978,
+    "44": 536.8188,
+    "45": 578.2249,
+    "46": 618.9172,
+    "47": 658.9138,
+    "48": 698.23254,
+    "49": 736.8905,
+    "50": 774.9041,
+    "51": 871.05994,
+    "52": 964.87054,
+    "53": 1056.4207,
+    "54": 1145.791,
+    "55": 1233.0585,
+    "56": 1318.2965,
+    "57": 1401.5751,
+    "58": 1482.9608,
+    "59": 1562.5178,
+    "60": 1640.3068,
+    "61": 1752.3215,
+    "62": 1861.9011,
+    "63": 1969.1241,
+    "64": 2074.066,
+    "65": 2176.7983,
+    "66": 2277.3904,
+    "67": 2375.9084,
+    "68": 2472.416,
+    "69": 2566.9739,
+    "70": 2659.6406,
+    "71": 2780.3044,
+    "72": 2898.6023,
+    "73": 3014.603,
+    "74": 3128.373,
+    "75": 3239.9758,
+    "76": 3349.4731,
+    "77": 3456.9236,
+    "78": 3562.3843,
+    "79": 3665.91,
+    "80": 3767.5535,
+    "81": 3957.8618,
+    "82": 4155.212,
+    "83": 4359.864,
+    "84": 4572.088,
+    "85": 4792.164,
+    "86": 5020.3833,
+    "87": 5257.047,
+    "88": 5502.4663,
+    "89": 5756.967,
+    "90": 6020.884,
+    "91": 6294.5654,
+    "92": 6578.3735,
+    "93": 6872.6826,
+    "94": 7177.881,
+    "95": 7494.3716,
+    "96": 7822.5723,
+    "97": 8162.9165,
+    "98": 8515.854,
+    "99": 8881.85,
+    "100": 9261.387,
+    "120": 9261.387
+  },
+  "enemies": {
+    "8012010": {
+      "template": {
+        "MonsterName": {
+          "Hash": 12136238828350213487
+        },
+        "MonsterStrategy": [],
+        "MonsterTemplateID": 8012010,
+        "Rank": "MinionLv2",
+        "NPCMonsterList": [
+          8012010
+        ],
+        "MonsterCampID": 6,
+        "TemplateGroupID": 8012010,
+        "AtlasSortID": 3,
+        "IconPath": "SpriteOutput/MosterIcon/Monster_8012010.png",
+        "RoundIconPath": "SpriteOutput/MonsterRoundIcon/Monster_8012010.png",
+        "ImagePath": "SpriteOutput/MonsterFigure/Monster_8012010.png",
+        "ManikinImagePath": "SpriteOutput/MonsterMiddleIcon/Monster_8012010.png",
+        "JsonConfig": "Config/ConfigCharacter/Monster/Monster_AML_Minion02_00_Config.json",
+        "PrefabPath": "Characters/CharacterPrefabs/Monster/AML_Minion02_00/Monster_AML_Minion02_00.prefab",
+        "ManikinPrefabPath": "Characters/CharacterPrefabs/Manikin/Monster/AML_Minion02_00/Manikin_Monster_AML_Minion02_00.prefab",
+        "ManikinConfigPath": "Config/ConfigCharacter/Manikin/Monster/Manikin_Monster_AML_Minion02_00_Config.json",
+        "AttackBase": {
+          "Value": 18
+        },
+        "DefenceBase": {
+          "Value": 210
+        },
+        "HPBase": {
+          "Value": 139.5
+        },
+        "SpeedBase": {
+          "Value": 100
+        },
+        "StanceBase": {
+          "Value": 60
+        },
+        "CriticalDamageBase": {
+          "Value": 0.2
+        },
+        "StatusResistanceBase": {
+          "Value": 0.1
+        },
+        "InitialDelayRatio": {
+          "Value": 1
+        },
+        "StanceCount": 1,
+        "StanceType": "Physical",
+        "AIPath": "Config/ConfigAI/Monster_AML_Minion02_00_AI.json",
+        "AISkillSequence": [
+          {
+            "MNAHFIGOHML": 801201001
+          },
+          {
+            "MNAHFIGOHML": 801201002
+          }
+        ],
+        "NatureID": 1,
+        "MinimumFatigueRatio": {
+          "Value": 0.2
+        }
+      },
+      "skills": [
+        {
+          "SkillID": 801201001,
+          "SkillName": {
+            "Hash": 6640166912922359536
+          },
+          "SkillTriggerKey": "Skill01",
+          "SkillTypeDesc": {
+            "Hash": 4236760374151560033
+          },
+          "SkillTag": {
+            "Hash": 4014610187872883999
+          },
+          "DamageType": "Imaginary",
+          "AttackType": "Normal",
+          "SPHitBase": {
+            "Value": 10
+          },
+          "DelayRatio": {
+            "Value": 1
+          },
+          "AI_CD": 1,
+          "AI_ICD": 1,
+          "IconPath": "SpriteOutput/SkillIcons/Avatar/1001/SkillIcon_1001_Maze.png",
+          "SkillDesc": {
+            "Hash": 18338864169958557229
+          },
+          "PhaseList": [
+            1
+          ],
+          "ParamList": [
+            {
+              "Value": 2.5
+            }
+          ],
+          "ModifierList": [],
+          "ExtraEffectIDList": []
+        },
+        {
+          "SkillID": 801201002,
+          "SkillName": {
+            "Hash": 123705738577201218
+          },
+          "SkillTriggerKey": "Skill02",
+          "SkillTypeDesc": {
+            "Hash": 4236760374151560033
+          },
+          "SkillTag": {
+            "Hash": 17899413561707685112
+          },
+          "DamageType": "Imaginary",
+          "AttackType": "Normal",
+          "SPHitBase": {
+            "Value": 5
+          },
+          "DelayRatio": {
+            "Value": 1
+          },
+          "AI_CD": 1,
+          "AI_ICD": 1,
+          "IconPath": "SpriteOutput/SkillIcons/Avatar/1001/SkillIcon_1001_Maze.png",
+          "SkillDesc": {
+            "Hash": 15509524269937046427
+          },
+          "PhaseList": [
+            1
+          ],
+          "ParamList": [
+            {
+              "Value": 1.5
+            }
+          ],
+          "ModifierList": [],
+          "ExtraEffectIDList": []
+        },
+        {
+          "SkillID": 801201003,
+          "SkillName": {
+            "Hash": 14320274156050016169
+          },
+          "SkillTriggerKey": "PassiveSkill01",
+          "SkillTypeDesc": {
+            "Hash": 11653660973383561666
+          },
+          "SkillTag": {
+            "Hash": 10170918581498782760
+          },
+          "AttackType": "Normal",
+          "DelayRatio": {
+            "Value": 1
+          },
+          "AI_CD": 1,
+          "AI_ICD": 1,
+          "IconPath": "SpriteOutput/SkillIcons/Avatar/1001/SkillIcon_1001_Maze.png",
+          "SkillDesc": {
+            "Hash": 1865969824149099926
+          },
+          "PhaseList": [],
+          "ParamList": [
+            {
+              "Value": 0.35
+            },
+            {
+              "Value": 2
+            },
+            {
+              "Value": 3
+            }
+          ],
+          "ModifierList": [],
+          "ExtraEffectIDList": []
+        }
+      ],
+      "ai": {
+        "AIName": "Monster_AML_Minion02_00",
+        "VariableList": [
+          {
+            "$type": "RPG.GameCore.AIVariableString",
+            "Value": "DG_010_Phase01",
+            "Name": "CurrentPhase"
+          },
+          {
+            "$type": "RPG.GameCore.AIVariableBool",
+            "Value": true,
+            "Name": "ForbidClearSkillUseRecord"
+          }
+        ],
+        "DecisionList": [
+          {
+            "$type": "RPG.GameCore.AIDecisionConfig",
+            "DecisionName": "UseSkill01",
+            "RootTask": {
+              "$type": "RPG.GameCore.SequenceConfig",
+              "TaskList": [
+                {
+                  "$type": "RPG.GameCore.SelectAISkillTarget",
+                  "SkillName": "Skill01",
+                  "Selector": {
+                    "$type": "RPG.GameCore.AIModifierNameSelector",
+                    "ModifierName": "MMonster_AML_Minion03_00_Target"
+                  }
+                },
+                {
+                  "$type": "RPG.GameCore.UseSkill",
+                  "SkillName": "Skill01"
+                }
+              ]
+            },
+            "ScoreEvaluatorType": "DefaultDSE",
+            "ConsiderAxisList": [
+              {
+                "$type": "RPG.GameCore.CheckSkillUsabilityAxis",
+                "SkillName": "Skill01",
+                "InitialCD": 1,
+                "CD": 1,
+                "CheckScore": {
+                  "Value": 0.1
+                }
+              }
+            ]
+          },
+          {
+            "$type": "RPG.GameCore.AIDecisionConfig",
+            "DecisionName": "UseSkill02",
+            "RootTask": {
+              "$type": "RPG.GameCore.SequenceConfig",
+              "TaskList": [
+                {
+                  "$type": "RPG.GameCore.SelectAISkillTarget",
+                  "SkillName": "Skill02",
+                  "Selector": {
+                    "$type": "RPG.GameCore.AIModifierNameSelector",
+                    "ModifierName": "MMonster_AML_Minion03_00_Target"
+                  }
+                },
+                {
+                  "$type": "RPG.GameCore.UseSkill",
+                  "SkillName": "Skill02"
+                }
+              ]
+            },
+            "ScoreEvaluatorType": "DefaultDSE",
+            "ConsiderAxisList": [
+              {
+                "$type": "RPG.GameCore.CheckSkillUsabilityAxis",
+                "SkillName": "Skill02",
+                "InitialCD": 2,
+                "CD": 2,
+                "CheckScore": {
+                  "Value": 0.2
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "astralExpress": [
+    1001,
+    1004,
+    1003,
+    1313,
+    1510,
+    1224,
+    1413,
+    1002,
+    1213,
+    1414,
+    8001,
+    8002,
+    8003,
+    8004,
+    8005,
+    8006,
+    8007,
+    8008,
+    8009,
+    8010
+  ],
+  "relics": {
+    "101": {
+      "name": "云无留迹的过客",
+      "p2": [
+        0.1
+      ],
+      "p4": [],
+      "description2": "治疗量提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "在战斗开始时，立即为我方恢复1个战技点。",
+      "timingSource": "release ability JSON"
+    },
+    "102": {
+      "name": "野穗伴行的快枪手",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.06,
+        0.1
+      ],
+      "description2": "攻击力提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者的速度提高<unbreak>#1[i]%</unbreak>，普攻造成的伤害提高<unbreak>#2[i]%</unbreak>。",
+      "timingSource": "release ability JSON"
+    },
+    "103": {
+      "name": "净庭教宗的圣骑士",
+      "p2": [
+        0.15
+      ],
+      "p4": [
+        0.2
+      ],
+      "description2": "防御力提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者提供的护盾量提高<unbreak>#1[i]%</unbreak>。",
+      "timingSource": "release ability JSON"
+    },
+    "104": {
+      "name": "密林卧雪的猎人",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.25,
+        2
+      ],
+      "description2": "冰属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者施放终结技时，暴击伤害提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合。",
+      "timingSource": "release ability JSON"
+    },
+    "105": {
+      "name": "街头出身的拳王",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.05,
+        5
+      ],
+      "description2": "物理属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者施放攻击或受到攻击后，其在本场战斗中攻击力提高<unbreak>#1[i]%</unbreak>，最多叠加<unbreak>#2[i]</unbreak>层。",
+      "timingSource": "release ability JSON"
+    },
+    "106": {
+      "name": "戍卫风雪的铁卫",
+      "p2": [
+        0.08
+      ],
+      "p4": [
+        0.5,
+        0.08,
+        5
+      ],
+      "description2": "受到伤害降低<unbreak>#1[i]%</unbreak>。",
+      "description4": "回合开始时，如果装备者当前生命值百分比小于等于<unbreak>#1[i]%</unbreak>，则回复等同于自身生命上限<unbreak>#2[i]%</unbreak>的生命值，并恢复<unbreak>#3[i]</unbreak>点能量。",
+      "timingSource": "release ability JSON"
+    },
+    "107": {
+      "name": "熔岩锻铸的火匠",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.12,
+        0.12
+      ],
+      "description2": "火属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者战技造成的伤害提高<unbreak>#1[i]%</unbreak>，并使施放终结技后的下一次攻击造成的火属性伤害提高<unbreak>#2[i]%</unbreak>。",
+      "timingSource": "release ability JSON"
+    },
+    "108": {
+      "name": "繁星璀璨的天才",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.1,
+        0.1
+      ],
+      "description2": "量子属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者对敌方目标造成伤害时，无视其<unbreak>#1[i]%</unbreak>的防御力。若目标拥有量子属性弱点，额外无视其<unbreak>#2[i]%</unbreak>的防御力。",
+      "timingSource": "release ability JSON"
+    },
+    "109": {
+      "name": "激奏雷电的乐队",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.2,
+        1
+      ],
+      "description2": "雷属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者施放战技时，使装备者的攻击力提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合。",
+      "timingSource": "release ability JSON"
+    },
+    "110": {
+      "name": "晨昏交界的翔鹰",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.25
+      ],
+      "description2": "风属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者施放终结技后，使其行动提前<unbreak>#1[i]%</unbreak>。",
+      "timingSource": "release ability JSON"
+    },
+    "111": {
+      "name": "流星追迹的怪盗",
+      "p2": [
+        0.16
+      ],
+      "p4": [
+        0.16,
+        3
+      ],
+      "description2": "击破特攻提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者的击破特攻提高<unbreak>#1[i]%</unbreak>。当装备者击破敌方目标弱点后，恢复<unbreak>#2[i]</unbreak>点能量。",
+      "timingSource": "release ability JSON"
+    },
+    "112": {
+      "name": "盗匪荒漠的废土客",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.1,
+        0.2
+      ],
+      "description2": "虚数属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者对陷入负面效果的敌方目标造成伤害时暴击率提高<unbreak>#1[i]%</unbreak>，对陷入禁锢状态的敌方目标造成伤害时暴击伤害提高<unbreak>#2[i]%</unbreak>。",
+      "timingSource": "release ability JSON"
+    },
+    "113": {
+      "name": "宝命长存的莳者",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.08,
+        2,
+        2
+      ],
+      "description2": "生命上限提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者受到攻击或被我方目标消耗生命值后，暴击率提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合，该效果最多叠加<unbreak>#3[i]</unbreak>层。",
+      "timingSource": "release ability JSON"
+    },
+    "114": {
+      "name": "骇域漫游的信使",
+      "p2": [
+        0.06
+      ],
+      "p4": [
+        0.12,
+        1
+      ],
+      "description2": "速度提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者对我方目标施放终结技时，我方全体速度提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合，该效果无法叠加。",
+      "timingSource": "release ability JSON"
+    },
+    "115": {
+      "name": "毁烬焚骨的大公",
+      "p2": [
+        0.2
+      ],
+      "p4": [
+        0.06,
+        8,
+        3
+      ],
+      "description2": "追加攻击造成的伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者施放追加攻击时，根据追加攻击造成伤害的次数，每次造成伤害时使装备者的攻击力提高<unbreak>#1[i]%</unbreak>，最多叠加<unbreak>#2[i]</unbreak>次，持续<unbreak>#3[i]</unbreak>回合。该效果在装备者下一次施放追加攻击时移除。",
+      "timingSource": "release ability JSON"
+    },
+    "116": {
+      "name": "幽锁深牢的系囚",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.06,
+        3
+      ],
+      "description2": "攻击力提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "敌方目标每承受1个持续伤害效果，装备者对其造成伤害时就无视其<unbreak>#1[i]%</unbreak>的防御力，最多计入<unbreak>#2[i]</unbreak>个持续伤害效果。",
+      "timingSource": "release ability JSON"
+    },
+    "117": {
+      "name": "死水深潜的先驱",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.04,
+        0.08,
+        0.12,
+        2,
+        3,
+        1
+      ],
+      "description2": "对受负面状态影响的敌人造成的伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "暴击率提高<unbreak>#1[i]%</unbreak>，装备者对陷入不少于<unbreak>#4[i]</unbreak>/<unbreak>#5[i]</unbreak>个负面效果的敌方目标造成的暴击伤害提高<unbreak>#2[i]%</unbreak>/<unbreak>#3[i]%</unbreak>。装备者对敌方目标施加负面效果后，上述效果提高<unbreak>100%</unbreak>，持续<unbreak>#6[i]</unbreak>回合。",
+      "timingSource": "release ability JSON"
+    },
+    "118": {
+      "name": "机心戏梦的钟表匠",
+      "p2": [
+        0.16
+      ],
+      "p4": [
+        0.3,
+        2
+      ],
+      "description2": "击破特攻提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者对我方目标施放终结技时，我方全体击破特攻提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合，该效果无法叠加。",
+      "timingSource": "release ability JSON"
+    },
+    "119": {
+      "name": "荡除蠹灾的铁骑",
+      "p2": [
+        0.16
+      ],
+      "p4": [
+        1.5,
+        2.5,
+        0.1,
+        0.15
+      ],
+      "description2": "击破特攻提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者的击破特攻大于等于<unbreak>#1[i]%</unbreak>时，对敌方目标造成的击破伤害无视其<unbreak>#3[i]%</unbreak>的防御力。当装备者的击破特攻大于等于<unbreak>#2[i]%</unbreak>时，对敌方目标造成的超击破伤害额外无视其<unbreak>#4[i]%</unbreak>的防御力。",
+      "timingSource": "release ability JSON"
+    },
+    "120": {
+      "name": "风举云飞的勇烈",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.06,
+        0.36,
+        1
+      ],
+      "description2": "攻击力提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者的暴击率提高<unbreak>#1[i]%</unbreak>，装备者施放追加攻击时，使终结技造成的伤害提高<unbreak>#2[i]%</unbreak>，持续<unbreak>#3[i]</unbreak>回合。",
+      "timingSource": "release ability JSON"
+    },
+    "121": {
+      "name": "重循苦旅的司铎",
+      "p2": [
+        0.06
+      ],
+      "p4": [
+        0.18,
+        2,
+        2
+      ],
+      "description2": "速度提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "对我方单体目标施放战技或终结技时，使技能目标的暴击伤害提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合，该效果最多叠加<unbreak>#3[i]</unbreak>次。",
+      "timingSource": "release ability JSON"
+    },
+    "122": {
+      "name": "识海迷坠的学者",
+      "p2": [
+        0.08
+      ],
+      "p4": [
+        0.2,
+        0.25
+      ],
+      "description2": "暴击率提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "战技和终结技造成的伤害提高<unbreak>#1[i]%</unbreak>，施放终结技后，下一次施放战技时造成的伤害额外提高<unbreak>#2[i]%</unbreak>。",
+      "timingSource": "release ability JSON"
+    },
+    "123": {
+      "name": "凯歌祝捷的英豪",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.06,
+        0.3,
+        2
+      ],
+      "description2": "攻击力提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者的忆灵在场时，装备者的速度提高<unbreak>#1[i]%</unbreak>，装备者的忆灵攻击时，装备者和忆灵的暴击伤害提高<unbreak>#2[i]%</unbreak>，持续<unbreak>#3[i]</unbreak>回合。",
+      "timingSource": "release ability JSON"
+    },
+    "124": {
+      "name": "哀歌覆国的诗人",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        -0.08,
+        110,
+        95,
+        0.2,
+        0.32,
+        0.08
+      ],
+      "description2": "量子属性伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者的速度降低<unbreak>#6[i]%</unbreak>。进入战斗前，若装备者的速度小于<unbreak>#2[i]</unbreak>/<unbreak>#3[i]</unbreak>，使装备者的暴击率提高<unbreak>#4[i]%</unbreak>/<unbreak>#5[i]%</unbreak>。该效果同时对装备者的忆灵生效。",
+      "timingSource": "release ability JSON"
+    },
+    "125": {
+      "name": "烈阳惊雷的女武神",
+      "p2": [
+        0.06
+      ],
+      "p4": [
+        0.06,
+        0.15,
+        2
+      ],
+      "description2": "速度提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者及其忆灵为装备者及其忆灵以外的我方目标提供治疗后，使装备者获得【甘霖】，每回合最多触发1次，持续<unbreak>#3[i]</unbreak>回合。装备者持有【甘霖】时，速度提高<unbreak>#1[i]%</unbreak>，我方全体暴击伤害提高<unbreak>#2[i]%</unbreak>，该效果无法叠加。",
+      "timingSource": "release ability JSON"
+    },
+    "126": {
+      "name": "恶海逐波的船长",
+      "p2": [
+        0.16
+      ],
+      "p4": [
+        2,
+        0.48,
+        1
+      ],
+      "description2": "暴击伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者成为其他我方目标的技能目标时，获得1层【助力】，最多叠加<unbreak>#1[i]</unbreak>层。施放终结技时，若持有<unbreak>#1[i]</unbreak>层【助力】，消耗所有【助力】，使装备者攻击力提高<unbreak>#2[i]%</unbreak>，持续<unbreak>#3[i]</unbreak>回合。",
+      "timingSource": "release ability JSON"
+    },
+    "127": {
+      "name": "再创天地的救世主",
+      "p2": [
+        0.08
+      ],
+      "p4": [
+        0.24,
+        0.15
+      ],
+      "description2": "暴击率提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者施放普攻或战技后，若装备者的忆灵在场，使装备者及其忆灵生命上限提高<unbreak>#1[i]%</unbreak>，我方全体造成的伤害提高<unbreak>#2[i]%</unbreak>，持续至装备者下次施放普攻或战技后。",
+      "timingSource": "release ability JSON"
+    },
+    "128": {
+      "name": "自匿星芒的隐士",
+      "p2": [
+        0.1
+      ],
+      "p4": [
+        0.12,
+        0.15
+      ],
+      "description2": "提供的护盾量提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者提供的护盾量提高<unbreak>#1[i]%</unbreak>，我方目标持有装备者提供的护盾时，暴击伤害提高<unbreak>#2[i]%</unbreak>。",
+      "timingSource": "release ability JSON"
+    },
+    "129": {
+      "name": "闪耀功勋的魔法少女",
+      "p2": [
+        0.16
+      ],
+      "p4": [
+        0.1,
+        5,
+        0.01,
+        10
+      ],
+      "description2": "暴击伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者及其忆灵造成的欢愉伤害无视目标<unbreak>#1[i]%</unbreak>的防御力，我方每累计获得<unbreak>#2[i]</unbreak>点笑点，造成的欢愉伤害额外无视目标<unbreak>#3[i]%</unbreak>的防御力，最多叠加<unbreak>#4[i]</unbreak>层。",
+      "timingSource": "release ability JSON"
+    },
+    "130": {
+      "name": "应天涉远的卜者",
+      "p2": [
+        0.06
+      ],
+      "p4": [
+        120,
+        160,
+        0.1,
+        0.18,
+        0.1
+      ],
+      "description2": "速度提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "进入战斗前，若装备者的速度大于等于<unbreak>#1[i]</unbreak>/<unbreak>#2[i]</unbreak>，使装备者的暴击率提高<unbreak>#3[i]%</unbreak>/<unbreak>#4[i]%</unbreak>。装备者每场战斗首次施放欢愉技时，使我方全体欢愉度提高<unbreak>#5[i]%</unbreak>，该效果无法叠加。",
+      "timingSource": "release ability JSON"
+    },
+    "131": {
+      "name": "星如我见的领航员",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.18,
+        3,
+        1
+      ],
+      "description2": "攻击力提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者进入战斗时/施放战技时，使战技和终结技造成的伤害提高<unbreak>#1[i]%</unbreak>，最多叠加<unbreak>#2[i]</unbreak>层，装备者回合开始时/施放终结技后，移除<unbreak>#3[i]</unbreak>层该效果。",
+      "timingSource": "release ability JSON"
+    },
+    "132": {
+      "name": "叩问天工的名冶",
+      "p2": [
+        0.12
+      ],
+      "p4": [
+        0.28,
+        2,
+        0.15
+      ],
+      "description2": "生命上限提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "装备者对防御力降低状态的敌方目标造成的暴击伤害提高<unbreak>#1[i]%</unbreak>。装备者对敌方目标施加防御力降低状态后，使我方全体获得【助燃】，持续<unbreak>#2[i]</unbreak>回合，该效果无法叠加，持有【助燃】的我方目标造成的伤害提高<unbreak>#3[i]%</unbreak>。该效果在装备者施放攻击后可再次触发。",
+      "timingSource": "release ability JSON"
+    },
+    "133": {
+      "name": "戏梦点星的伶人",
+      "p2": [
+        0.06
+      ],
+      "p4": [
+        0.16,
+        3,
+        10,
+        0.12,
+        3
+      ],
+      "description2": "速度提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "当装备者对我方其他单体目标施放战技或终结技时，使技能目标的欢愉度提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合，若装备者持有的好活当赏大于等于<unbreak>#3[i]</unbreak>点，则额外使我方全体目标的暴击伤害提高<unbreak>#4[i]%</unbreak>，持续<unbreak>#5[i]</unbreak>回合。",
+      "timingSource": "database description"
+    },
+    "134": {
+      "name": "贪噬禁果的异端",
+      "p2": [
+        0.16
+      ],
+      "p4": [
+        0.36,
+        0.2,
+        2
+      ],
+      "description2": "暴击伤害提高<unbreak>#1[i]%</unbreak>。",
+      "description4": "使装备者普攻造成的伤害提高<unbreak>#1[i]%</unbreak>。当装备者施放普攻时，使装备者的攻击力提高<unbreak>#2[i]%</unbreak>，持续<unbreak>#3[i]</unbreak>回合。",
+      "timingSource": "database description"
+    },
+    "301": {
+      "name": "太空封印站",
+      "p2": [
+        0.12,
+        120,
+        0.12
+      ],
+      "p4": [],
+      "description2": "使装备者的攻击力提高<unbreak>#1[i]%</unbreak>。当装备者的速度大于等于<unbreak>#2[i]</unbreak>时，攻击力额外提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "302": {
+      "name": "不老者的仙舟",
+      "p2": [
+        0.12,
+        120,
+        0.08
+      ],
+      "p4": [],
+      "description2": "使装备者的生命上限提高<unbreak>#1[i]%</unbreak>。当装备者的速度大于等于<unbreak>#2[i]</unbreak>时，我方全体攻击力提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "303": {
+      "name": "泛银河商业公司",
+      "p2": [
+        0.1,
+        0.25,
+        0.25
+      ],
+      "p4": [],
+      "description2": "使装备者的效果命中提高<unbreak>#1[i]%</unbreak>。同时提高装备者等同于当前效果命中<unbreak>#2[i]%</unbreak>的攻击力，最多提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "304": {
+      "name": "筑城者的贝洛伯格",
+      "p2": [
+        0.15,
+        0.5,
+        0.15
+      ],
+      "p4": [],
+      "description2": "使装备者的防御力提高<unbreak>#1[i]%</unbreak>。当装备者的效果命中大于等于<unbreak>#2[i]%</unbreak>时，防御力额外提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "305": {
+      "name": "星体差分机",
+      "p2": [
+        0.16,
+        1.2,
+        0.6
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击伤害提高<unbreak>#1[i]%</unbreak>。当装备者的暴击伤害大于等于<unbreak>#2[i]%</unbreak>时，进入战斗后装备者的暴击率提高<unbreak>#3[i]%</unbreak>，持续到施放首次攻击后结束。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "306": {
+      "name": "停转的萨尔索图",
+      "p2": [
+        0.08,
+        0.5,
+        0.15
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击率提高<unbreak>#1[i]%</unbreak>。当装备者当前暴击率大于等于<unbreak>#2[i]%</unbreak>时，终结技和追加攻击造成的伤害提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "307": {
+      "name": "盗贼公国塔利亚",
+      "p2": [
+        0.16,
+        145,
+        0.2
+      ],
+      "p4": [],
+      "description2": "使装备者的击破特攻提高<unbreak>#1[i]%</unbreak>。当装备者的速度大于等于<unbreak>#2[i]</unbreak>时，击破特攻额外提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "308": {
+      "name": "生命的翁瓦克",
+      "p2": [
+        0.05,
+        120,
+        0.4
+      ],
+      "p4": [],
+      "description2": "使装备者的能量恢复效率提高<unbreak>#1[i]%</unbreak>。当装备者的速度大于等于<unbreak>#2[i]</unbreak>时，进入战斗时立刻使行动提前<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "309": {
+      "name": "繁星竞技场",
+      "p2": [
+        0.08,
+        0.7,
+        0.2
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击率提高<unbreak>#1[i]%</unbreak>。当装备者的当前暴击率大于等于<unbreak>#2[i]%</unbreak>时，普攻和战技造成的伤害提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "310": {
+      "name": "折断的龙骨",
+      "p2": [
+        0.1,
+        0.3,
+        0.1
+      ],
+      "p4": [],
+      "description2": "使装备者的效果抵抗提高<unbreak>#1[i]%</unbreak>。当装备者的效果抵抗大于等于<unbreak>#2[i]%</unbreak>时，我方全体暴击伤害提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "311": {
+      "name": "苍穹战线格拉默",
+      "p2": [
+        0.12,
+        135,
+        160,
+        0.12,
+        0.18
+      ],
+      "p4": [],
+      "description2": "使装备者的攻击力提高<unbreak>#1[i]%</unbreak>。当装备者的速度大于等于<unbreak>#2[i]</unbreak>/<unbreak>#3[i]</unbreak>时，使装备者造成的伤害提高<unbreak>#4[i]%</unbreak>/<unbreak>#5[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "312": {
+      "name": "梦想之地匹诺康尼",
+      "p2": [
+        0.05,
+        0.1
+      ],
+      "p4": [],
+      "description2": "使装备者的能量恢复效率提高<unbreak>#1[i]%</unbreak>。使队伍中与装备者属性相同的我方其他角色造成的伤害提高<unbreak>#2[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "313": {
+      "name": "无主荒星茨冈尼亚",
+      "p2": [
+        0.04,
+        10,
+        0.04
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击率提高<unbreak>#3[i]%</unbreak>。当敌方目标被消灭时，装备者暴击伤害提高<unbreak>#1[i]%</unbreak>，最多叠加<unbreak>#2[i]</unbreak>层。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "314": {
+      "name": "出云显世与高天神国",
+      "p2": [
+        0.12,
+        0.12
+      ],
+      "p4": [],
+      "description2": "使装备者的攻击力提高<unbreak>#1[i]%</unbreak>。进入战斗时，若至少存在一名与装备者命途相同的队友，装备者的暴击率提高<unbreak>#2[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "315": {
+      "name": "奔狼的都蓝王朝",
+      "p2": [
+        5,
+        0.05,
+        0.25
+      ],
+      "p4": [],
+      "description2": "我方角色施放追加攻击时，装备者获得一层【功勋】，最多叠加<unbreak>#1[i]</unbreak>层，每层【功勋】使装备者追加攻击造成的伤害提高<unbreak>#2[i]%</unbreak>，叠满<unbreak>#1[i]</unbreak>层时，额外使装备者的暴击伤害提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "316": {
+      "name": "劫火莲灯铸炼宫",
+      "p2": [
+        0.06,
+        0.4,
+        1
+      ],
+      "p4": [],
+      "description2": "使装备者的速度提高<unbreak>#1[i]%</unbreak>。当装备者击中拥有火属性弱点的敌方目标时，击破特攻提高<unbreak>#2[i]%</unbreak>，持续<unbreak>#3[i]</unbreak>回合。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "317": {
+      "name": "沉陆海域露莎卡",
+      "p2": [
+        0.05,
+        0.12
+      ],
+      "p4": [],
+      "description2": "使装备者的能量恢复效率提高<unbreak>#1[i]%</unbreak>，如果装备者不是编队中的第一位角色，使编队中的第一位角色攻击力提高<unbreak>#2[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "318": {
+      "name": "奇想蕉乐园",
+      "p2": [
+        0.16,
+        0.32
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击伤害提高<unbreak>#1[i]%</unbreak>，当存在装备者召唤的目标时，暴击伤害额外提高<unbreak>#2[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "319": {
+      "name": "谧宁拾骨地",
+      "p2": [
+        0.12,
+        5000,
+        0.28
+      ],
+      "p4": [],
+      "description2": "使装备者的生命上限提高<unbreak>#1[i]%</unbreak>。当装备者的生命上限大于等于<unbreak>#2[i]</unbreak>点时，使装备者及其忆灵的暴击伤害提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "320": {
+      "name": "渊思寂虑的巨树",
+      "p2": [
+        0.06,
+        135,
+        180,
+        0.12,
+        0.2
+      ],
+      "p4": [],
+      "description2": "使装备者的速度提高<unbreak>#1[i]%</unbreak>。当装备者的速度大于等于<unbreak>#2[i]</unbreak>/<unbreak>#3[i]</unbreak>时，使装备者及其忆灵的治疗量提高<unbreak>#4[i]%</unbreak>/<unbreak>#5[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "321": {
+      "name": "妖精织梦的乐园",
+      "p2": [
+        0.09,
+        0.12,
+        4,
+        3
+      ],
+      "p4": [],
+      "description2": "队伍中当前在场的我方目标数量不等于4时，每多/少1名我方目标，使装备者及其忆灵造成的伤害提高<unbreak>#1[i]%</unbreak>/<unbreak>#2[i]%</unbreak>，最多叠加<unbreak>#3[i]</unbreak>/<unbreak>#4[i]</unbreak>层。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "322": {
+      "name": "沉欢醉饮的海隅",
+      "p2": [
+        0.12,
+        2400,
+        3600,
+        0.12,
+        0.24
+      ],
+      "p4": [],
+      "description2": "使装备者的攻击力提高<unbreak>#1[i]%</unbreak>。当装备者的攻击力大于等于<unbreak>#2[i]</unbreak>/<unbreak>#3[i]</unbreak>时，使造成的持续伤害额外提高<unbreak>#4[i]%</unbreak>/<unbreak>#5[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "323": {
+      "name": "永恒之地翁法罗斯",
+      "p2": [
+        0.08,
+        0.08
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击率提高<unbreak>#1[i]%</unbreak>。装备者的忆灵在场时，我方全体速度提高<unbreak>#2[i]%</unbreak>，该效果无法叠加。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "324": {
+      "name": "天国@直播间",
+      "p2": [
+        0.16,
+        3,
+        0.32,
+        3
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击伤害提高<unbreak>#1[i]%</unbreak>，若在同一回合内消耗大于等于<unbreak>#2[i]</unbreak>点战技点，额外使装备者暴击伤害提高<unbreak>#3[i]%</unbreak>，持续<unbreak>#4[i]</unbreak>回合。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "325": {
+      "name": "零号关卡朋克洛德",
+      "p2": [
+        0.08,
+        0.4,
+        0.8,
+        0.2,
+        0.32
+      ],
+      "p4": [],
+      "description2": "使装备者的欢愉度提高<unbreak>#1[i]%</unbreak>。战斗中欢愉度首次达到<unbreak>#2[i]%</unbreak>/<unbreak>#3[i]%</unbreak>时，使装备者暴击伤害提高<unbreak>#4[i]%</unbreak>/<unbreak>#5[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "326": {
+      "name": "千星荟萃之城",
+      "p2": [
+        0.24,
+        2,
+        0.12
+      ],
+      "p4": [],
+      "description2": "装备者施放追加攻击时，攻击力提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合。当敌方目标被消灭时，我方全体在本场战斗中暴击伤害提高<unbreak>#3[i]%</unbreak>，该效果无法叠加。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "327": {
+      "name": "坠星启航地",
+      "p2": [
+        0.08,
+        0.32
+      ],
+      "p4": [],
+      "description2": "使装备者的暴击率提高<unbreak>#1[i]%</unbreak>。进入战斗时，若装备者与另一名队友均为开拓同行角色，使装备者的暴击伤害提高<unbreak>#2[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    },
+    "328": {
+      "name": "寰宇生研院",
+      "p2": [
+        200,
+        0.002,
+        0.32
+      ],
+      "p4": [],
+      "description2": "进入战斗时，若装备者能量上限大于等于<unbreak>#1[i]</unbreak>点，每超过1点使装备者造成的伤害提高<unbreak>#2[f1]%</unbreak>，最多提高<unbreak>#3[i]%</unbreak>。",
+      "description4": null,
+      "timingSource": "release ability JSON"
+    }
+  }
+}

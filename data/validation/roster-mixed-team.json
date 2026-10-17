@@ -1,0 +1,11 @@
+{
+  "schema":"hsr-analysis/team-v1",
+  "datasetVersion":"4.6",
+  "members":[
+    {"slot":1,"character":"星期日","level":80,"eidolon":0,"lightcone":"专武","superimpose":1,"technique":true,"statsBasis":"engine-input","stats":{"hp":4000,"atk":1500,"def":1000,"speed":160,"critRate":"10%","critDmg":"200%","energyRegen":1.194394},"policy":{"allyTargetSlot":3}},
+    {"slot":2,"character":"缇宝","level":80,"eidolon":0,"lightcone":"专武","superimpose":1,"technique":true,"statsBasis":"engine-input","stats":{"hp":6000,"atk":1000,"def":1000,"speed":134,"critRate":"50%","critDmg":"100%","energyRegen":1.194394}},
+    {"slot":3,"character":"红A","eidolon":0,"lightcone":"专武","superimpose":1},
+    {"slot":4,"character":"刻律","eidolon":0,"lightcone":"专武","superimpose":1,"policy":{"allyTargetSlot":3}}
+  ],
+  "notes":["新增角色模块验收：星期日 / 缇宝 / Archer / 刻律，使用明确给定的测试面板；不是实际录像配装，也不表示0T实测。敌人与其他设置沿用当前页面。"]
+}

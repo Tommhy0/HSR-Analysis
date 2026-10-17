@@ -1,0 +1,256 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-16",
+  "cases": [
+    {
+      "id": "lisara-35-first",
+      "title": "Lisara · MoC 3.5 上半 0T",
+      "author": "Lisara",
+      "url": "https://www.youtube.com/watch?v=hU7Eq66-0ws",
+      "mode": "moc",
+      "gameVersion": "3.5",
+      "characters": [
+        1015,
+        1306,
+        1403,
+        1412
+      ],
+      "eidolons": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "buildTimestamp": "08:18",
+      "battleTimestamp": "00:00",
+      "sourceAccess": "description_only",
+      "claimedZeroCycle": true,
+      "observedCheckpoints": [],
+      "missingInputs": [
+        "播放器要求登录确认，尚未读取配装画面",
+        "逐项主副词条、技能等级及初始状态",
+        "具体关卡敌人配置与当期增益",
+        "逐动作及终结技插入记录"
+      ],
+      "requiredSystems": [
+        "moc-3.5-stage",
+        "tribbie-kit"
+      ]
+    },
+    {
+      "id": "lisara-35-second",
+      "title": "Lisara · MoC 3.5 下半 0T",
+      "author": "Lisara",
+      "url": "https://www.youtube.com/watch?v=hU7Eq66-0ws",
+      "mode": "moc",
+      "gameVersion": "3.5",
+      "characters": [
+        1015,
+        1306,
+        1006,
+        1412
+      ],
+      "eidolons": [
+        0,
+        0,
+        2,
+        0
+      ],
+      "buildTimestamp": "08:30",
+      "battleTimestamp": "04:48",
+      "sourceAccess": "description_only",
+      "claimedZeroCycle": true,
+      "observedCheckpoints": [],
+      "missingInputs": [
+        "播放器要求登录确认，尚未读取配装画面",
+        "光锥、面板、行迹及套装完整配置",
+        "具体关卡敌人配置与当期增益",
+        "银狼植弱结果与实际操作轴"
+      ],
+      "requiredSystems": [
+        "moc-3.5-stage",
+        "silver-wolf-kit"
+      ]
+    },
+    {
+      "id": "hutao-svarog",
+      "title": "胡桃花火厨 · Archer 携刻律 0T 史瓦罗",
+      "author": "胡桃花火厨",
+      "url": "https://www.bilibili.com/video/BV18tawz9E8x/",
+      "mode": "moc",
+      "gameVersion": null,
+      "characters": [
+        1015,
+        1412,
+        1306,
+        1403
+      ],
+      "eidolons": [
+        1,
+        0,
+        0,
+        1
+      ],
+      "battleTimestamp": "00:00",
+      "durationSeconds": 194,
+      "sourceAccess": "public_360p_previewed",
+      "claimedZeroCycle": true,
+      "observedCheckpoints": [],
+      "missingInputs": [
+        "未获得全套面板、行迹与遗器数值",
+        "史瓦罗关卡波次、血量及当期增益",
+        "完整按帧动作记录；尚未核实结算画面"
+      ],
+      "requiredSystems": [
+        "svarog-stage",
+        "tribbie-kit"
+      ],
+      "notes": "简介与作者回复一致列出 E1S1 Archer、E0 刻律、E0S1 花火、E1 缇宝。S0 不表示未装备光锥，不能据此省略替代光锥。"
+    },
+    {
+      "id": "hale-four-member",
+      "title": "Hale雨矢 · 红花刻龙 11箭 0T 来古士",
+      "author": "Hale雨矢",
+      "url": "https://www.bilibili.com/video/BV1f6sxz7EuA/",
+      "mode": "anomaly-arbitration",
+      "gameVersion": "3.6",
+      "characters": [
+        1015,
+        1306,
+        1412,
+        1414
+      ],
+      "durationSeconds": 376,
+      "sourceAccess": "public_360p_previewed",
+      "claimedZeroCycle": true,
+      "observedCheckpoints": [],
+      "publishedRotation": {
+        "baselineSkills": 6,
+        "extendedSkills": 11,
+        "extendedUltimates": 2,
+        "extendedFollowups": 4,
+        "extendedOpeningSP": 7,
+        "extendedOpeningCharge": 3,
+        "sparkleSpeed": 152,
+        "sparkleSet": 110,
+        "sparklePlanar": 308
+      },
+      "missingInputs": [
+        "高配展示的四人完整配装和初始局内状态",
+        "11箭流程每次留大/插入/额外行动的时间点",
+        "来古士绝境阶段、黑潮及仲裁专属机制"
+      ],
+      "requiredSystems": [
+        "anomaly-3.6-lygos-phases",
+        "windfury-extra-action-control"
+      ],
+      "notes": "与用户四人一致；属于异相仲裁，不能当作混沌0T。作者公开的6箭循环可单独作隔离检查，不能据此给整场录像判通过。"
+    },
+    {
+      "id": "kongshan-36-lygos",
+      "title": "空山无人-遥望星辰 · 61红A 0T来古士",
+      "author": "空山无人-遥望星辰",
+      "url": "https://www.bilibili.com/video/BV15zxEzfEW3/",
+      "mode": "moc",
+      "gameVersion": "3.6",
+      "characters": [
+        1015,
+        1306,
+        1403,
+        1412
+      ],
+      "durationSeconds": 476,
+      "sourceAccess": "public_360p_played_and_build_frames_read",
+      "claimedZeroCycle": true,
+      "battleTimestamp": "03:42",
+      "buildTimestamp": "07:13",
+      "observedClearTimestamp": "06:58",
+      "observedPanels": {
+        "1015": {
+          "timestamp": "07:32",
+          "level": 80,
+          "hp": 3049,
+          "atk": 3384,
+          "def": 1088,
+          "speed": 107,
+          "critRatePercent": 101.7,
+          "critDmgPercent": 123.8
+        },
+        "1306": {
+          "timestamp": "07:36",
+          "level": 80,
+          "hp": 4310,
+          "atk": 1592,
+          "def": 1534,
+          "speed": 155,
+          "critRatePercent": 5,
+          "critDmgPercent": 163.4
+        },
+        "1412": {
+          "timestamp": "07:51",
+          "level": 80,
+          "hp": 3865,
+          "atk": 3123,
+          "def": 1256,
+          "speed": 172,
+          "critRatePercent": 10.5,
+          "critDmgPercent": 50
+        }
+      },
+      "observedCheckpoints": [
+        {
+          "title": "Archer追击恢复战技点",
+          "type": "sp",
+          "actor": "slot-1",
+          "field": "amount",
+          "expected": 1,
+          "tolerance": 0,
+          "timestamp": "04:33–04:35"
+        }
+      ],
+      "resourceCheckpoints": [
+        {
+          "actor": 1015,
+          "action": "followup",
+          "before": 2,
+          "after": 3,
+          "timestamps": [
+            "04:33",
+            "04:35"
+          ],
+          "evidence": [
+            "outputs/公开视频_BV15zxEzfEW3_0433追击前.png",
+            "outputs/公开视频_BV15zxEzfEW3_0435追击补点.png"
+          ]
+        }
+      ],
+      "missingInputs": [
+        "片尾已读三人基础面板，但四人完整遗器、回能、技能等级和部分光锥叠影仍缺失",
+        "3.6 创世之柱其十二来古士完整波次、阶段与关卡增益未登记",
+        "未完成全部动作及插入终结技的逐项抄录；已读挑战成功，但不据此给程序判0T通过"
+      ],
+      "requiredSystems": [
+        "tribbie-kit",
+        "moc-3.6-lygos-stage"
+      ],
+      "notes": "全程使用公开360P，不登录；可跳转片尾配装和06:58挑战成功画面。只有Archer追击2→3战技点用于隔离对照，录像伤害584490等未反推配装或当作通过。视频有双半，不能将另一半飞霄队的动作混入红A队。",
+      "hpCheckpoints": [
+        {
+          "actor": 1403,
+          "before": 4250,
+          "after": 5643,
+          "timestamp": "04:22",
+          "teamHP": {
+            "1015": 3049,
+            "1306": 4310,
+            "1403": 4250,
+            "1412": 3865
+          },
+          "evidence": [
+            "outputs/公开视频_BV15zxEzfEW3_0422.png"
+          ]
+        }
+      ]
+    }
+  ]
+}
