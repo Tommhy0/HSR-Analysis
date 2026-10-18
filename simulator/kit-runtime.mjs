@@ -107,7 +107,32 @@ export function kitRuntime(api) {
   }
   function cleanseOne(b,u,to){const negative=[...to.buffs.filter(e=>e.debuff),...to.dots];const first=negative.find(e=>e.control)??negative[0];if(!first)return;to.buffs=to.buffs.filter(e=>e!==first);to.dots=to.dots.filter(e=>e!==first);record(b,'cleanse',u,{target:to.id,name:first.name});}
   function supportTarget(b,u){const id=u.policy?.allyTargetId??u.actions.skill?.targetId;return get(b,id)??allies(b,u).find(t=>is(t,1015))??allies(b,u).find(t=>t!==u)??u;}
-  function merit(b,u,to){const old=u.resources['军功目标'];if(old!==to.id){resource(b,u,'充能',0);resource(b,u,'军功目标',to.id);for(const t of b.units)t.buffs=t.buffs.filter(e=>!(e.source===u.id&&e.merit));}
+  // 1141523「持有【军功】的角色暴击伤害提高 42%」是持有者状态光环。昔涟的诗篇把数值记在
+  // 1412 的 resources（castPoem），这里保证光环总是挂在当前【军功】持有者身上：
+  // 旧持有者身上的光环被移走，首次指定持有者时补挂。
+  function syncLawPoem(b,u,to){
+    for(const t of b.units){
+      for(const e of [...t.buffs]){
+        const tag=String(e.tag??'');
+        if(!tag.startsWith('cyreneLawPoem:'))continue;
+        if(t===to)continue;
+        t.buffs=t.buffs.filter(x=>x!==e);
+        if(!to.buffs.some(x=>x.tag===e.tag)){
+          // id 里含旧持有者，迁移后同步重写，避免同一光环出现两条。
+          e.id=tag.slice('cyreneLawPoem:'.length)+':poem-law-cd:'+to.id;
+          to.buffs.push(e);
+        }
+      }
+    }
+    for(const key of Object.keys(u.resources)){
+      if(!key.startsWith('Cyrene律法诗篇:'))continue;
+      const cyreneId=key.slice('Cyrene律法诗篇:'.length),tag='cyreneLawPoem:'+cyreneId;
+      if(to.buffs.some(e=>e.tag===tag))continue;
+      buff(b,u,to,'献予「律法」之诗 · 暴击伤害','critDmg',u.resources[key],null,
+        {id:cyreneId+':poem-law-cd:'+to.id,tag});
+    }
+  }
+  function merit(b,u,to){const old=u.resources['军功目标'];if(old!==to.id){resource(b,u,'充能',0);resource(b,u,'军功目标',to.id);for(const t of b.units)t.buffs=t.buffs.filter(e=>!(e.source===u.id&&e.merit));syncLawPoem(b,u,to);}
     buff(b,u,to,'军功','atk',0,null,{tag:'merit',merit:true,convert:{source:u.id,stat:'atk',ratio:u.kit.params.Talent[1]}});
     if(rank(u,1))buff(b,u,to,'军功 · 无视防御','defIgnore',rank(u,1),null,{merit:true});
     if(rank(u,2))buff(b,u,to,'军功 · 增伤','dmgBoost',rank(u,2),null,{merit:true});
@@ -203,7 +228,10 @@ export function kitRuntime(api) {
     }
   }
   function copyOwner(b,u,key,kind,a){if(key!=='skill'||kind==='copy'||kind==='technique'||!(a.terms?.length))return null;return b.units.find(c=>live(c)&&is(c,1412)&&c.resources['军功目标']===u.id&&tag(u,'peerage'));}
-  function consumeCopy(b,c,u){resource(b,c,'充能',Math.max(0,c.resources['充能']-c.kit.params.BPSkill[3]));u.buffs=u.buffs.filter(e=>!(e.source===c.id&&(e.peerage||e.tag==='peerage')));record(b,'mechanic',c,{name:'奇袭结束 · 爵位降为军功',target:u.id});}
+  function consumeCopy(b,c,u){resource(b,c,'充能',Math.max(0,c.resources['充能']-c.kit.params.BPSkill[3]));
+    // 1141523 献予「律法」之诗：奇袭结束后，使刻律德菈获得 1 点充能。
+    if(Object.keys(c.resources??{}).some(k=>k.startsWith('Cyrene律法诗篇:')))ceryCharge(b,c,1);
+    u.buffs=u.buffs.filter(e=>!(e.source===c.id&&(e.peerage||e.tag==='peerage')));record(b,'mechanic',c,{name:'奇袭结束 · 爵位降为军功',target:u.id});}
   function after(b,u,key,kind,a,selected,hitTargets,bounceTargets){
     if(u.enemyKit?.id===8012010&&hitTargets.length){const p=u.enemyKit;stacks(b,u,u,'掠夺者 · 速度叠层','speedPct',p.speedPerLayer,p.speedLayers,p.speedDuration,{tickAt:'start'});}
     if(is(u,1306)){

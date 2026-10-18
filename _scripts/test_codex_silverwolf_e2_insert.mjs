@@ -9,6 +9,8 @@ function makeBattle(eidolon=2){
   const a=dummy('ally-a'),b=dummy('ally-b'),foe=dummy('enemy','enemy');
   foe.panel={...foe.panel,hp:1e9,speed:1};foe.hp=1e9;
   const battle=createBattle({strict:false,maxAV:500,sp:3,maxSP:9,seed:23,critMode:'noncrit',units:[wolf,a,b,foe]});
+  // 本用例只验证 E2 阈值；固定盲盒结果为【爆爆爆炸蛋】，避免随机笑点改写隐藏分累计。
+  battle.random=()=>.5;
   const owner=battle.units.find(x=>x.characterId===1506);
   owner.energy=60;owner.resources['隐藏分']=180;owner.resources['笑点快照']=1;
   owner.policy={...owner.policy,turnPlan:[{turn:1,key:'ultimate'}]};

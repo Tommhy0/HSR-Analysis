@@ -345,7 +345,10 @@ test('长夜月：战技召唤长夜（生命 50% / 速度 160）、加忆灵暴
   near(n.hp,combatPanel(self).hp*p.Talent[4]);
   near(combatPanel(n).speed,p.Talent[3]);
   const cd=n.buffs.find(e=>e.id===self.id+':skill-cd');
-  assert.ok(cd,'未给我方忆灵加暴伤');near(cd.value,cd0*p.BPSkill[0]);assert.equal(cd.remaining,p.BPSkill[1]);
+  assert.ok(cd,'未给我方忆灵加暴伤');
+  // 4.6 Ability Skill02_Phase02：LoseHPByRatio 先于 Skill02_Buff；本次消耗触发的 141304
+  // 暴伤提高应先计入长夜月暴伤，再按 24% 换算给忆灵。
+  near(cd.value,(cd0+p.Talent[1])*p.BPSkill[0]);assert.equal(cd.remaining,p.BPSkill[1]);
   assert.ok(self.resources['忆质']>=p.BPSkill[2],'战技应获得忆质');
 });
 
@@ -483,13 +486,17 @@ test('知更鸟•晴歌：战技召唤晴空乐手（生命 70% / 速度 180%�
   const band=memOf(b,self);assert.ok(band,'战技未召唤晴空乐手');
   near(band.hp,combatPanel(self).hp*p.Talent[0]);
   near(band.baseSpeed,combatPanel(self).speed*p.Talent[1],'忆灵天赋：晴空乐手速度 = 知更鸟•晴歌速度×180%');
-  near(self.resources['气氛值'],p.BPSkill[1]+1+self.kit.ranks[2][1],'战技召唤治疗产生1点基础气氛值，E2首次技能再加2点');
+  // 151202：Success 分支（首次召唤）只 CreateServant，不治疗、不 +6 气氛。
+  near(self.resources['气氛值'],0,'首次召唤不应获得气氛值');
   // 忆灵天赋「贴近海的心跳」：被召唤时为知更鸟•晴歌恢复 20 点能量
   near(self.energy,svp(1512,1151205)[0]);
-  assert.equal(self.resources['乐手人数'],2,'气氛值 ≥6 应立即召唤第二名乐手');
+  assert.equal(self.resources['乐手人数'],1,'首次召唤只有 1 名乐手');
   assert.ok(band.cannotAct,'未进入 Fever 时乐手不应出现在行动序列上');
   assert.equal(b.units.filter(x=>x.memospriteOwner===self.id&&x.active!==false).length,1,
     '4.6 Ability 只 CreateServant 一名 11512；Partner02/03 是演出别名，不应伪造成额外行动单位');
+  b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
+  near(self.resources['气氛值'],p.BPSkill[1]+1+self.kit.ranks[2][1],'已在场时治疗并 +6 气氛，含 1 点治疗气氛与 E2 +2');
+  assert.equal(self.resources['乐手人数'],2,'气氛值 ≥6 应立即召唤第二名乐手');
   b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
   assert.equal(self.resources['乐手人数'],3,'气氛值 ≥12 应立即召唤第三名乐手');
   assert.ok(self.buffs.some(e=>e.tag==='fever'),'全员登台后应进入 Fever');
@@ -506,6 +513,7 @@ test('知更鸟•晴歌：Fever 倒计时扣除 50% 当前气氛值（至少 12
   const b=createBattle(config([actor(1512)]));const [self]=b.units;
   b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
   b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
+  b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
   const band=memOf(b,self),cd=b.summons.find(s=>s.id===self.id+':fever');
   self.resources['气氛值']=20;
   b.rules.summonTurn(b,self,cd);
@@ -520,6 +528,7 @@ test('知更鸟•晴歌：Fever 倒计时扣除 50% 当前气氛值（至少 12
 
 test('知更鸟•晴歌：晴空乐手忆灵技 2.1×生命上限全体风伤（E6 翻倍），Fever 结界无视防御',()=>{
   const b=createBattle(config([actor(1512,{eidolon:6})]));const [self,en]=b.units,p=self.kit.params;
+  b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
   b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
   b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
   const band=memOf(b,self);
@@ -610,7 +619,7 @@ test('知更鸟•晴歌 E4：速度只在Fever生效，气氛值改变与倒计
   const skill=()=>b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
   skill();const band=memOf(b,self);assert.ok(band);
   assert.ok(!band.buffs.some(x=>x.id===self.id+':e4-speed'),'未进入Fever时不应应用E4速度');
-  skill();assert.ok(self.buffs.some(x=>x.tag==='fever'),'多次获得气氛值后进入Fever');
+  skill();skill();assert.ok(self.buffs.some(x=>x.tag==='fever'),'多次获得气氛值后进入Fever');
   const speedBuff=()=>band.buffs.find(x=>x.id===self.id+':e4-speed');
   near(speedBuff().value,rank[1]+self.resources['气氛值']*rank[2],'进入Fever立即按当前气氛值刷新速度');
   const cd=b.summons.find(x=>x.id===self.id+':fever');
@@ -625,7 +634,7 @@ test('知更鸟•晴歌 E6：Fever内终结能量上限翻倍、首次入场及
   const [self]=b.units,base=self.energyMax,stored=self.energy;
   self.energy=50;
   const skill=()=>b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
-  skill();skill();
+  skill();skill();skill();
   assert.ok(self.buffs.some(x=>x.tag==='fever'));
   assert.equal(self.energyMax,base*2,'E6 Fever的能量储存上限为两次终结技');
   assert.equal(self.actions.ultimate.energyCost,base,'单次终结技消耗仍为原能量上限');

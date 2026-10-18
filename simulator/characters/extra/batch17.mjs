@@ -554,14 +554,37 @@ function phainon(api){
     const count=P(u).Ultra[3],speed=eventSpeed(u);
     const cycle=(u.resources['永续行动循环']??0)+1;resource(b,u,'永续行动循环',cycle);
     resource(b,u,'卡厄斯兰那回合',count);
-    // 源描述：8个倒计时事件的初始行动值均匀分布于0～100%；故按八分位显示，速度取基础速度60%。
+    // 源码确证：8 个 BattleEvent（11408）由 LoopExecuteTaskList 创建，各自 SetActionDelay。
+    // NormalizedValue 的三个动态哈希（608586940 / 696029444 / 1979030979）在本地缓存中
+    // 全部 ReadInfo.Type=None；但社区实测与配速计算给出一致口径：
+    //   8 个额外回合共享一次行动条，总行动值 = 10000 / (基础速度 × 0.6)；
+    //   首动不占行动值，其余 7 等分。因此距离为 0, 10000/7, …, 10000。
+    // 来源：NGA 白厄配速帖（tid=44710678 / 44574669 / 44855203）与米游社机制文。
+    // 该公式不使用动态哈希，哈希仍未映射；实现按社区实测口径落地，并在缺口台账注明来源层级。
+    // Ultra 的 OnListenBattleEventDie 在有 Phainon_UltraBE 阵亡时才安装
+    // RedirectActionDelayChange（→ Phainon_UltraBE.SortByActionOrder.Select2），倒计时归零时
+    // 以 IsCancel 取消；因此倒计时初始不开启重定向，由 actionEventEnd 在首个阵亡后打开。
     scheduleActionEvents(b,u.id,Array.from({length:count},(_,i)=>({
       id:u.id+':phainon-khaos:'+String(cycle)+':'+String(i+1),name:'卡厄斯兰那倒计时 '+(i+1)+'/'+count,
-      key:'basic',speed,distance:10000*(i+1)/count,
-    })),{group:eventGroup,suspendNormalGauge:true,redirectAdvance:true,noWaveReset:true});
+      key:'basic',speed,distance:count>1?10000*i/(count-1):0,
+    })),{group:eventGroup,suspendNormalGauge:true,redirectAdvance:false,noWaveReset:true});
+  }
+  // 境界【时墟铁墓】：变身期间敌方全体始终拥有物理属性弱点。
+  // 原始脚本把 MAvatar_Phainon_00_Ultra_Weakness 作为 Ultra 的 Halo 子修饰器挂在
+  // AllEnemyWithUnSelectable 上（STAT_AttachWeakness → StackWeakness Physical），
+  // Ultra 移除时由 OnDestroy 一并删除，因此这里用同名 tag 的 buff 复刻该光环。
+  function attachKhaosWeakness(b,u){
+    for(const to of enemies(b,u))if(!to.buffs.some(e=>e.tag==='phainonUltraWeakness'))
+      buff(b,u,to,'时墟铁墓 · 物理弱点','marker',0,null,{id:u.id+':khaos-weak',tag:'phainonUltraWeakness',weakness:'Physical'});
   }
   function endTransform(b,u){
     u.buffs=u.buffs.filter(e=>!['phainonKhaos','phainonKhaosAtk','phainonKhaosHp','phainonKhaosSpd'].includes(e.tag));
+    // Ultra 的 OnDestroy 同时移除 Ultra_Weakness 光环，以及 MAvatar_Phainon_00_Guard
+    // （Guard 的层数即【弑魂之炽】，因此层数与减伤 buff 一并清除）。
+    for(const to of b.units)to.buffs=to.buffs.filter(e=>e.tag!=='phainonUltraWeakness');
+    u.buffs=u.buffs.filter(e=>e.tag!=='phainonSoulfire');
+    resource(b,u,'弑魂之炽',0);resource(b,u,'敌行动未叠层',0);
+    u.counterMarkIds=[];
     // 行迹 point06：变身结束时获得 3 点【火种】；Talent 的溢出点数一并返还。
     addKindling(b,u,(trace(u,1)?trace(u,1)[0]:0)+(u.resources['火种溢出']??0));
     resource(b,u,'火种溢出',0);
@@ -577,13 +600,16 @@ function phainon(api){
     const cur=tagOf(u,tag)?.stacks??0;if(cur>=max)return;
     const n=cur+1;buff(b,u,u,name,key,per*n,null,{id:u.id+':'+tag,tag,stacks:n});
   }
-  // 最后一击：960% 攻击力物理终结伤害，由敌方全体均分；每剩余 1 个额外回合倍率 -12.5%。
-  function finalBlow(b,u,stacks){
+  // 最后一击：960% 攻击力物理终结伤害，由敌方全体均分；
+  // 「每剩余 1 个卡厄斯兰那的额外回合，最后一击的伤害倍率减少原倍率的 #3=12.5%」。
+  // remaining = 触发时点仍在行动条上的倒计时事件数；正常在第 8 个额外回合触发时为 0（全额）。
+  function finalBlow(b,u,remaining=0){
     const pool=enemies(b,u);if(!pool.length)return;
-    const mult=P(u).Ultra[0]*(1-kForm[2]*Math.max(0,stacks-1))/pool.length;
+    const mult=P(u).Ultra[0]*(1-kForm[2]*Math.max(0,remaining))/pool.length;
     for(const to of pool)damageTo(b,u,to,{name:'永劫燔世，其将背负 · 最后一击',type:'Ultra',element:'Physical',
       terms:atk(mult),toughness:60},1,'primary','direct');
   }
+  function activeCountdowns(b,u){return b.actionEvents.filter(e=>e.active&&e.owner===u.id&&e.group===eventGroup).length;}
   return {
     start(b,u){
       resource(b,u,'毁伤',0);resource(b,u,'火种溢出',0);resource(b,u,'弑魂之炽',0);resource(b,u,'反击层数',0);
@@ -603,7 +629,11 @@ function phainon(api){
       gainRuin(b,u,sk(1408,'140807','1')[1]);
       api.sp(b,u,sk(1408,'140807','1')[3],'终结之始');
     },
-    waveStart(b,u){if(u.kit.technique)for(const to of enemies(b,u))damageTo(b,u,to,{name:'终结之始 · 波次',type:'Maze',element:'Physical',terms:atk(P(u).Maze[0]),toughness:mazeStance(1408)},1,'primary','technique');},
+    waveStart(b,u){
+      if(u.kit.technique)for(const to of enemies(b,u))damageTo(b,u,to,{name:'终结之始 · 波次',type:'Maze',element:'Physical',terms:atk(P(u).Maze[0]),toughness:mazeStance(1408)},1,'primary','technique');
+      // Ultra_Weakness 是光环：新入场的敌人同样获得物理弱点。
+      if(kh(u))attachKhaosWeakness(b,u);
+    },
     // 卡厄斯兰那：普攻 →【创生•血棘渡亡】；战技 →【支柱•死星天裁】。
     prepare(b,u,key,kind,a){
       if(key==='ultimate'&&kind!=='copy'&&!kh(u))resource(b,u,'本次变身火种来源',(u.energy??0)+(u.resources['火种溢出']??0));
@@ -642,6 +672,13 @@ function phainon(api){
         buff(b,u,u,'卡厄斯兰那 · 攻击力','atkPct',kForm[3],null,{id:u.id+':khaos-atk',tag:'phainonKhaosAtk'});
         buff(b,u,u,'卡厄斯兰那 · 生命上限','hpPct',kForm[4],null,{id:u.id+':khaos-hp',tag:'phainonKhaosHp'});
         beginKhaosCountdown(b,u);
+        attachKhaosWeakness(b,u);
+        // Ultra 的 OnStack：ByTargetListIntersects(AllTeamMemberWithUnselectable, CurrentTurnOwnerEntity)
+        // → Remodifier(CurrentTurnOwnerEntity, StatusTypeMask="Buff", LifeTime>0) → LifeTime +1。
+        // StatusTypeMask 只含 Buff，负面效果（e.debuff）不延长；判定不排除自身回合。
+        const turnOwner=b.turnActor?b.units.find(x=>x.id===b.turnActor):null;
+        if(turnOwner&&turnOwner.side===u.side)
+          for(const e of turnOwner.buffs)if(!e.debuff&&e.remaining!=null&&e.remaining>0)e.remaining+=1;
         gainRuin(b,u,kForm[0]);
         if(u.resources['永续的燃烧']){
           const surplus=Math.max(0,(u.resources['本次变身火种来源']??12)-poem[4]);
@@ -661,7 +698,8 @@ function phainon(api){
       const index=Number(e.id.split(':').at(-1)),count=P(u).Ultra[3];
       if(index>=count){
         if(u.resources['永续的燃烧']){gainRuin(b,u,poem[8]);beginKhaosCountdown(b,u);return false;}
-        finalBlow(b,u,1);endTransform(b,u);return false;
+        // 最后一个额外回合开始时发动最后一击；此时本次倒计时已消耗，剩余事件为 0 → 全额倍率。
+        finalBlow(b,u,activeCountdowns(b,u));endTransform(b,u);return false;
       }
       if(u.resources['永续的燃烧']){
         const lost=Math.min(Math.max(0,u.hp-1),u.hp*poem[1]);
@@ -677,19 +715,45 @@ function phainon(api){
     },
     actionEventEnd(b,u,e,result){
       if(e.group!==eventGroup)return;
+      // Ultra 的 OnListenBattleEventDie：任一 Phainon_UltraBE 阵亡后，为仍在行动条上的倒计时
+      // 安装 RedirectActionDelayChange（行动提前 → 最早倒计时）；归零时由 cancelActionEvents 一并清理。
+      for(const other of b.actionEvents)if(other.group===eventGroup&&other.active)other.redirectAdvance=true;
       const parts=e.id.split(':'),eventCycle=Number(parts.at(-2)),index=Number(parts.at(-1));
       if(eventCycle!==(u.resources['永续行动循环']??1))return;
       resource(b,u,'卡厄斯兰那回合',Math.max(0,P(u).Ultra[3]-index));
       if(!result.executed&&index<P(u).Ultra[3])record(b,'assumption',u,{message:'卡厄斯兰那倒计时额外行动未执行'});
     },
-    // 【支柱•死星天裁】/【灾厄•弑魂焚诏】的伤害在 before 内逐段结算（段数随【毁伤】变化）。
+    // E1「火与光，善恶的化身」：原始 Rank01 的 OnListenCharacterDie 只要求
+    // 「ParamEntity = TeamDark（阵亡者）且 ParamEntity2 != TeamDark（击杀者为我方）」，
+    // 并不要求击杀者是白厄、也不要求处于卡厄斯兰那形态——单场战斗中每次敌方阵亡都累加。
     death(b,u,from,to){
       if(to.side===u.side)return;
-      if(from===u&&kh(u)){
+      if(rank(u,1)&&from&&from.side===u.side){
         resource(b,u,'消灭计数',(u.resources['消灭计数']??0)+1);
         updateActionEventSpeed(b,u.id,eventSpeed(u),eventGroup);
       }
+    },
+    // 卡厄斯兰那受到致命攻击时不会陷入无法战斗状态，而是回复 #2=25% 生命上限并立即发动最后一击。
+    // （Ultra 的 OnLimboWaitHeal → Skill31_SelectTarget_OnLimbo，优先级 AvatarReviveSelf。）
+    beforeLethal(b,u,from,to){
+      if(to!==u||!kh(u))return false;
+      resource(b,u,'致命反击待结算',1);
       void from;
+      return true;
+    },
+    afterDamage(b,u,from,to,kind){
+      if(to!==u||!u.resources['致命反击待结算'])return;
+      resource(b,u,'致命反击待结算',0);
+      // 原始 Skill31_SelectTarget_OnLimbo 的首个任务是 SetHP（ADF_MaxHPValue × #2=25%）：
+      // 把当前生命直接设为生命上限的 25%，不是在此之上追加治疗；随后插入 Skill31 结算最后一击。
+      const maxHp=combatPanel(u).hp,previous=u.hp;
+      u.hp=Math.max(1,maxHp*kForm[1]);
+      if(u.hp>previous)record(b,'heal',u,{target:u.id,amount:u.hp-previous,hp:u.hp,name:'命运•此躯即神 · 生命回复'});
+      const remaining=activeCountdowns(b,u);
+      finalBlow(b,u,remaining);
+      endTransform(b,u);
+      record(b,'mechanic',u,{name:'命运•此躯即神 · 致命反击',remaining});
+      void from;void kind;
     },
     // 卡厄斯兰那免疫控制类负面状态。
     attacked(b,u,to){if(to===u&&kh(u))u.buffs=u.buffs.filter(e=>e.control!=='freeze');},
@@ -742,16 +806,46 @@ function phainonExtra(api){
   const counter=sk(1408,'140809'),nuke=sk(1408,'140811');
   function randomEnemy(b,u){const pool=enemies(b,u);return pool.length?pool[Math.floor(b.random()*pool.length)]:null;}
   function setRuin(b,u,n){resource(b,u,'毁伤',Math.max(0,n));}
+  // MAvatar_Phainon_00_Guard 的命中回溯（TAvatar_Phainon_00_HitBackCheck）：
+  // Skill21_Phase02 的 OnStart 依次执行 SetActionDelay(AllEnemy, 0) 与
+  // AddModifier(AllEnemy, M_Phainon_00_Skill21_Mark)，即把「施放时在场的全部敌人」记为待反击目标；
+  // Guard 的 OnListenBeforeSkillUse 在敌人行动前移除它自己的标记，随后 OnListenAfterAction /
+  // OnAfterBeingAttacked 执行 HitBackCheck：Retarget(AllEnemy, 带 M_Phainon_00_Skill21_Mark,
+  // MaxNumber 1) 失败（所有被标记的敌人都已行动完）且仍有存活敌人时，执行
+  // TurnInsertAbility(Avatar_Phainon_00_Skill21_Insert_Phase01)。这正是 4.6 文本的
+  // 「上述敌方目标行动完毕后，立即发动反击」，因此反击由最后一个被标记敌人的行动结束触发，
+  // 而不是等到下一个卡厄斯兰那额外回合。
+  function markSoulfireTargets(b,u){u.counterMarkIds=enemies(b,u).map(t=>t.id);}
+  function consumeSoulfireMark(b,u,actorId){
+    if(!Array.isArray(u.counterMarkIds))return false;
+    // 已阵亡 / 退场的被标记目标不再阻塞判定（AllEnemy 只统计存活敌人）。
+    u.counterMarkIds=u.counterMarkIds.filter(id=>{
+      const t=b.units.find(x=>x.id===id);return !!t&&t.active!==false&&t.hp>1e-8;
+    });
+    const at=u.counterMarkIds.indexOf(actorId);if(at>=0)u.counterMarkIds.splice(at,1);
+    return u.counterMarkIds.length===0;
+  }
   function resolveSoulfire(b,u,actor){
     const layers=u.resources['弑魂之炽']??0;if(!(layers>0))return;
     const scale=1+counter[4]*layers;
     for(const to of enemies(b,u))damageTo(b,u,to,{name:'灾厄•弑魂焚诏 · 反击',type:'BPSkill',element:'Physical',terms:atk(counter[0]*scale),toughness:30},1,'primary','direct');
     for(let i=0;i<counter[2];i++){const to=randomEnemy(b,u);if(to)damageTo(b,u,to,{name:'灾厄•弑魂焚诏 · 额外伤害',type:'BPSkill',element:'Physical',terms:atk(counter[3]*scale),toughness:0},1,'primary','direct');}
     u.buffs=u.buffs.filter(e=>e.tag!=='phainonSoulfire');resource(b,u,'弑魂之炽',0);
-    record(b,'mechanic',u,{name:'灾厄•弑魂焚诏 · 反击',trigger:actor.id,layers});
+    u.counterMarkIds=[];
+    record(b,'mechanic',u,{name:'灾厄•弑魂焚诏 · 反击',trigger:actor?.id??null,layers});
+  }
+  // 卡厄斯兰那在此形态下没有普通回合；受到行动提前/插入时按队伍策略选择强化普攻 / 强化战技。
+  function chooseKhaosKey(b,u){
+    const rotation=u.policy?.rotation;
+    let key=u.policy?.basicOnly?'basic':Array.isArray(rotation)&&rotation.length?rotation[u.turns%rotation.length]:(u.actions.skill&&b.sp>=(u.actions.skill.spCost??0)&&b.rules.shouldUseSkill(b,u)!==false?'skill':'basic');
+    if(!['basic','skill'].includes(key))key='basic';
+    return key;
   }
   return {
     before(b,u,actor,key,kind,a,selected){
+      // MAvatar_Phainon_00_Guard 的 OnListenBeforeSkillUse：敌方（TeamDark）开始行动时，
+      // 记下「本次行动尚未通过受击获得层数」。
+      if(actor?.side==='enemy')resource(b,u,'敌行动未叠层',1);
       if(actor!==u||kind==='copy')return;
       if(a?.name===ROSTER_DATA[1408].skills['140809'].name){
         // 灾厄•弑魂焚诏：获得等同于敌方全体数量的【毁伤】和 1 层【弑魂之炽】（E4 +1），
@@ -761,6 +855,7 @@ function phainonExtra(api){
         const layers=1+(rank(u,4)?rank(u,4,0):0);
         resource(b,u,'弑魂之炽',layers);
         buff(b,u,u,'弑魂之炽 · 减伤','dmgReduction',counter[1],null,{id:u.id+':soulfire',tag:'phainonSoulfire'});
+        markSoulfireTargets(b,u);
         for(const to of enemies(b,u))advance(b,to.id,1);
         record(b,'mechanic',u,{name:'灾厄•弑魂焚诏 · 等待敌方行动',targets:n,layers});
       }
@@ -773,8 +868,15 @@ function phainonExtra(api){
         for(let i=0;i<n;i++)for(let j=0;j<nuke[2];j++){const to=randomEnemy(b,u);if(to)damageTo(b,u,to,{name:'支柱•死星天裁',type:'BPSkill',element:'Physical',terms:atk(nuke[1]),toughness:10},1,'primary','direct');}
         if(n>=nuke[3]){const pool=enemies(b,u);const each=pool.length?nuke[0]/pool.length:0;
           for(const to of pool)damageTo(b,u,to,{name:'支柱•死星天裁 · 终结',type:'BPSkill',element:'Physical',terms:atk(each),toughness:60},1,'primary','direct');}
-        // E2：单次消耗 4 点及以上【毁伤】时获得 1 个额外回合。
-        if(rank(u,2)&&n>=rank(u,2,0))advance(b,u.id,1);
+        // E2：单次消耗 #1=4 点及以上【毁伤】时获得 1 个额外回合。
+        // 原始 Skill22_Phase02：ByRankActivated + ByCompareDynamicValue(_prev_energy) 通过后
+        // 直接 TurnInsertAction（插入一个可用回合），不是行动提前；因此这里向插入动作队列
+        // 追加一个真实的额外行动，而不是推进行动条。
+        if(rank(u,2)&&n>=rank(u,2,0)){
+          const extraKey=chooseKhaosKey(b,u);
+          b.queue.push({actor:u.id,key:extraKey,kind:'extra',targetId:selected?.[0]?.id});
+          record(b,'mechanic',u,{name:'天与地 · 额外回合',key:extraKey,ruin:n});
+        }
         // E6：攻击后对生命值最高的敌方目标额外造成本次总伤害 36% 的真实伤害。
         if(rank(u,6)){
           const total=b.log.slice(start).filter(e=>e.type==='damage'&&e.actor===u.id).reduce((s,e)=>s+e.damage,0);
@@ -786,22 +888,38 @@ function phainonExtra(api){
       void a;void selected;
     },
     after(b,u,actor,key,kind,a,selected,hitTargets){
-      // Guard 的数据库回调：友方施放战技后若未通过受击获得层数，再增加一层。
-      if(actor?.side==='ally'&&actor!==u&&a?.type==='BPSkill'&&(u.resources['弑魂之炽']??0)>0)
-        resource(b,u,'弑魂之炽',(u.resources['弑魂之炽']??0)+1);
+      // MAvatar_Phainon_00_Guard 的 OnListenAfterAction：敌方单位行动结束、且本回合内没有
+      // 因「受击」叠层（_haveNotGainCountFromEnemyAction >= 1）时增加 1 层【弑魂之炽】，
+      // 随后执行 TAvatar_Phainon_00_HitBackCheck。
+      if(actor?.side==='enemy'){
+        if((u.resources['弑魂之炽']??0)>0){
+          if((u.resources['敌行动未叠层']??0)>=1)resource(b,u,'弑魂之炽',(u.resources['弑魂之炽']??0)+1);
+          resource(b,u,'敌行动未叠层',0);
+        }
+        // 最后一个被标记的敌人行动完毕 → 立即插入反击（若仍有存活敌人且 Guard 仍在）。
+        if(consumeSoulfireMark(b,u,actor.id)&&(u.resources['弑魂之炽']??0)>0&&enemies(b,u).length)
+          resolveSoulfire(b,u,null);
+      }
       // 强化普攻 140808【创生•血棘渡亡】获得 2 点【毁伤】。
       if(actor===u&&a?.name===ROSTER_DATA[1408].skills['140808'].name&&kind!=='copy')resource(b,u,'毁伤',ruin(u)+sk(1408,'140808','6')[2]);
       // 卡厄斯兰那施放攻击后回复 20% 生命上限。
       if(actor===u&&hitTargets?.length&&kh(u))api.heal(b,u,u,combatPanel(u).hp*sk(1408,'140805')[6]);
       void key;void kind;void selected;void a;
     },
-    // Ability JSON 的 MAvatar_Phainon_00_Guard 使用 OnListenTurnBegin + TurnInsertAbility；
-    // 模拟器在该敌方回合开始处结算插入反击，再继续敌人的原行动。
-    turnStart(b,u,actor){if(actor?.side==='enemy')resolveSoulfire(b,u,actor);},
+    // 兜底路径：主触发点已改为「最后一个被标记敌人行动结束」（见 after 的 HitBackCheck）。
+    // 若被标记的敌人没有机会行动（被冻结 / 跳过），仍有层数时在下一个卡厄斯兰那倒计时
+    // 开始时按 MAvatar_Phainon_00_Guard 的 OnListenTurnBegin 结算一次，避免反击永久悬挂。
+    actionEventStart(b,u,e){
+      if(e.owner!==u.id)return;
+      resolveSoulfire(b,u,null);
+    },
     attacked(b,u,to,from){
-      // MAvatar_Phainon_00_Guard 的 OnAfterBeingAttacked 只计友方单位受击事件。
-      if(to?.side==='ally'&&from?.side==='enemy'&&(u.resources['弑魂之炽']??0)>0)
+      // MAvatar_Phainon_00_Guard 的 OnAfterBeingAttacked：Guard 的持有者（卡厄斯兰那本人）
+      // 被敌方攻击时 +1 层，并把「未叠层」标记清零。
+      if(to===u&&from?.side==='enemy'&&(u.resources['弑魂之炽']??0)>0){
         resource(b,u,'弑魂之炽',(u.resources['弑魂之炽']??0)+1);
+        resource(b,u,'敌行动未叠层',0);
+      }
     },
   };
 }
@@ -1012,6 +1130,9 @@ const factories={
     return {...a,before(b2,u,actor,key,kind,act,selected){a.before?.(b2,u,actor,key,kind,act,selected);b.before?.(b2,u,actor,key,kind,act,selected);},
       after(b2,u,actor,key,kind,act,selected,hitTargets){a.after?.(b2,u,actor,key,kind,act,selected,hitTargets);b.after?.(b2,u,actor,key,kind,act,selected,hitTargets);},
       turnStart(b2,u,actor){a.turnStart?.(b2,u,actor);b.turnStart?.(b2,u,actor);},
+      // 倒计时事件开始：先按 Guard 的 OnListenTurnBegin 结算反击（TurnInsertAbility），
+      // 再走倒计时自身的「最后一击 / 永续的燃烧刷新 / 强化行动」判定。
+      actionEventStart(b2,u,e){b.actionEventStart?.(b2,u,e);return a.actionEventStart?.(b2,u,e);},
       attacked(b2,u,to,from){a.attacked?.(b2,u,to,from);b.attacked?.(b2,u,to,from);}};},
   1509:gilgamesh,
 };

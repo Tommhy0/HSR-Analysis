@@ -103,10 +103,15 @@ function H(api){
     if(!to||!live(to)||!(n>0))return 0;
     const addBatch=(recipient,amount,source=u)=>{
       if(!(amount>0))return;
+      // 150304 天赋：真珠的【好活当赏】持有上限为 #3（4.6 = 50 点）；超出上限的部分不发放，
+      // 也不能写成会被后续到期事件重复转化的批次。
+      const cap=recipient.kit?.characterId===1503?(recipient.kit.params?.Talent?.[2]??Infinity):Infinity;
+      const current=punchOf(recipient),next=Math.min(cap,current+amount),granted=next-current;
+      if(!(granted>0))return;
       const seq=(recipient.resources['好活当赏批次序号']??0)+1;recipient.resources['好活当赏批次序号']=seq;
-      recipient.resources['好活当赏']=punchOf(recipient)+amount;
-      record(b,'resource',source,{target:recipient.id,name:'好活当赏',value:recipient.resources['好活当赏']});
-      buff(b,source,recipient,'好活当赏','marker',0,punchDurationFor(recipient,duration),{id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks:amount});
+      recipient.resources['好活当赏']=next;
+      record(b,'resource',source,{target:recipient.id,name:'好活当赏',value:next});
+      buff(b,source,recipient,'好活当赏','marker',0,punchDurationFor(recipient,duration),{id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks:granted});
     };
     // The source fires whenever a lower-index teammate gains Banger, not only after a natural Aha.
     const evanescia=b.units.find(t=>t.side===to.side&&t.kit?.characterId===1505&&live(t));
@@ -114,10 +119,14 @@ function H(api){
     const fromIndex=participantId(to),evanesciaIndex=participantId(evanescia);
     if(evanescia&&to!==evanescia&&point06>0&&Number.isFinite(fromIndex)&&Number.isFinite(evanesciaIndex)&&fromIndex<evanesciaIndex){
       const e2=evanescia.kit.eidolon>=2?(evanescia.kit.ranks?.[2]?.[1]??0):0;
-      const converted=Math.min(n,n*point06*(1+e2));
-      addBatch(to,n-converted);
+      // 先按接收者的持有上限（150304 #3）算出实际可发放量，再据此计算瞰众乐转化；
+      // 被上限拦下的请求不能凭空变成绯英的好活当赏。
+      const cap=to.kit?.characterId===1503?(to.kit.params?.Talent?.[2]??Infinity):Infinity;
+      const accepted=Math.min(n,Math.max(0,cap-punchOf(to)));
+      const converted=Math.min(accepted,accepted*point06*(1+e2));
+      addBatch(to,accepted-converted);
       addBatch(evanescia,converted,evanescia);
-      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:n,converted,participantId:fromIndex});
+      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:accepted,requested:n,converted,participantId:fromIndex});
       return punchOf(to);
     }
     addBatch(to,n);
@@ -149,7 +158,11 @@ function H(api){
   // 欢愉追加伤害使用共享 ElationDamage 公式。
   function hitElation(b,u,to,o){
     if(!to||!live(to))return;
-    damageTo(b,u,to,{name:o.name,type:'ElationDamage',punchlineSource:'certifiedBanger',punchlineFloor:o.punchlineFloor,element:o.element??u.element,terms:atk(o.mult),toughness:0},1,o.role??'primary','elation');
+    damageTo(b,u,to,{name:o.name,type:'ElationDamage',punchlineSource:'certifiedBanger',punchlineFloor:o.punchlineFloor,
+      ...(o.punchlineFrom?{punchlineFrom:o.punchlineFrom.id}:{}),
+      // 角色文案里的「本次造成的欢愉伤害固定计入 N 点好活当赏」不走持有量，直接覆盖计入值。
+      ...(o.punchlineOverride!=null?{punchlineOverride:o.punchlineOverride}:{}),
+      element:o.element??u.element,terms:atk(o.mult),toughness:0},1,o.role??'primary','elation');
   }
   const elationOf=u=>combatPanel(u).elation??0;
   function adjacentOf(b,u,to){
@@ -232,8 +245,10 @@ const actions={
       skill:skill(p,d,{target:'blast',terms:[...atk(p.BPSkill[1]),{...atk(p.BPSkill[2])[0],target:'adjacent'}],
         hitShares:[.2,.2,.2,.4],toughness:60,adjacentToughness:30}),
       // 150503：全体 #1=1.6，随后 #2=5 次随机单体 #3=1.2（行迹「瞰众乐」追加弹射）。
+      // 5 次随机单体段在 Avatar_Evanescia_00_Skill03_Phase02 里用 StanceValue 动态哈希 1659254037，
+      // 与主段 1182064154 分列 show_stance_list 的 [0]/[1]；150503.stance=[15,60,0] → 每段弹射削韧 15。
       ultimate:ultimate(p,d,{target:'all',terms:atk(p.Ultra[0]),toughness:60,hitShares:[1],
-        bounceCount:p.Ultra[1],bounceTerms:atk(p.Ultra[2]),bounceToughness:0}),
+        bounceCount:p.Ultra[1],bounceTerms:atk(p.Ultra[2]),bounceToughness:d.skills['150503'].stance?.[0]??0}),
       // 【狐狸老师】追加攻击：全体 #1=1.0 攻击力物理伤害（欢愉伤害在 after 里结算）。
       followup:talentAction(p,d,{target:'all',terms:atk(p.Talent[0]),toughness:30,energyGain:0,hitShares:[1]}),
       elation:elationAction(1505,d,{eidolon}),
@@ -271,6 +286,9 @@ const actions={
       // 151303：全体 #1=4.0，获得 #2=8 热意与 #3=6 笑点，自身速度 +#4 持续 #5 回合。
       ultimate:ultimate(p,d,{terms:atk(p.Ultra[0]),target:'all',toughness:60,hitShares:[1]}),
       elation:elationAction(1513,d,{eidolon}),
+      // 热意阈值触发的【举杯】是角色自身插入动作（InsertElationSkillSave），
+      // 不是全队阿哈额外回合；单独动作键便于固定计入 #5=20 笑点且不误用 All in。
+      elationHeat:elationAction(1513,d,{eidolon}),
     };
   },
 };
@@ -288,23 +306,32 @@ const factories={
       const {live,enemies,rank,trace,buff,resource,damageTo,record,sp}=api;
     const h=H(api);
     const d=ROSTER_DATA[1501];
+    // E2 的额外回合是 TurnInsertAction，没有动作类型限制；允许策略选择普攻/战技。
+    const extraTurnKey=u=>['basic','skill'].includes(u.policy?.extraTurnKey)?u.policy.extraTurnKey:'basic';
     const enhOf=u=>plist(d,150108,u.kit.skillLevels?.Normal)??plist(d,150108,6)??[1,.5];
     const trapOf=u=>plist(d,150109,u.kit.skillLevels?.BPSkill)??plist(d,150109,10)??[2,1,2,.2,.1];
     const connected=u=>(u.resources['直播连线']??0)>0;
     const traps=u=>u.resources['互动陷阱']??0;
     // 互动陷阱的随机礼物（150109 #1=2 战技点 + #3=2 笑点 / #2=1 笑点）。
     function gift(b,u,T){
-      if(b.random()<.5){h.gainLaughter(b,u,T[2],'互动陷阱 · 红红火火');sp(b,u,T[0],'互动陷阱 · 红红火火');}
-      else h.gainLaughter(b,u,T[1],'互动陷阱 · 恍恍惚惚');
-      record(b,'mechanic',u,{name:'互动陷阱 · 礼物'});
+      // 150109 礼包状态机：小奖后若大奖概率仍 >0，下一次强制大奖；
+      // 大奖/小奖各消耗一次对应概率，二者耗尽后重置。基础概率的原始动态哈希未解析，暂按 50/50。
+      const minor=u.resources['互动陷阱小奖数']??0,grandChance=u.resources['大奖概率']??1,smallChance=u.resources['小奖概率']??1;
+      const grand=minor>=1&&grandChance>0?true:b.random()<.5;
+      let nextGrand=grandChance,nextSmall=smallChance,nextMinor=minor;
+      if(grand){h.gainLaughter(b,u,T[2],'互动陷阱 · 红红火火');sp(b,u,T[0],'互动陷阱 · 红红火火');nextMinor=0;nextGrand=Math.max(0,grandChance-1);}
+      else{h.gainLaughter(b,u,T[1],'互动陷阱 · 恍恍惚惚');nextMinor=minor+1;nextSmall=Math.max(0,smallChance-1);}
+      if(nextGrand<=0&&nextSmall<=0){nextGrand=1;nextSmall=1;}
+      resource(b,u,'互动陷阱小奖数',nextMinor);resource(b,u,'大奖概率',nextGrand);resource(b,u,'小奖概率',nextSmall);
+      record(b,'mechanic',u,{name:'互动陷阱 · 礼物',grand,nextGrand,nextSmall,nextMinor});
     }
     return {
-      start(b,u){resource(b,u,'直播连线',0);resource(b,u,'互动陷阱',0);resource(b,u,'爆点',0);},
+      start(b,u){resource(b,u,'直播连线',0);resource(b,u,'互动陷阱',0);resource(b,u,'爆点',0);resource(b,u,'互动陷阱小奖数',0);resource(b,u,'大奖概率',1);resource(b,u,'小奖概率',1);},
       waveStart(b,u){
         const pending=u.resources['火花 E2待插入回合']??0;
         if(pending>0&&enemies(b,u).some(live)){
           resource(b,u,'火花 E2待插入回合',0);
-          b.queue.unshift(...Array.from({length:pending},()=>({actor:u.id,key:'basic',kind:'extra'})));
+          b.queue.unshift(...Array.from({length:pending},()=>({actor:u.id,key:extraTurnKey(u),kind:'extra'})));
           record(b,'mechanic',u,{name:'火花 E2 · 新波次恢复暂存额外回合',count:pending});
         }
       },
@@ -341,10 +368,9 @@ const factories={
       before(b,u,actor,key,kind,a,selected){
         void selected;
         if(actor!==u||kind==='copy'||kind==='technique')return;
-        const cost=a.spCost??0,cur=u.resources['爆点']??0;
-        if(!cost||!cur)return;
-        const n=Math.min(cost,cur);
-        resource(b,u,'爆点',cur-n);sp(b,u,n,'爆点抵扣战技点');
+        // 引擎已按「SP + 爆点」拆分并扣除了爆点；这里只结算 E2 的暴伤叠层。
+        const n=a.spSubstituteUsed??0;
+        if(!n)return;
         if(rank(u,2))for(let i=0;i<n;i++)
           api.stacks(b,u,u,'火花 E2 · 暴击伤害','critDmg',rank(u,2,1),rank(u,2,3),rank(u,2,2),{id:u.id+':e2-crit'});
       },
@@ -358,7 +384,7 @@ const factories={
             resource(b,u,'爆点',(u.resources['爆点']??0)+rank(u,2,0));
             const to=selected.find(live)??hitTargets.find(live)??enemies(b,u).find(live);
             if(enemies(b,u).some(live)){
-              b.queue.push({actor:u.id,key:'basic',kind:'extra',targetId:to?.id,persistWave:true});
+              b.queue.push({actor:u.id,key:extraTurnKey(u),kind:'extra',targetId:to?.id,persistWave:true});
               record(b,'mechanic',u,{name:'火花 E2 · 阿哈时刻结束获得额外回合'});
             }else{
               resource(b,u,'火花 E2待插入回合',(u.resources['火花 E2待插入回合']??0)+1);
@@ -367,6 +393,13 @@ const factories={
           }
         });
         if(actor!==u||kind==='technique')return;
+        if(key==='elation'){
+          // 150120 desc：欢愉技除了造成伤害，还使火花获得 #4 个【爆点】（可抵扣战技点消耗）。
+          const row=elationRow(d,150120,elationLevel(u.kit.eidolon??0));
+          const n=row?.[3]??0;
+          if(n>0)resource(b,u,'爆点',(u.resources['爆点']??0)+n);
+          return;
+        }
         if(key==='skill'){
           // 150102：开启直播连线，本次技能内发动 1 次互动陷阱（上限 #1=20），并拾取一次礼物。
           resource(b,u,'直播连线',1);
@@ -377,6 +410,8 @@ const factories={
         }
         if(key==='basic'){
           if(!connected(u))return;
+          // 强化普攻（Skill11_Phase02）重置礼包的两项概率。
+          resource(b,u,'大奖概率',1);resource(b,u,'小奖概率',1);
           // 「结算直播连线结果」：连线关闭，按已累计的互动陷阱结算天赋欢愉伤害。
           const n=traps(u);
           resource(b,u,'直播连线',0);resource(b,u,'互动陷阱',0);
@@ -446,7 +481,9 @@ const factories={
     function grigri(b,u,actor,to,a,times){
       const P=u.kit.params;
       const source=(combatPanel(actor).elation??0)>=(combatPanel(u).elation??0)?actor:u;
-      for(let i=0;i<times&&live(to);i++)h.hitElation(b,source,to,{name:'大吉大利',element:a?.element??actor.element??u.element,mult:P.Talent[0]});
+      // Passive_ToMember 的 OnListenBeforeHitAll：DamageTag_HongBao 的笑点基数
+      // 固定读取 Caster（爻光）的 ElationEchoPoint，与攻击者是谁无关；欢愉度则取两者较高值。
+      for(let i=0;i<times&&live(to);i++)h.hitElation(b,source,to,{name:'大吉大利',element:a?.element??actor.element??u.element,mult:P.Talent[0],punchlineFrom:u});
       record(b,'mechanic',u,{name:'大吉大利',target:to.id,times});
     }
     return {
@@ -498,7 +535,9 @@ const factories={
         void selected;
         h.onAhaEnd(b,u);
         // 在完整动作后从实际命中目标中随机选取，避免多段攻击固定触发首段目标。
-        if(h.hasPunch(u)&&actor.side===u.side&&!['dot','elation'].includes(kind)&&hitTargets?.length&&!fired(b,u)){
+        // Passive_ToMember 的 OnAfterAttack 只要求爻光持有 ElationEchoPoint，未排除欢愉伤害；
+        // DoT / 间接附加伤害不是一次攻击，仍排除。
+        if(h.hasPunch(u)&&actor.side===u.side&&!['dot','additional'].includes(kind)&&hitTargets?.length&&!fired(b,u)){
           u.resources['大吉大利动作']=b.activeAction?.sequence??-1;
           const pool=[...new Set(hitTargets)].filter(live);
           if(pool.length){const to=pool[Math.floor(b.random()*pool.length)];
@@ -613,9 +652,18 @@ const factories={
       start(b,u){
         resource(b,u,'深度学习充能',0);
         // 秘技 150307：战斗开始时获得 #2=20 点好活当赏，并以 #1=2 点充能进入【深度学习】。
+        // desc 同时规定「获得【美学底本】……深度学习持有【美学底本】的角色，真珠只能深度学习
+        // 除自身以外的角色」。秘技在战斗外使用，持有者是玩家当时操作的角色；模拟器无权读取
+        // 战斗外状态，因此按与终结技默认选靶一致的口径取第一名除真珠外的我方角色作为持有者。
+        // 具体持有者选择属于战斗外操作，若与录像不符需由配置显式指定（source-blocked 的交界）。
         if(u.kit.technique){
           const P=u.kit.params;
           h.grantPunch(b,u,u,P.Maze[1],null);
+          const holder=allies(b,u).find(to=>to!==u);
+          if(holder){
+            resource(b,holder,'美学底本',1);
+            record(b,'mechanic',u,{name:'秘技 · 美学底本',target:holder.id});
+          }
           resource(b,u,'深度学习充能',P.Maze[0]);
           record(b,'mechanic',u,{name:'秘技 · 深度学习'});
         }
@@ -642,7 +690,10 @@ const factories={
       panel(b,u,to,out){
         const T=trace(u,1);
         if(to===u&&T){
-          const e=T[1]+Math.min(T[4]-T[0],Math.max(0,(out.def??0)-T[0]))/T[2]*T[3];
+          // 1503101 desc：「之后每超过 #3=100 点防御力使自身欢愉度提高 #4=3%，最多计入 #5=3600 点**超出的**防御力」。
+          // #5 是超出部分的上限（与 1506101 / 1513101 的「最多计入 #5 点超出的速度」同构），
+          // 不是「防御力总量上限」；写成 T[4]-T[0] 会把上限误砍到 1200 点超出。
+          const e=T[1]+Math.min(T[4],Math.max(0,(out.def??0)-T[0]))/T[2]*T[3];
           out.elation=(out.elation??0)+e;
           out.healingBoost=(out.healingBoost??0)+e*T[5];
         }
@@ -655,11 +706,13 @@ const factories={
           else if(n===3)out.elation=(out.elation??0)+rank(u,1,1);
           else if(n===2)out.elation=(out.elation??0)+rank(u,1,0);
         }
-        if(rank(u,6)&&studying(u))out.resPen=(out.resPen??0)+rank(u,6,0);
       },
       modifiers(b,u,actor,to,a,kind){
         void to;void a;
         const out={};
+        // E6：深度学习期间我方全体全属性抗性穿透 +20%。必须写在 modifiers（damageTo 读取 mod.resPen），
+        // 不能写进 panel.out.resPen —— 伤害路径从不读取该字段。
+        if(rank(u,6)&&studying(u)&&actor.side===u.side)out.resPen=(out.resPen??0)+rank(u,6,0);
         // E2：我方全体欢愉伤害「增笑」15%。
         if(kind==='elation'&&rank(u,2)&&actor.side===u.side)out.elationBoost=(out.elationBoost??0)+rank(u,2,0);
         return out;
@@ -698,7 +751,9 @@ const factories={
         // 真珠欢愉技：每名我方角色的下一次实际攻击后，对其命中的每个敌人追加一次对应属性的欢愉伤害。
         // Gachabase 4.6 的 150320 参数为 1/2/3/4+ 名欢愉角色各 10/15/20/40%；E4 把原倍率提高 100%。
         // 欢愉技动作本身是辅助动作，不能消费上一轮留下的攻击票；空目标/未命中的动作也不能消费。
-        if(actor?.side===u.side&&key==='elation'&&kind==='aha'&&actor===u){
+        // 欢愉技可能来自自然阿哈（kind='aha'）或 8009/8010 终结技的插入施放（kind='extra'）；
+        // 两者都是真珠实际施放欢愉技，都应发放下一次攻击票。
+        if(actor?.side===u.side&&key==='elation'&&actor===u){
           const n=h.elationCount(b,u),level=Math.min(15,10+((u.kit.eidolon??0)>=3?1:0)+((u.kit.eidolon??0)>=5?1:0));
           const P=plist(d,150320,level)??plist(d,150320,10)??[.1,.15,.2,.4];
           const ratio=n>=4?P[3]:n===3?P[2]:n===2?P[1]:P[0];
@@ -765,9 +820,17 @@ const factories={
         const T2=trace(u,2);
         if(actor===u)resource(b,u,'本回合已获好活当赏',0);
         else if(T2){
-          const got=u.resources['本回合已获好活当赏']??0,cap=T2[1]-T2[0];
+          // 1503102 desc：「我方目标回合开始时，真珠获得 #1=5 点好活当赏，最多获得 #2=50 点」。
+          // 上限按本轮累计发放量计算（真珠自己的回合开始只重置计数，不占额度）。
+          const got=u.resources['本回合已获好活当赏']??0,cap=T2[1];
           const add=Math.min(T2[0],Math.max(0,cap-got));
-          if(add>0){h.grantPunch(b,u,u,add,null);resource(b,u,'本回合已获好活当赏',got+add);}
+          if(add>0){
+            // 「最多获得」按实际到账量累计：被 150304 #3=50 持有上限拦下的份额不消耗本轮额度。
+            const before=h.punchOf(u);
+            h.grantPunch(b,u,u,add,null);
+            const gained=h.punchOf(u)-before;
+            if(gained>0)resource(b,u,'本回合已获好活当赏',got+gained);
+          }
         }
         resource(b,u,'抵御值',Math.min(u.kit.params.Talent[2],h.punchOf(u))*u.kit.params.Talent[4]);
         refreshGuard(b,u);
@@ -819,6 +882,7 @@ const factories={
   1505:function(api){
     const {live,allies,enemies,rank,trace,buff,resource,energy,damageTo,record}=api;
     const h=H(api);
+    const d=ROSTER_DATA[1505];
     // 天赋：获得能量 ⇄ 获得等值好活当赏（单次不超过 100）；累计获得 #3=240 点能量后消耗该累计值，
     // 由【狐狸老师】发动追加攻击并恢复 #4=10 点能量（单次获得能量最多计入 #3 点）。
     function syncEP(b,u){
@@ -831,15 +895,22 @@ const factories={
           h.grantPunch(b,u,u,Math.min(100,dE),2);
           const threshold=P.Talent[2];
           let acc=(u.resources['狐狸累计']??0)+Math.min(threshold,dE);
-          let triggers=0;
-          while(acc>=threshold){acc-=threshold;triggers++;}
-          resource(b,u,'狐狸累计',acc);
-          for(let i=0;i<triggers;i++){
+          // 150504 desc：狐狸老师为绯英恢复 #4=10 点能量也是「获得能量」，应计入下一次 #3=240 累计。
+          // 旧实现把回能并进能量快照，导致这 10 点永远不参与累计；回能同样应触发等值好活当赏。
+          let refunded=0;
+          for(let guard=0;guard<20&&acc>=threshold;guard++){
+            acc-=threshold;
             const to=b.units.find(t=>t.side!==u.side&&live(t));
             b.queue.push({actor:u.id,key:'followup',kind:'followup',targetId:to?.id,persistWave:true});
-            energy(b,u,P.Talent[3]);
-            record(b,'mechanic',u,{name:'狐狸老师 · 累计能量触发'});
+            const refund=Math.min(threshold,P.Talent[3]);
+            energy(b,u,refund);
+            refunded+=refund;
+            acc+=refund;
+            record(b,'mechanic',u,{name:'狐狸老师 · 累计能量触发',refund,carry:acc});
           }
+          // 回能也是「获得能量」：按天赋等值转好活当赏（单次上限 100）。
+          if(refunded>0)h.grantPunch(b,u,u,Math.min(100,refunded),2);
+          resource(b,u,'狐狸累计',acc);
         }
         if(dP>1e-9)energy(b,u,Math.min(100,dP));
         u.resources['能量快照']=u.energy;u.resources['好活当赏快照']=h.punchOf(u);
@@ -917,9 +988,11 @@ const factories={
         }
         if(key==='followup'){
           // 【狐狸老师】追加攻击：全体 #1 攻击力物理伤害（动作表）+ #2=25% 欢愉伤害；行迹 2=point07 施加易伤。
-          const T=trace(u,2);
+          // 150504 desc / Avatar_EvanesciaCombat_00_Insert_Phase02：欢愉伤害只在绯英持有【好活当赏】时结算
+          //（`ByContainBehaviorFlag Caster ElationEchoPoint`）；易伤属于行迹 2，不受该条件限制。
+          const T=trace(u,2),elation=h.hasPunch(u);
           for(const to of hitTargets.filter(live)){
-            h.hitElation(b,u,to,{name:'狐狸老师 · 欢愉伤害',mult:P.Talent[1]});
+            if(elation)h.hitElation(b,u,to,{name:'狐狸老师 · 欢愉伤害',mult:P.Talent[1]});
             if(T)buff(b,u,to,'狐狸老师 · 易伤','vuln',T[0],T[1],{id:u.id+':fox-vuln',debuff:true});
           }
           // E1：行迹 1505101「【狐狸老师】施放攻击后会额外触发一次欢愉技」→ 排队 1 次欢愉技（去重）。
@@ -928,6 +1001,9 @@ const factories={
           return;
         }
         if(key==='elation'){
+          // 150520 desc：#1=5 点【好活当赏】（欢愉技基础获取）。
+          const row=plist(d,150520,elationLevel(u.kit.eidolon??0));
+          if(row?.[0]>0)h.grantPunch(b,u,u,row[0],2);
           // E1 #2=10：欢愉技使绯英额外获得 10 点【好活当赏】
           //（E2 的 50%/100% 只加在行迹【瞰众乐】/【开不败】的获取上，不适用于本次）。
           if(rank(u,1))h.grantPunch(b,u,u,rank(u,1,1),2);
@@ -1012,22 +1088,35 @@ const factories={
       const seen=u.resources['笑点快照']??0,cur=h.laughterOf(b,u);
       if(cur!==seen){u.resources['笑点快照']=cur;if(cur>seen)setHidden(b,u,hidden(u)+(cur-seen));}
     }
-    // 【头号补给盲盒】：固定概率初始 100%，成功后下一次降为当前 ×#4=20%。结界内每消耗 1 点战技点判定 1 次。
+    // 【头号补给盲盒】本体：150621 / 强化普攻的固定触发也复用这一份结算。
+    // opts.punchline：文案里的「本次造成的欢愉伤害固定计入 N 点好活当赏」（秘技 150607 #1=99）。
+    function supplyBox(b,u,ramp=1,opts={}){
+      const P=u.kit.params;
+      const hit={name:'头号补给盲盒',element:'Imaginary',mult:P.Ultra[2]/Math.max(1,enemies(b,u).length)*ramp,
+        ...(opts.punchline!=null?{punchlineOverride:opts.punchline}:{})};
+      const pool=enemies(b,u),mark=b.log.length;
+      if(pool.length)for(const to of pool)h.hitElation(b,u,to,hit);
+      const r=b.random();
+      if(r<1/3){
+        const top=enemies(b,u).slice().sort((x,c)=>c.hp-x.hp)[0];
+        // 150603 desc：【超超超大剑】「对生命值最高的敌方目标额外造成等同于本次总伤害值 #5% 的真实伤害」。
+        // 必须以本盲盒实际造成的欢愉伤害为基数（欢愉伤害不吃攻击力，不能用 atk 近似）。
+        const total=b.log.slice(mark).filter(e=>e.type==='damage'&&e.actor===u.id).reduce((n,e)=>n+(e.damage??0),0);
+        if(top&&total>0)trueDamage(b,u,top,total*P.Ultra[4],'超超超大剑');
+      }else if(r<2/3)sp(b,u,P.Ultra[6],'爆爆爆炸蛋');
+      else h.gainLaughter(b,u,P.Ultra[5],'怪怪怪味豆');
+      record(b,'mechanic',u,{name:'头号补给盲盒'});
+    }
+    // 150603 desc：初始固定概率 100%，**成功触发后**下一次降低至当前概率的 #4=20%；
+    // 判定失败不改变固定概率。150621 会把概率重置为初始值。
     function mysteryBox(b,u,spent){
       const P=u.kit.params;
       if(!h.hasPunch(u)||!spent)return;
       for(let i=0;i<spent;i++){
         const p=u.resources['盲盒概率']??1;
-        if(b.random()>=p){resource(b,u,'盲盒概率',p*(1-P.Ultra[3]));continue;}
-        resource(b,u,'盲盒概率',1);
-        const pool=enemies(b,u);
-        if(pool.length)for(const to of pool)h.hitElation(b,u,to,{name:'头号补给盲盒',element:'Imaginary',mult:P.Ultra[2]/pool.length});
-        const r=b.random();
-        if(r<1/3){
-          const top=enemies(b,u).slice().sort((x,c)=>c.hp-x.hp)[0];
-          if(top)trueDamage(b,u,top,combatPanel(u).atk*P.Ultra[2]*P.Ultra[4],'超超超大剑');
-        }else if(r<2/3)sp(b,u,P.Ultra[6],'爆爆爆炸蛋');
-        else h.gainLaughter(b,u,P.Ultra[5],'怪怪怪味豆');
+        if(b.random()>=p)continue;
+        resource(b,u,'盲盒概率',p*P.Ultra[3]);
+        supplyBox(b,u);
       }
     }
     return {
@@ -1042,6 +1131,8 @@ const factories={
       // 行迹 1=point06：速度达标 → 欢愉度（超出部分最多计入 #5）。
       panel(b,u,to,out){
         if(to!==u)return;
+        // 150604 desc：【无敌玩家】状态下免疫控制类负面状态。
+        if(inUlt(u))out.controlRes=1;
         const P=u.kit.params,T=trace(u,1);
         const hs=hidden(u),base=out.critRate??0,need=Math.max(0,1-base),pts=need/P.Talent[3];
         if(hs<=pts)out.critRate=base+hs*P.Talent[3];
@@ -1051,11 +1142,32 @@ const factories={
       // 【无敌玩家】期间普攻替换为 150608（#1=2.4 总倍率均分为 #3=100 段弹射，收尾在 after 结算）。
       prepare(b,u,key,kind,a){
         if(kind==='technique'||kind==='copy')return a;
+        // 150620「殿堂级操作回放」是常态欢愉技（Enhance，只获得 #1=15 隐藏分，不造成伤害）；
+        // 150621「崩坏级伤害演示」是【无敌玩家】状态下的强化欢愉技（原始脚本 Skill04 / Skill41）。
+        if(key==='elation'){
+          if(inUlt(u))return a;
+          return {...a,name:sname(d,150620),terms:[],bounceCount:0,bounceTerms:[],bounceToughness:0,
+            punchlineMultiplier:1,baseElation:true};
+        }
         if(key==='basic'&&inUlt(u)){
           const e=plist(d,150608,u.kit.skillLevels?.Normal)??plist(d,150608,6)??[2.4,0,100,1,3,60,2,.15];
           const seg=e[0]/Math.max(1,e[2]);
+          // 150608 desc：每拥有 #6=60 点隐藏分，强化普攻期间伤害提高 #8=15%，最多 #7=2 层。
+          const stacks=Math.min(Math.max(0,e[6]??0),Math.floor(hidden(u)/Math.max(1,e[5]??1)));
+          const ramp=1+stacks*(e[7]??0);
+          // 150604 desc：持有【好活当赏】时，强化普攻的技能伤害改为相同倍率的欢愉伤害。
+          const elation=h.hasPunch(u);
+          // 150608 desc：「若对场上所有敌方造成了致命伤害则结束本次技能，当存在可攻击的敌方
+          // 目标后获得1个额外回合并基于剩余弹射段数和【头号补给盲盒】次数再次施放。」
+          // 续放由 waveStart 以 kind='extra' 入队；只有该动作消费挂起的剩余段数/盲盒次数，
+          // 普通回合的强化普攻仍从完整的 #3=100 段开始。
+          const pending=kind==='extra'?u.resources['强化普攻续放']:null;
+          const segments=pending?.segments??e[2];
+          const boxes=pending?.boxes??(e[4]??0);
           return {...a,name:sname(d,150608),target:'single',hitShares:[1],toughness:30/e[2],
-            energyGain:0,spGain:0,terms:atk(seg),bounceCount:Math.max(0,e[2]-1),bounceTerms:atk(seg),bounceToughness:30/e[2]};
+            ...(elation?{type:'ElationDamage',punchlineSource:'certifiedBanger'}:{}),
+            continuation:!!pending,continuationSegments:segments,continuationBoxes:boxes,
+            energyGain:0,spGain:0,terms:atk(seg*ramp),bounceCount:Math.max(0,segments-1),bounceTerms:atk(seg*ramp),bounceToughness:30/e[2]};
         }
         return a;
       },
@@ -1064,26 +1176,57 @@ const factories={
       waveStart(b,u){
         // 自然阿哈在角色模块 start 后才加入首个笑点；开局立即同步，避免首帧隐藏分/面板落后一整次行动。
         syncHidden(b,u);
-        if(u.resources['怪怪怪味豆'])h.grantPunch(b,u,u,u.kit.params.Maze[0],2);
+        // 150608 desc：全灭中断后，「当存在可攻击的敌方目标后获得1个额外回合并基于
+        // 剩余弹射段数和【头号补给盲盒】次数再次施放」。新波次入场时把续放动作排到队首。
+        const pending=u.resources['强化普攻续放'];
+        if(pending&&inUlt(u)){
+          // 原始脚本从可攻击敌人中随机重选目标（不是固定第一个）。
+          const pool=enemies(b,u).filter(live);
+          const target=pool.length?pool[Math.floor(b.random()*pool.length)]:null;
+          if(target){
+            b.queue.unshift({actor:u.id,key:'basic',kind:'extra',targetId:target.id,persistWave:true});
+            record(b,'mechanic',u,{name:'狼尊时刻 · 全灭后续放',segments:pending.segments,boxes:pending.boxes});
+          }
+        }
         // E6：敌方目标进入战斗时植入【禁限弱点】（全属性弱点；基础抗性 0 则改为对应属性抗性降低 20%）。
+        // 必须先于本波次的【头号补给盲盒】结算，否则波次盲盒的欢愉伤害吃不到抗性降低。
         for(const to of enemies(b,u))applyE6Weakness(b,u,to);
+        // 150607 desc：【怪怪怪味豆】在场时，每个波次开始时触发 1 次【头号补给盲盒】，
+        // 本次造成的欢愉伤害**固定计入** #1=99 点好活当赏（不是直接获得 99 点好活当赏）。
+        if(u.resources['怪怪怪味豆']&&enemies(b,u).some(live)){
+          supplyBox(b,u,1,{punchline:u.kit.params.Maze[0]});
+          record(b,'mechanic',u,{name:'怪怪怪味豆 · 波次头号补给盲盒',fixedPunchline:u.kit.params.Maze[0]});
+        }
       },
-      unitCreated(b,u,to){applyE6Weakness(b,u,to);},
+      unitCreated(b,u,to){
+        applyE6Weakness(b,u,to);
+        // 全灭中断后新敌人在同一波次入场：同样恢复续放动作。
+        const pending=u.resources['强化普攻续放'];
+        if(pending&&inUlt(u)&&to.side!==u.side&&live(to)&&!b.queue.some(q=>q.actor===u.id&&q.key==='basic')){
+          b.queue.unshift({actor:u.id,key:'basic',kind:'extra',targetId:to.id,persistWave:true});
+          record(b,'mechanic',u,{name:'狼尊时刻 · 新敌人入场续放',segments:pending.segments,boxes:pending.boxes});
+        }
+      },
       before(b,u,actor,key,kind,a,selected){
-        void a;void selected;
-        if(actor!==u||kind==='copy'||key!=='ultimate')return;
+        void selected;
+        if(actor!==u||kind==='copy')return;
+        // 续放动作真正执行时才消费挂起的剩余段数；prepare 的普通回合预览不得清掉它。
+        if(a?.continuation)delete u.resources['强化普攻续放'];
+        if(key!=='ultimate')return;
         const P=u.kit.params;
         // 终结技消耗 #1=60 点隐藏分（引擎已扣能量），并重置盲盒概率。
         resource(b,u,'隐藏分',Math.max(0,hidden(u)-P.Talent[0]));
         resource(b,u,'盲盒概率',1);
         resource(b,u,'强化普攻剩余',P.Talent[4]);
         advance(b,u.id,1);                                   // 行动提前 100%
-        buff(b,u,u,'无敌玩家','marker',0,P.Talent[4],{id:u.id+':sw999-ult',tag:'sw999Ult'});
+        buff(b,u,u,'无敌玩家','marker',0,P.Talent[4],{id:u.id+':sw999-ult',tag:'sw999Ult',noUltimate:true});
         if(rank(u,2))resource(b,u,'E2 累计',hidden(u));       // Rank02 SumScore starts from current EP when Ultra aura is created.
         const T=trace(u,3);
         if(T)setHidden(b,u,hidden(u)+T[0]);                  // 行迹 3=point08：进入状态 +20 隐藏分
         triggerE2(b,u);                                       // 初始隐藏分（含入口后点数）也参与阈值检查。
-        if(rank(u,2))for(const to of allies(b,u))for(const e of to.buffs)if(e.remaining!=null)e.remaining+=1;  // E2：增益延长 1 回合
+        // Rank02 desc：「进入【无敌玩家】状态后，使**自身**所有增益效果延长 1 回合」——只延长银狼自己的
+        // 增益，不能把队友的增益一起延长。
+        if(rank(u,2))for(const e of u.buffs)if(e.remaining!=null&&!e.debuff)e.remaining+=1;
         record(b,'mechanic',u,{name:'进入无敌玩家'});
       },
       // 150603 desc：结界内**我方目标**每消耗 1 个战技点，有概率触发 1 次【头号补给盲盒】。
@@ -1093,12 +1236,23 @@ const factories={
         if(!inUlt(u)||!spender||spender.side!==u.side)return;
         mysteryBox(b,u,amount);
       },
-      after(b,u,actor,key,kind,a,selected,hitTargets){
-        void a;void selected;
+      after(b,u,actor,key,kind,a,selected,hitTargets,bounceTargets=[]){
+        void selected;
         syncHidden(b,u);
         if(actor!==u||kind==='technique')return;
         const P=u.kit.params;
         if(key==='elation'){
+          if(a.baseElation){
+            // 150620 #1=15：常态欢愉技只获得隐藏分，不产生伤害事件。
+            // Skill04_Phase02 的 PointB2 档位同样生效：计入笑点 ≥20/≥40 各再 +20 隐藏分。
+            const row=plist(d,150620,elationLevel(u.kit.eidolon??0))??[15];
+            const T=trace(u,2),counted=h.countedAhaLaughter(b,u,kind);
+            const bonus=T?(counted>=T[0]?T[2]:0)+(counted>=T[1]?T[3]:0):0;
+            setHidden(b,u,hidden(u)+(row[0]??15)+bonus);
+            return;
+          }
+          // 150621 desc：施放后把【头号补给盲盒】固定概率重置为初始值。
+          resource(b,u,'盲盒概率',1);
           // 行迹 point07：按本次欢愉技实际计入的笑点，达到20/40分别增加20隐藏分。
           // 固定阿哈回合必须读 instant 的固定笑点，自然阿哈则读当前共享笑点。
           const T=trace(u,2),counted=h.countedAhaLaughter(b,u,kind);
@@ -1108,7 +1262,13 @@ const factories={
           }
           return;
         }
-        if(key==='skill'){h.gainLaughter(b,u,P.BPSkill[1],'战技');return;}
+        if(key==='skill'){
+          // 150604 desc：持有【好活当赏】时，施放普攻**或战技**都要对受到攻击的敌方目标造成 #3 虚数欢愉伤害。
+          // Avatar_SilverWolf999_00_Skill02_Phase02 与 Skill01_Phase02 同构，都带
+          // ByContainBehaviorFlag Caster ElationEchoPoint → FormulaType=ByElationDamage 的附加段。
+          if(h.hasPunch(u))for(const to of hitTargets.filter(live))h.hitElation(b,u,to,{name:'顺风局 · 欢愉伤害',element:'Imaginary',mult:P.Talent[2]});
+          h.gainLaughter(b,u,P.BPSkill[1],'战技');return;
+        }
         if(key==='basic'){
           // 天赋 #3=40%：持有好活当赏时，普攻 / 战技对受到攻击的目标造成 40% 虚数欢愉伤害。
           if(h.hasPunch(u))for(const to of hitTargets.filter(live))h.hitElation(b,u,to,{name:'顺风局 · 欢愉伤害',element:'Imaginary',mult:P.Talent[2]});
@@ -1122,9 +1282,42 @@ const factories={
           // 故收尾对每个目标削韧 stance[1]=30，而不是 0，也不是把 30 均分给全体。
           const e=plist(d,150608,u.kit.skillLevels?.Normal)??[2.4,0,100,1,3,60,2,.15];
           const st=d.skills['150608'].stance?.[1]??0;
+          const stacks=Math.min(Math.max(0,e[6]??0),Math.floor(hidden(u)/Math.max(1,e[5]??1)));
+          const ramp=1+stacks*(e[7]??0);
+          // 150608 desc：「若对场上所有敌方造成了致命伤害则结束本次技能……基于剩余弹射段数和
+          // 【头号补给盲盒】次数再次施放。」已结算段数 = 主段 1 + 实际弹射段数（全灭时引擎提前 break）。
+          const totalSegments=a.continuation?a.continuationSegments:(e[2]??0);
+          const totalBoxes=a.continuation?a.continuationBoxes:(e[4]??0);
+          const delivered=1+(bounceTargets?.length??0);
+          const remainingSegments=Math.max(0,totalSegments-delivered);
+          const cleared=!enemies(b,u).some(live);
+          // 150608 desc：弹射途中暂停并触发【头号补给盲盒】，总计 #5=3 次。动态段位哈希尚未映射，
+          // 因此按技能描述的三次触发在动作内连续结算，不臆造具体段号。全灭后不再空放盲盒。
+          let boxesTriggered=0;
+          if(!cleared&&h.hasPunch(u))for(let i=0;i<Math.max(0,totalBoxes);i++){
+            // 每结算一个盲盒都可能击杀最后一个敌人；剩余次数必须留到续放，不能空放后丢失。
+            if(!enemies(b,u).some(live))break;
+            supplyBox(b,u,ramp);boxesTriggered++;
+          }
+          // 即使致命一击发生在最后一段（remainingSegments=0），也要进入续放/增益延长流程。
+          if(!enemies(b,u).some(live)){
+            // 150608 desc：「每回合首次触发该效果时，使自身所有增益效果延长1回合。」
+            if((u.resources['续放增益延长回合']??-1)!==u.turns){
+              u.resources['续放增益延长回合']=u.turns;
+              for(const e2 of u.buffs)if(e2.remaining!=null&&!e2.debuff)e2.remaining+=1;
+              record(b,'mechanic',u,{name:'狼尊时刻 · 首次全灭续放增益延长'});
+            }
+            // 本次施放没有完成的剩余段数与尚未结算的盲盒次数挂起，等新波次入场后续放。
+            const remainingBoxes=Math.max(0,totalBoxes-boxesTriggered);
+            u.resources['强化普攻续放']={segments:remainingSegments,boxes:remainingBoxes};
+            record(b,'mechanic',u,{name:'狼尊时刻 · 全灭中断',remainingSegments,remainingBoxes});
+            return;              // 中断不算完整施放：不扣强化普攻次数、不退出无敌玩家
+          }
           const pool=enemies(b,u);
-          if(pool.length){const m=e[3]/pool.length;
-            for(const to of pool)damageTo(b,u,to,{name:'狼尊时刻 · 收尾',type:'Normal',element:'Imaginary',terms:atk(m),toughness:st},1,'primary','direct');}
+          if(pool.length){const m=e[3]/pool.length*ramp;
+            // 持有好活当赏时，强化普攻的技能伤害改为欢愉伤害（150604 desc）。
+            const finalType=h.hasPunch(u)?'ElationDamage':'Normal';
+            for(const to of pool)damageTo(b,u,to,{name:'狼尊时刻 · 收尾',type:finalType,punchlineSource:'certifiedBanger',element:'Imaginary',terms:atk(m),toughness:st},1,'primary','direct');}
           const left=(u.resources['强化普攻剩余']??P.Talent[4])-1;
           resource(b,u,'强化普攻剩余',left);
           if(left<=0){
@@ -1148,11 +1341,12 @@ const factories={
       modifiers(b,u,actor,to,a,kind){
         void a;
         const out={};
-        if(actor!==u||to.side===u.side)return out;
-        // E1：结界中的敌方目标受到的伤害提高 20%。
+        if(to.side===u.side)return out;
+        // E1：「结界中的敌方目标受到的伤害提高 20%」是全队易伤，不限于银狼本人出手。
         if(rank(u,1)&&inUlt(u))out.vuln=(out.vuln??0)+rank(u,1,1);
-        // E6：强化普攻期间造成的欢愉伤害「增笑」50%。
-        if(kind==='elation'&&rank(u,6)&&inUlt(u))out.elationBoost=(out.elationBoost??0)+rank(u,6,1);
+        if(actor!==u)return out;
+        // E6：仅强化普攻期间造成的欢愉伤害「增笑」50%（不含强化欢愉技本身）。
+        if(kind==='elation'&&rank(u,6)&&inUlt(u)&&b.activeAction?.key==='basic')out.elationBoost=(out.elationBoost??0)+rank(u,6,1);
         return out;
       },
     };
@@ -1184,11 +1378,37 @@ const factories={
       const before=heat(u);
       resource(b,u,'热意',Math.min(cap(u),before+n));
       for(const t of thresholds(u))if(before<t&&heat(u)>=t){
-        h.ahaMoment(b,u,u.kit.params.Talent[4],'举杯！敬炽烈一夏');
-        resource(b,u,'AllIn',1);
+        // 151304 desc / InsertElationSkillSave：达到阈值时砂金**自身**插入施放 1 次
+        // 固定计入 #5=20 笑点的【举杯】，不是全队阿哈额外回合。
+        b.queue.push({actor:u.id,key:'elationHeat',kind:'extra',persistWave:true});
+        // AllIn 标记在插入动作真正结算后由 after 添加（UpGradeElationSkill_OnceMark 在 OnInsertActionFinish 生效）。
         resource(b,u,'欢愉技次数',(u.resources['欢愉技次数']??0)+1);
-        record(b,'mechanic',u,{name:'举杯！敬炽烈一夏',threshold:t});
-        // 固定计入笑点的 Aha Instant 已在 ahaMoment 中把全体欢愉角色排入同一额外回合。
+        record(b,'mechanic',u,{name:'举杯！敬炽烈一夏',threshold:t,fixedPunchline:u.kit.params.Talent[4]});
+      }
+    }
+    // 队友行动后的天赋/行迹结算：同一动作只结算一次；PointB2 只在单欢愉队伍生效。
+    function teammateAction(b,u,actor,key,kind){
+      if(!actor||actor.side!==u.side||actor===u)return;
+      if(kind==='dot')return;
+      if((b.activeAction?.sequence??-1)===u.resources['热意触发动作'])return;
+      u.resources['热意触发动作']=b.activeAction?.sequence??-1;
+      const P=u.kit.params,T=trace(u,2),T8=trace(u,3);
+      h.gainLaughter(b,u,P.Talent[5],'队友行动');
+      addHeat(b,u,P.Talent[6]);
+      if(T&&(u.resources['soloElationFollowup']??0)>0){
+        if(T[3])h.gainLaughter(b,u,T[3],'纵享惊涛 · 队友攻击');
+        h.grantPunch(b,u,u,T[1],2);
+        // 原始 PointB2 modifier 是 Stacking=Replace，目标为阿哈，且在 ElationTimeEnd 移除。
+        b.ahaSpeedBonus=T[2];
+        record(b,'resource',u,{name:'阿哈速度加成',value:b.ahaSpeedBonus,reason:'同行攻击，持续至阿哈时刻结束'});
+      }
+      if(T8&&['basic','skill','followup','ultimate'].includes(key)){
+        const used=u.resources['旧梦淘金已用']??0;
+        if(used<T8[4]){
+          resource(b,u,'旧梦淘金已用',used+1);
+          addHeat(b,u,T8[3]);
+          for(const t of allies(b,u))buff(b,u,t,'旧梦淘金 · 暴伤','critDmg',T8[1],T8[2],{id:u.id+':aw-e8b:'+t.id});
+        }
       }
     }
     return {
@@ -1213,22 +1433,29 @@ const factories={
         const T=trace(u,1);
         if(T)out.elation=(out.elation??0)+T[1]+Math.min(T[4],Math.max(0,(out.speed??0)-T[0]))*T[3];
       },
-      // 欢愉技形态选择：无 AllIn → 动作表默认的 151320【举杯！敬炽烈一夏】；
-      // AllIn=1 → 151321【All in！敬炽烈一夏】：#1=0.6 全体、#3=10 次固定弹射 #4=0.18，
-      // 另外每消耗 1 点【热意】额外 1 次 #2=0.21。
-      // 固定 #3 次弹射使用 #4 倍率；每点热意另增 1 次弹射，使用 #2 倍率。
-      // 假设：本批没有阿哈时刻窗口（E9-2 blocked_source），阈值触发的这次排队欢愉技即承载
-      // All in 强化形态；`before` 施放时清零【热意】与 AllIn。
+      // 欢愉技形态选择：
+      //   elationHeat（热意阈值插入）→ 151320【举杯】，固定计入 #5=20 笑点；
+      //   elation（真正的阿哈时刻欢愉技）且 AllIn=1 → 151321【All in！】；
+      //   E6 施放 2 次后，后续欢愉技强制 All in。
+      // All in 的 #1 全体、#3 次固定弹射 #4、每点热意 #2；`before` 仅在 All in 时清空热意。
       prepare(b,u,key,kind,a){
-        if(kind==='technique'||kind==='copy'||key!=='elation')return a;
+        if(kind==='technique'||kind==='copy')return a;
+        if(key!=='elation'&&key!=='elationHeat')return a;
         const countAsFollowup=(u.resources['soloElationFollowup']??0)>0;
+        const heatInsert=key==='elationHeat';
         const forcedE6=!!rank(u,6)&&(u.resources['欢愉技施放次数']??0)>=rank(u,6,0);
-        if((u.resources['AllIn']??0)<=0&&!forcedE6)return countAsFollowup?{...a,countAsFollowup:true}:a;
+        // 阈值插入不是阿哈时刻，不得消耗 AllIn 标记；该标记只强化下一次阿哈欢愉技。
+        const allIn=forcedE6||(!heatInsert&&kind==='aha'&&(u.resources['AllIn']??0)>0);
+        if(!allIn){
+          return {...a,name:sname(d,151320),countAsFollowup:countAsFollowup||a.countAsFollowup,
+            ...(heatInsert?{punchlineOverride:u.kit.params.Talent[4],heatInsert:true}:{})};
+        }
         const E=elationRow(d,151321,elationLevel(u.kit.eidolon??0))??[0.6,0.21,10,0.18];
-        return {...a,name:sname(d,151321),countAsFollowup:countAsFollowup||a.countAsFollowup,terms:atk(E[0]),bounceGroups:[
+        return {...a,name:sname(d,151321),allIn:true,countAsFollowup:countAsFollowup||a.countAsFollowup,terms:atk(E[0]),bounceGroups:[
           {count:E[2],terms:atk(E[3]),toughness:0},
           {count:heat(u),terms:atk(E[1]),toughness:0},
-        ],preserveHeatOutsideAha:forcedE6&&kind!=='aha'};
+        ],...(heatInsert?{punchlineOverride:u.kit.params.Talent[4]}:{}),
+        preserveHeatOutsideAha:forcedE6&&kind!=='aha'};
       },
       // 秘技 151307：进入战斗对敌方全体造成 #1=100% 攻击力量子伤害，自身获得 #2=2 热意与 #3=20 好活当赏。
       entry(b,u){
@@ -1251,10 +1478,11 @@ const factories={
       before(b,u,actor,key,kind,a,selected){
         void a;void selected;
         if(actor!==u||kind==='copy')return;
-        // 【举杯】/【All in！】施放时消耗所有【热意】，并消耗 All in 强化标记。
-        if(key==='elation'){
-          if(heat(u)>0&&!a.preserveHeatOutsideAha)resource(b,u,'热意',0);
-          if((u.resources['AllIn']??0)>0)resource(b,u,'AllIn',0);
+        // 只有【All in！】施放时消耗所有【热意】；基础【举杯】不消耗。
+        // All in 强化标记在**阿哈时刻**的欢愉技施放后消耗（UpGradeElationSkill_OnceMark）。
+        if(key==='elation'||key==='elationHeat'){
+          if(a.allIn&&heat(u)>0&&!a.preserveHeatOutsideAha)resource(b,u,'热意',0);
+          if(key==='elation'&&kind==='aha'&&(u.resources['AllIn']??0)>0)resource(b,u,'AllIn',0);
           return;
         }
         // E4：施放战技时使我方全体造成的伤害无视 18% 防御，持续 3 回合。
@@ -1264,10 +1492,16 @@ const factories={
       after(b,u,actor,key,kind,a,selected,hitTargets){
         void a;void selected;
         h.onAhaEnd(b,u);
+        // 队友的普攻/战技/终结/欢愉技/追击即使没有伤害也应触发天赋与行迹；
+        // 同一动作由 teammateAction 去重，afterHit 命中路径不会重复结算。
+        if(actor!==u&&actor?.side===u.side&&['basic','skill','ultimate','elation','followup'].includes(key))
+          teammateAction(b,u,actor,key,kind);
         if(actor!==u||kind==='technique')return;
         const P=u.kit.params;
-        if(key==='elation'){
+        if(key==='elation'||key==='elationHeat'){
           resource(b,u,'欢愉技施放次数',(u.resources['欢愉技施放次数']??0)+1);
+          // 阈值插入真正结算后，才把下一次阿哈欢愉技标记为 All in。
+          if(key==='elationHeat')resource(b,u,'AllIn',1);
           // E2：每次施放欢愉技后获得 #2=4 点热意。
           if(rank(u,2))addHeat(b,u,rank(u,2,1));
           return;
@@ -1282,6 +1516,8 @@ const factories={
           return;
         }
         if(key==='ultimate'){
+          // 在阿哈时刻内施放终结技会移除 All-in 强化标记（AVE:2541-2556）。
+          if(b.ahaInstant)resource(b,u,'AllIn',0);
           h.gainLaughter(b,u,P.Ultra[2],'终结技');
           addHeat(b,u,P.Ultra[1]);
           buff(b,u,u,'胜局 · 速度','speedPct',P.Ultra[3],P.Ultra[4],{id:u.id+':aw-ult-speed'});
@@ -1295,27 +1531,8 @@ const factories={
       // 自身额外 +2 热意，最多触发 #5=6 次，施放战技时重置。
       afterHit(b,u,actor,to,a,kind){
         void a;
-        if(actor.side!==u.side||actor===u||to.side===u.side)return;
-        if(kind==='dot'||kind==='elation')return;
-        if((b.activeAction?.sequence??-1)===u.resources['热意触发动作'])return;
-        u.resources['热意触发动作']=b.activeAction?.sequence??-1;
-        const P=u.kit.params,T=trace(u,2),T8=trace(u,3);
-        h.gainLaughter(b,u,P.Talent[5],'队友攻击');
-        addHeat(b,u,P.Talent[6]);
-        if(T){
-          h.grantPunch(b,u,u,T[1],2);
-          // 原始 PointB2 modifier 是 Stacking=Replace，目标为阿哈，且在 ElationTimeEnd 移除。
-          b.ahaSpeedBonus=T[2];
-          record(b,'resource',u,{name:'阿哈速度加成',value:b.ahaSpeedBonus,reason:'同行攻击，持续至阿哈时刻结束'});
-        }
-        if(T8){
-          const used=u.resources['旧梦淘金已用']??0;
-          if(used<T8[4]){
-            resource(b,u,'旧梦淘金已用',used+1);
-            addHeat(b,u,T8[3]);
-            for(const t of allies(b,u))buff(b,u,t,'旧梦淘金 · 暴伤','critDmg',T8[1],T8[2],{id:u.id+':aw-e8b:'+t.id});
-          }
-        }
+        if(!actor||actor.side!==u.side||actor===u||!to||to.side===u.side)return;
+        teammateAction(b,u,actor,b.activeAction?.key??'basic',kind);
       },
     };
   },

@@ -1,5 +1,5 @@
 import {CONE_TABLES,SET_TABLES} from './game-data.mjs';
-export const SUPPORTED_CONES=[23021,23051,23046,23048,21018,21004,21011,21003,22005,23003,23034,23038,20012,21000,21021,21025,23019,23026];
+export const SUPPORTED_CONES=[23021,23051,23046,23048,21018,21004,21011,21003,22005,23003,23034,23038,20012,21000,21021,21025,23019,23026,23063];
 export const SUPPORTED_SETS=Object.keys(SET_TABLES).map(Number);
 export function compileGear(ctx,ch,{lightconeId=null,superimpose=1,relicSets=[]}={}){
   const gear={cone:null,sets:[]},unsupported=[];

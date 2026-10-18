@@ -37,7 +37,7 @@
 //              行迹1[10,30] 行迹2[1.4,0.5] 行迹3[0.04]；E1[0.16,2,1] E2[0.2] E4[0.3,2,2] E6[1.3]
 //   1510 姬子  普攻[1.4]；战技[0.25 增伤, 3 回合]；终结[0.4,1,0.25,1,0.375,3,1,3,9.525,3.15]；
 //              天赋[1.0 暴伤, 0.25 抗穿, 4 回能]；助战技 151022[2,3,0.3,2.5,4,0.39,4,2]；
-//              光束 151008[0.4,1,3]；脉冲 151009[0.25,1,0.375]；秘技[30 秒]；
+//              光束 151008[0.4,1,3]；脉冲 151009[0.25,1,0.375]；终击 151014[3,1]（stance 12）；秘技[30 秒]；
 //              行迹1[5] 行迹2[0.5] 行迹3[3,3,0.3]；E1[1,3,1,1] E2[1.3] E4[0.1] E6[0.2,6,0.75,6,1.6]
 //   1508 远坂凛 普攻[1.4]；战技[2.25]；终结[7.5,2.5,12,1 战技点,0.25 易伤,3 回合]；
 //              天赋[20 开场能量,2 回合,0.875 暴伤,7 战技点阈值,15 能量阈值]；
@@ -430,6 +430,12 @@ const factories={
       },
       // 天赋：对处于【质性揭露】的目标施放普攻或战技后，额外施放 1 次战技（不消耗战技点、不再次触发）。
       prepare(b,u,key,kind,a){
+        // 1141518 献予「理性」之诗：战技伤害次数 +3（一次性，持续 1 回合）。
+        // 只读取、不在这里消费：prepare 会在选靶与执行阶段被调用多次，消费会导致第二次退回原段数。
+        if(key==='skill'&&(u.resources['Cyrene理性诗篇次数']??0)>0){
+          const n=u.resources['Cyrene理性诗篇次数'];
+          return {...a,bounceCount:(a.bounceCount??0)+n};
+        }
         if(key!=='skill'||kind!=='followup')return a;
         return {...a,spCost:0,spGain:0,extraSkill:true};
       },
@@ -442,6 +448,8 @@ const factories={
         if(key==='basic'&&trace(u,1))energy(b,u,trace(u,1)[0]);
         // E1：首次施放战技后恢复 1 个战技点；战技命中使目标防御力降低 16%，持续 2 回合。
         if(key==='skill'){
+          // 理性诗篇的战技次数在动作真正结算后消费，避免 prepare 多次调用提前清空。
+          if((u.resources['Cyrene理性诗篇次数']??0)>0)resource(b,u,'Cyrene理性诗篇次数',0);
           if(rank(u,1)){
             if(!(u.resources['E1 已恢复']??0)){resource(b,u,'E1 已恢复',1);api.sp(b,u,rank(u,1,2),'那刻夏 E1');}
             for(const to of alive)buff(b,u,to,'那刻夏 E1 · 防御降低','defShred',rank(u,1,0),rank(u,1,1),{id:u.id+':e1',debuff:true});
@@ -485,17 +493,56 @@ const factories={
   1510:function(api){
     const {live,enemies,allies,rank,trace,buff,resource,energy,damageTo,record}=api;
     const P=u=>u.kit.params;
-    const enqueue=(b,u,key,kind,targetId)=>b.queue.push({actor:u.id,key,kind,targetId:targetId??null});
+    const enqueue=(b,u,key,kind,targetId,extra={})=>b.queue.push({actor:u.id,key,kind,targetId:targetId??null,...extra});
     const capUses=u=>rank(u,2)?2:1;
     const usesOf=t=>t.resources['助战技次数']??0;
     // 上限由姬子•启行的 E2 决定（而非使用者的星魂）。
     const setUses=(b,u,t,n)=>resource(b,t,'助战技次数',Math.max(0,Math.min(capUses(u),n)));
     const capEnergy=u=>rank(u,6)?rank(u,6,1):3;
     const sourceEnergy=u=>u.resources['源能']??0;
+    // 同行协议参数（151025/151026 等级 15）：#8 增伤/暴伤、#9 触发次数、#10 终结/战技额外增伤。
+    const PROTOCOL_SKILL={juecai:151025,jianpo:151026};
+    const protoRow=which=>ROSTER_DATA[1510].skills[String(PROTOCOL_SKILL[which])]?.params?.['15']?.param_list
+      ??[2,3,0.3,2.5,4,0.39,4,1.25,which==='juecai'?2:9,1.25];
+    const protoCap=u=>2+(rank(u,1)?rank(u,1,3):0);
+    function queueFreeAssist(b,u,reason){
+      if((u.resources['协议额外助战已用']??0)>=protoCap(u))return false;
+      resource(b,u,'协议额外助战已用',(u.resources['协议额外助战已用']??0)+1);
+      const to=enemies(b,u)[0];
+      enqueue(b,u,'assistFree','followup',to?.id,{persistWave:true});
+      record(b,'mechanic',u,{name:'同行协议 · 额外助战技',reason,used:u.resources['协议额外助战已用'],cap:protoCap(u)});
+      return true;
+    }
     const enqueueFinalBlow=(b,u)=>{
       if(u.resources['拓星者终击已排程'])return;
       resource(b,u,'拓星者终击已排程',1);
-      enqueue(b,u,'finalBlow','extra');
+      // 最后一击属于同一次「拓星者」接管；若光束 / 脉冲恰好清空当前波，下一波仍须执行终击
+      //（原始脚本 OnWaveMonster → ReStartUltraSkill，AllDarkTeam 改指新一波）。
+      enqueue(b,u,'finalBlow','extra',null,{persistWave:true});
+    };
+    // 原始脚本 Avatar_HimekoNova_00_Skill11/Skill21_TargetHPCanBeDamage：
+    //   · ByCheckTargetHPCanBeDamage(AllDarkTeam.RemoveUnselectable) 为假（没有任何敌人还能掉血）→ Skill31 最后一击；
+    //   · 否则只要存在 1 名不带 MCommon_LockHPThresholdReached_Mark 的敌人就继续光束 / 脉冲。
+    // 引擎没有战斗脚本的动态标记，故用通用字段表达：hpLocked 或 tag='lockHpThreshold' 视为到达锁血阈值。
+    const hpLocked=to=>to.hpLocked===true||to.buffs.some(e=>e.tag==='lockHpThreshold');
+    const hpDamageable=to=>live(to)&&to.hpDamageable!==false&&to.cannotBeDamaged!==true;
+    const pendingWave=(b,u)=>b.units.some(t=>t.side!==u.side&&(t.wave??1)>b.wave&&t.hp>1e-8);
+    const sequenceCanContinue=(b,u)=>{
+      const pool=enemies(b,u);
+      if(pool.some(to=>hpDamageable(to)&&!hpLocked(to)))return true;
+      // 换波后 AllDarkTeam 已是新一波敌人；当前波全灭且还有后续波次时序列继续（不是提前收尾）。
+      return pool.length===0&&pendingWave(b,u);
+    };
+    // 提前收尾：取消本次终结技尚未执行的光束 / 脉冲指令，立刻插入最后一击。
+    // 只有真正跳过了后续指令时才记录「提前收尾」；脉冲作为序列的正常终点不算提前。
+    const earlyFinalBlow=(b,u,reason)=>{
+      const dropped=b.queue.filter(q=>q.actor===u.id&&(q.key==='beam'||q.key==='pulse'));
+      if(dropped.length){
+        b.queue=b.queue.filter(q=>!(q.actor===u.id&&(q.key==='beam'||q.key==='pulse')));
+        for(const q of dropped)if(q.planIndex!=null)b.planQueued=b.planQueued.filter(i=>i!==q.planIndex);
+        record(b,'mechanic',u,{name:'拓星者 · 提前收尾',reason,skipped:dropped.length});
+      }
+      enqueueFinalBlow(b,u);
     };
     const gainSource=(b,u,n=1,reason='星魂6 · 助战技')=>{
       if(!rank(u,6)||n<=0)return;
@@ -510,11 +557,26 @@ const factories={
     return {
       start(b,u){
         resource(b,u,'源能',0);
-        // 天赋「共赴灼热的远征」：展开境界并使我方全体获得 1 次助战技使用次数。
+        // 天赋「共赴灼热的远征」：姬子•启行在场时展开境界【拓星视界】，场上出现「拓星者」。
+        // 二者都随姬子离场而关闭（death 钩子），资源值用于战斗日志 / frame.resources 复核。
+        resource(b,u,'境界·拓星视界',1);
+        resource(b,u,'实体·拓星者',1);
+        // 并使我方全体获得 1 次助战技使用次数。
         for(const to of allies(b,u)){
           setUses(b,u,to,1);
           if(to!==u)to.actions.supportSkill={name:'开拓，与你同行',type:'Support',element:'Fire',target:'single',terms:[],hitShares:[1],energyGain:0,spCost:0,spGain:0,toughness:0};
         }
+      },
+      // 境界 / 「拓星者」实体生命周期：姬子•启行离场时关闭境界（原始 FieldExit_Insert 的
+      // SetDieImmediately/ForceKill Partners + RemoveModifier）；其未执行的光束 / 脉冲 / 终击随后按阵亡单位跳过。
+      death(b,u,from,to){
+        void from;
+        if(to!==u)return;
+        resource(b,u,'境界·拓星视界',0);
+        resource(b,u,'实体·拓星者',0);
+        resource(b,u,'拓星者终结技进行中',0);
+        resource(b,u,'拓星者终击已排程',0);
+        record(b,'mechanic',u,{name:'境界【拓星视界】关闭',reason:'姬子•启行离场'});
       },
       // 秘技「拓星巡航」：进入战斗后每个波次开始时立即施放 1 次战技（获得【领航旗语】）。
       waveStart(b,u){
@@ -528,8 +590,12 @@ const factories={
       turnStart(b,u,actor){
         if(actor!==u)return;
         if(trace(u,1)&&usesOf(u)>=capUses(u))energy(b,u,trace(u,1)[0]);
-        // 【领航旗语】存在时每个回合开始立即恢复 1 次助战技使用次数。
-        if(u.buffs.some(e=>e.id===u.id+':flag'))for(const to of allies(b,u))setUses(b,u,to,usesOf(to)+1);
+        // 【领航旗语】存在时每个回合开始立即恢复 1 次助战技使用次数；
+        // E2「旗帜，永不降下的帆」：该恢复额外 +1 次（1510 技能文本 E2 明示）。
+        if(u.buffs.some(e=>e.id===u.id+':flag')){
+          const step=1+(rank(u,2)?1:0);
+          for(const to of allies(b,u))setUses(b,u,to,usesOf(to)+step);
+        }
       },
       // 行迹「银轨在旷古中静默」(point08)：施放终结技时立即获得 3 点【源能】；终结技期间 6 次光束各 +1。
       prepare(b,u,key,kind,a){
@@ -550,7 +616,10 @@ const factories={
           const stored=sourceEnergy(u);
           a.sourceEnergyAtPulse=stored;
           a.bounceCount=Math.max(0,stored-1);
-          a.bounceTerms=atk(P(u).Ultra[4]);
+          // 行迹 point08「银轨在旷古中静默」：施放脉冲时源能 ≥#2（3）点，
+          // 脉冲的随机单体额外伤害倍率提高 #3（30%）。
+          const bounceBonus=trace(u,3)&&stored>=trace(u,3)[1]?trace(u,3)[2]:0;
+          a.bounceTerms=atk(P(u).Ultra[4]*(1+bounceBonus));
           a.bounceToughness=0;
           // 脉冲先消耗1点；当前源能高于1时，每再消耗1点追加一次随机单体伤害。
           resource(b,u,'源能',0);
@@ -564,22 +633,44 @@ const factories={
           energy(b,actor,P(u).Talent[2]);
           // E6：我方使用助战技时姬子获得 1 点源能；姬子随后的协同伤害是同一次助战技的伤害段，不能重复加点。
           gainSource(b,u,1,'队友使用助战技');
-          enqueue(b,u,'assist','followup',(selected.find(t=>t.side!==u.side)??hitTargets.find(t=>t.side!==u.side))?.id);
+          // 已进入同行协议时，队友的助战技走对应协议变体。
+          const proto=u.resources['同行协议'];
+          const assistKey=proto==='juecai'?'assistJuecai':proto==='jianpo'?'assistJianpo':'assist';
+          enqueue(b,u,assistKey,'followup',(selected.find(t=>t.side!==u.side)??hitTargets.find(t=>t.side!==u.side))?.id);
         }
+        // 同行协议：151025/151026 施放后进入对应状态，并清空该协议的计数。
+        if(actor===u&&(key==='assistJuecai'||key==='assistJianpo')){
+          const proto=key==='assistJuecai'?'juecai':'jianpo';
+          resource(b,u,'同行协议',proto);
+          resource(b,u,'协议计数',0);
+          record(b,'mechanic',u,{name:'进入同行协议',protocol:proto,params:protoRow(proto)});
+        }
+        // 裁决：队友主动施放终结技计数，达到 #9（E1 减 #1）后立即发动无消耗助战技。
+        if(actor&&actor!==u&&actor.side===u.side&&key==='ultimate'&&u.resources['同行协议']==='juecai'){
+          const need=Math.max(1,(protoRow('juecai')[8]??2)-(rank(u,1)?rank(u,1,0):0));
+          const n=(u.resources['协议计数']??0)+1;
+          if(n>=need){resource(b,u,'协议计数',0);queueFreeAssist(b,u,'裁决 · 队友终结技');}
+          else resource(b,u,'协议计数',n);
+        }
+        // 姬子本人施放终结技后刷新额外助战技次数。
+        if(actor===u&&key==='ultimate')resource(b,u,'协议额外助战已用',0);
         if(actor===u&&key==='beam'){
           resource(b,u,'拓星者光束次数',(u.resources['拓星者光束次数']??0)+1);
           gainBeamSource(b,u);
           const count=u.resources['拓星者光束次数']??0;
-          if(count>=6)enqueue(b,u,'pulse','extra');
+          // 六束耗尽 → Skill12_End_Enter 自动发动脉冲（脉冲后又接最后一击）。
+          // 本次接管跨波保留：第 6 束若恰好清空当前波，自动脉冲必须在新一波继续结算。
+          if(count>=6)enqueue(b,u,'pulse','extra',null,{persistWave:true});
+          // 原始脚本 Skill11_TargetHPCanBeDamage：这一束之后若场上已无敌人可继续削减生命值
+          // （全灭且无后续波次，或全部到达锁血阈值），立即取消剩余光束并发动最后一击。
+          else if(!sequenceCanContinue(b,u))earlyFinalBlow(b,u,'超频粒子光束后敌方已无法继续削减生命值');
         }
         if(actor===u&&key==='pulse'){
           if(rank(u,6)&&a.sourceEnergyAtPulse>=rank(u,6,3))
             for(const to of enemies(b,u))damageTo(b,u,to,{name:'轨道歼灭脉冲 · E6额外火伤',type:'Ultra',element:'Fire',terms:atk(rank(u,6,4)),toughness:0},1,'primary','direct');
-          // 脉冲结束超频选择，立刻接终击；同一终结技中未执行的光束指令取消。
-          b.queue=b.queue.filter(q=>!(q.actor===u.id&&q.key==='beam'&&q.planIndex!=null));
-          enqueueFinalBlow(b,u);
+          // 脉冲结束超频选择，立刻接终击；同一终结技中未执行的光束指令取消（含操作轴占用清理）。
+          earlyFinalBlow(b,u,'轨道歼灭脉冲结束');
         }
-        if(actor===u&&key==='beam'&&(u.resources['拓星者光束次数']??0)>=6)enqueueFinalBlow(b,u);
         if(actor===u&&key==='finalBlow')resource(b,u,'拓星者终结技进行中',0);
         if(actor!==u)return;
         // 战技：立即恢复所有助战技使用次数，并获得【领航旗语】：我方全体造成的伤害提高 BPSkill[0]=25%，持续 BPSkill[1]=3 回合。
@@ -590,16 +681,42 @@ const factories={
           }
         }
         // 使用助战技视为姬子施放了战技：获得 Talent[1]=25% 全属性抗性穿透与 Talent[0]=100% 暴击伤害。
-        if(key==='assist'){
+        if(key==='assist'||key==='assistJuecai'||key==='assistJianpo'||key==='assistFree'){
           // E4：助战技抗穿改为全队效果；姬子本人额外提高 10 个百分点。
+          // 境界关闭（姬子离场）时全队共享的抗穿随之移除；姬子本人的增益随其死亡自然失效。
           for(const to of rank(u,4)?allies(b,u):[u])
-            buff(b,u,to,'共赴灼热的远征 · 抗性穿透','resPen',P(u).Talent[1]+(to===u&&rank(u,4)?rank(u,4,0):0),null,{id:to===u?u.id+':talent-pen':u.id+':talent-pen:'+to.id});
-          buff(b,u,u,'共赴灼热的远征 · 暴击伤害','critDmg',P(u).Talent[0],null,{id:u.id+':talent-cd'});
+            buff(b,u,to,'共赴灼热的远征 · 抗性穿透','resPen',P(u).Talent[1]+(to===u&&rank(u,4)?rank(u,4,0):0),null,
+              {id:to===u?u.id+':talent-pen':u.id+':talent-pen:'+to.id,removeOnSourceDeath:true});
+          buff(b,u,u,'共赴灼热的远征 · 暴击伤害','critDmg',P(u).Talent[0],null,{id:u.id+':talent-cd',removeOnSourceDeath:true});
         }
+      },
+      // 歼破：我方每击中 1 名敌方目标获得 1 点充能；达到 #9（E1 减 #2）后立即发动无消耗助战技。
+      // 无消耗助战技本身不获得充能（assistFree）。
+      afterHit(b,u,actor,to,a,kind){
+        void a;void kind;
+        if(u.resources['同行协议']!=='jianpo')return;
+        if(!actor||actor.side!==u.side||to.side===u.side)return;
+        if(b.activeAction?.key==='assistFree')return;
+        const need=Math.max(1,(protoRow('jianpo')[8]??9)-(rank(u,1)?rank(u,1,1):0));
+        const n=(u.resources['协议计数']??0)+1;
+        if(n>=need){resource(b,u,'协议计数',0);queueFreeAssist(b,u,'歼破 · 充能');}
+        else resource(b,u,'协议计数',n);
       },
       modifiers(b,u,actor,to,a,kind){
         const out={};
-        if(actor!==u||to.side===u.side)return out;
+        if(to.side===u.side)return out;
+        const proto=u.resources['同行协议'];
+        // 歼破：我方全体暴击伤害 + #8；战技暴击伤害额外 + #10。
+        if(proto==='jianpo'&&actor.side===u.side){
+          const row=protoRow('jianpo');
+          out.critDmg=(out.critDmg??0)+(row[7]??0)+(a.type==='BPSkill'?(row[9]??0):0);
+        }
+        if(actor!==u)return out;
+        // 裁决：姬子造成的伤害 + #8，终结技伤害额外 + #10。
+        if(proto==='juecai'){
+          const row=protoRow('juecai');
+          out.dmgBoost=(out.dmgBoost??0)+(row[7]??0)+(a.type==='Ultra'?(row[9]??0):0);
+        }
         // E6：姬子火属性抗性穿透 +20%；助战技造成的伤害提高 E6[2]=75%。
         if(rank(u,6))out.resPen=(out.resPen??0)+rank(u,6,0);
         if(rank(u,6)&&a.type==='Assist')out.dmgBoost=(out.dmgBoost??0)+rank(u,6,2);
@@ -783,6 +900,10 @@ const actions={
     const A=HIMEKO_ASSIST;
     const beam=rowFor(1510,151003,151008,p.Ultra[0]);
     const pulse=rowFor(1510,151003,151009,p.Ultra[0]);
+    // 最后一击对应内部技能 151014（simpleDesc 与 151003 #6/#7 一致：3 次随机单体），
+    // 其倍率 / 段数 / 削韧一并从 151014 的同等级行与 stance 读取，避免与终结技主表脱钩。
+    const fin=rowFor(1510,151003,151014,p.Ultra[0]);
+    const finStance=ROSTER_DATA[1510].skills?.[151014]?.stance?.[0]??0;
     return {
       basic:basic(p,d,{terms:atk(p.Normal[0])}),
       skill:skill(p,d,{target:'self',terms:[],toughness:0}),
@@ -790,10 +911,23 @@ const actions={
       ultimate:ultimate(p,d,{target:'self',terms:[],toughness:0}),
       beam:{name:ROSTER_DATA[1510].skills[151008].name,type:'Ultra',element:'Fire',target:'all',terms:atk(beam[0]),hitShares:[1],toughness:6,energyGain:0,spCost:0,spGain:0,persistWave:true},
       pulse:{name:ROSTER_DATA[1510].skills[151009].name,type:'Ultra',element:'Fire',target:'all',terms:atk(pulse[0]),hitShares:[1],toughness:6,energyGain:0,spCost:0,spGain:0,persistWave:true},
-      finalBlow:{name:'拓星者 · 最后一击',type:'Ultra',element:'Fire',target:'single',terms:atk(p.Ultra[6]),hitShares:[1],
-        bounceCount:Math.max(0,p.Ultra[5]-1),bounceTerms:atk(p.Ultra[6]),toughness:0,bounceToughness:0,energyGain:0,spCost:0,spGain:0,persistWave:true},
+      finalBlow:{name:'拓星者 · 最后一击',type:'Ultra',element:'Fire',target:'single',
+        terms:atk(fin[1]??p.Ultra[6]),hitShares:[1],
+        bounceCount:Math.max(0,(fin[0]??p.Ultra[5])-1),bounceTerms:atk(fin[1]??p.Ultra[6]),
+        toughness:finStance,bounceToughness:finStance,energyGain:0,spCost:0,spGain:0,persistWave:true},
       assist:{name:'开拓，与你同行',type:'Assist',element:'Fire',target:'all',
         terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:18,spCost:0,spGain:0,
+        bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
+      // 同行协议：151025 / 151026 是助战技的协议变体（同一段数/倍率，附加协议状态）。
+      assistJuecai:{name:'同行协议：裁决',type:'Assist',element:'Fire',target:'all',protocol:'juecai',
+        terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:0,spCost:0,spGain:0,
+        bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
+      assistJianpo:{name:'同行协议：歼破',type:'Assist',element:'Fire',target:'all',protocol:'jianpo',
+        terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:0,spCost:0,spGain:0,
+        bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
+      // 协议触发的无消耗助战技：不恢复能量，也不计入歼破充能。
+      assistFree:{name:'同行协议 · 无消耗助战技',type:'Assist',element:'Fire',target:'all',freeAssist:true,
+        terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:0,spCost:0,spGain:0,
         bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
     };
   },

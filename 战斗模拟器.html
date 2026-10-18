@@ -539,20 +539,11 @@ __def("simulator/mechanics-status.mjs", function (__req) {
 // Runtime capability gates, independent of mutable actor.unsupported or progress reports.
 // Remove a blocker only after its implementation and independent regression are accepted.
 const KNOWN_MECHANICS_GAPS=Object.freeze({
-  1407:['新蕊溢出、资源型终结技、死龙后援、焰息低血时点、E2秘技/终结召唤、E4受疗与E6实际弱点削韧/击破奖励已接入；治疗转化边界、其余星魂和完整调度仍未完整验收'],
-  1408:['变身额外行动的真实行动间隔仍未从动态字节码确认；事件队列连接仍属近似'],
-  1413:['开场常驻忆灵、E2本体与忆灵暴伤、至暗充能按迷梦施放消耗、至暗期间本体与长夜控制免疫、E4忆灵削韧效率和忆质消耗分支已接入；完整生命周期及其余天赋/行迹/星魂仍未完整验收'],
-  1415:['追忆27存储、24/12门槛、未来交互、创世/岁月/生死/负世/浪漫/诡计/海洋诗篇分支及真我故事阈值、E4舞曲弹射增伤已接入；其余专属诗篇、赠礼舞曲完整分支及星魂后续仍未完整验收'],
-  1501:['自然阿哈行动条、速度、开局笑点/好活、跨波参演与固定额外回合已接入；E6弹射和Point07按完整编队1/2/3+角色正确分档已接入；E6抗穿只作用于火花本人；E2全灭暂存与目标阵亡重选已接入；角色其余完整分支尚未完整验收'],
-  1502:['自然阿哈行动条、随机命中目标的天赋伤害、较高欢愉度来源、行迹欢愉技回点、速度/欢愉度、跨波分支及E1队伍欢愉伤害减防/E4/E6欢愉技倍率已接入；角色完整分支尚未完整验收'],
-  1503:['已按公开4.6技能文本接入欢愉技对全队下一次实际攻击的对应属性追加伤害、E4倍率翻倍、动态抵御池及50%生命线减伤刷新；E1按完整编队欢愉角色数计算。原始Ability缺失，因此动作段数/精确事件时序仍未验证；额外回合动作选择、专武和其余专属交互仍未完整验收，严格模式继续阻断'],
-  1505:['好活当赏独立计时已接入；瞰众乐参演编号判断及E0/E2转换覆盖自然阿哈、真珠与欢愉开拓者的角色发放路径；开不败现覆盖队友标记自然到期、完整消耗、临时回合清理及持有者阵亡，按移除批次转化；终结技最低计入能量上限及真实随机弹射目标已修；原始Ability其余监听、狐狸老师与专武交互仍未完整验收'],
-  1506:['银狼LV.999 E2隐藏分阈值只在无敌玩家期间计入，并按阈值逐次恢复1次强化普攻；E4欢愉技计入基础+5倍笑点；E6为敌方加入全属性弱点、按基础抗性归零或在基础为0时降低20%，覆盖新入场敌人并在银狼阵亡时清理。其余完整分支仍未验收'],
-  1510:['拓星者终结接管、六束逐段回源能、E6脉冲门槛、自动三段终击、战斗页选择与该序列跨波保留已接入；境界/实体生命周期、全灭或锁血时的提前收尾、其余星魂及更多多波边界仍未完整验收'],
-  1512:['4.6 Ability仅创建一名可行动11512晴空乐手；Partner02/03是演出别名并参与Fever状态。E1现记录全队非真实伤害、忆灵技按当前气氛值对最高当前生命敌人追加真实伤害并保留一半记录；E2同队友每回合首次触发气氛值的技能额外+2；E4速度仅在Fever生效且随气氛值即时更新；E6 Fever时终结能量上限翻倍、首次入场及每个倒计时回合固定回能140；治疗/护盾气氛按提供者自身回合限次。跨波和专武仍未完整验收，严格模式继续阻断'],
-  1513:['热意累计阈值10/20/30/40/50、仅All in消耗热意、单欢愉队伍Point07欢愉技按追加攻击触发及PointB2阿哈加速替换/时限生命周期已接入；自然阿哈的其他速度/行动轴交互与角色其余分支仍未完整验收'],
-  8009:['固定笑点与自然阿哈共享行动条、战技额外欢愉伤害读取全队最高ElationEchoPoint、行迹Point08仅响应我方欢愉技已接入；男形态其余角色分支尚未完整验收'],
-  8010:['固定笑点与自然阿哈共享行动条、战技额外欢愉伤害读取全队最高ElationEchoPoint、行迹Point08仅响应我方欢愉技已接入；女形态其余角色分支尚未完整验收'],
+  1407:['新蕊溢出、资源型终结技、死龙后援、焰息低血时点、E2秘技/终结召唤、E4受疗与E6实际弱点削韧/击破奖励、焰息阶数跨动作与重召清零、死龙被击倒/反噬/到期结算晦翼、天赋扩散至死龙与生命消耗触发、E2炽意2层、重召清理时限状态已接入；治疗转化边界、其余星魂与完整调度、录像对拍仍未完成'],
+  1413:['开场常驻忆灵、E2本体与忆灵暴伤、至暗充能、控制免疫、E4削韧、战技10%生命消耗先于暴伤共享、忆质≥16解除并免疫控制、E1覆盖所有我方忆灵已接入；完整生命周期、剩余忆灵专属脚本与星魂仍未完成'],
+  1415:['追忆27存储、24/12门槛、未来交互、创世/岁月/生死/负世/浪漫/诡计/海洋诗篇、真我故事、E4舞曲、门径/理性/天空/律法四篇、律法诗篇随军功迁移、岁月诗篇暴伤16.8%、门径追加攻击额外附加、理性战技次数+3、律法奇袭结束+1充能已接入；赠礼舞曲与星魂后续仍未完成'],
+  1501:['自然阿哈行动条、速度、开局笑点/好活、跨波参演与固定额外回合、E6弹射/Point07分档、E6抗穿范围、E2全灭暂存、欢愉技+4爆点已接入；角色其余完整分支尚未完整验收'],
+  1506:['银狼LV.999 E2隐藏分阈值只在无敌玩家期间计入并逐次恢复1次强化普攻；E4欢愉技计入基础+5倍笑点；E6全属性弱点；常态/强化欢愉技按150620/150621拆分；盲盒成功后降至当前20%、失败不变并由150621重置；E1结界易伤全队生效；强化普攻每60隐藏分+15%最多2层、持好活当赏时技能伤害转欢愉、控制免疫、E6增笑限定强化普攻；150607波次盲盒固定99好活、150608全灭中断保留段数与盲盒次数并跨波续放、盲盒击杀最后敌人后立即停止、Rank02/续放只延长增益、超超超大剑按本次实际总伤害比例、战技顺风局追加虚数欢愉已接入。150608盲盒触发段位动态哈希仍未映射、专武与跨波细节仍未完成'],
 });
 function knownMechanicsGaps(unit){
   return unit?.side==='ally'?[...(KNOWN_MECHANICS_GAPS[unit.characterId]??[])]:[];
@@ -1081,7 +1072,7 @@ __def("simulator/game-data.mjs", function (__req) {
 const KIT_TABLES={"1306":{"base":{"Normal":{"1":{"level":1,"param_list":[0.5]},"2":{"level":2,"param_list":[0.6]},"3":{"level":3,"param_list":[0.7]},"4":{"level":4,"param_list":[0.8]},"5":{"level":5,"param_list":[0.9]},"6":{"level":6,"param_list":[1]},"7":{"level":7,"param_list":[1.1]},"8":{"level":8,"param_list":[1.2]},"9":{"level":9,"param_list":[1.3]},"10":{"level":10,"param_list":[1.4]}},"BPSkill":{"1":{"level":1,"param_list":[0.12,0.27,1,0.5]},"2":{"level":2,"param_list":[0.132,0.288,1,0.5]},"3":{"level":3,"param_list":[0.144,0.306,1,0.5]},"4":{"level":4,"param_list":[0.156,0.324,1,0.5]},"5":{"level":5,"param_list":[0.168,0.342,1,0.5]},"6":{"level":6,"param_list":[0.18,0.36,1,0.5]},"7":{"level":7,"param_list":[0.195,0.3825,1,0.5]},"8":{"level":8,"param_list":[0.21,0.405,1,0.5]},"9":{"level":9,"param_list":[0.225,0.4275,1,0.5]},"10":{"level":10,"param_list":[0.24,0.45,1,0.5]},"11":{"level":11,"param_list":[0.252,0.468,1,0.5]},"12":{"level":12,"param_list":[0.264,0.486,1,0.5]},"13":{"level":13,"param_list":[0.276,0.504,1,0.5]},"14":{"level":14,"param_list":[0.288,0.522,1,0.5]},"15":{"level":15,"param_list":[0.3,0.54,1,0.5]}},"Ultra":{"1":{"level":1,"param_list":[2,4,0.06,2]},"2":{"level":2,"param_list":[2,4,0.064,2]},"3":{"level":3,"param_list":[2,4,0.068,2]},"4":{"level":4,"param_list":[2,4,0.072,2]},"5":{"level":5,"param_list":[2,4,0.076,2]},"6":{"level":6,"param_list":[2,4,0.08,2]},"7":{"level":7,"param_list":[2,4,0.085,2]},"8":{"level":8,"param_list":[2,4,0.09,2]},"9":{"level":9,"param_list":[2,4,0.095,2]},"10":{"level":10,"param_list":[2,4,0.1,2]},"11":{"level":11,"param_list":[2,4,0.104,2]},"12":{"level":12,"param_list":[2,4,0.108,2]},"13":{"level":13,"param_list":[2,4,0.112,2]},"14":{"level":14,"param_list":[2,4,0.116,2]},"15":{"level":15,"param_list":[2,4,0.12,2]}},"Talent":{"1":{"level":1,"param_list":[2,0.03,2,3]},"2":{"level":2,"param_list":[2,0.033,2,3]},"3":{"level":3,"param_list":[2,0.036,2,3]},"4":{"level":4,"param_list":[2,0.039,2,3]},"5":{"level":5,"param_list":[2,0.042,2,3]},"6":{"level":6,"param_list":[2,0.045,2,3]},"7":{"level":7,"param_list":[2,0.04875,2,3]},"8":{"level":8,"param_list":[2,0.0525,2,3]},"9":{"level":9,"param_list":[2,0.05625,2,3]},"10":{"level":10,"param_list":[2,0.06,2,3]},"11":{"level":11,"param_list":[2,0.063,2,3]},"12":{"level":12,"param_list":[2,0.066,2,3]},"13":{"level":13,"param_list":[2,0.069,2,3]},"14":{"level":14,"param_list":[2,0.072,2,3]},"15":{"level":15,"param_list":[2,0.075,2,3]}},"Maze":{"1":{"level":1,"param_list":[3,20]}}},"enhanced":{"Normal":{"1":{"level":1,"param_list":[0.5]},"2":{"level":2,"param_list":[0.6]},"3":{"level":3,"param_list":[0.7]},"4":{"level":4,"param_list":[0.8]},"5":{"level":5,"param_list":[0.9]},"6":{"level":6,"param_list":[1]},"7":{"level":7,"param_list":[1.1]},"8":{"level":8,"param_list":[1.2]},"9":{"level":9,"param_list":[1.3]},"10":{"level":10,"param_list":[1.4]}},"BPSkill":{"1":{"level":1,"param_list":[0.12,0.27,2,0.5]},"2":{"level":2,"param_list":[0.132,0.288,2,0.5]},"3":{"level":3,"param_list":[0.144,0.306,2,0.5]},"4":{"level":4,"param_list":[0.156,0.324,2,0.5]},"5":{"level":5,"param_list":[0.168,0.342,2,0.5]},"6":{"level":6,"param_list":[0.18,0.36,2,0.5]},"7":{"level":7,"param_list":[0.195,0.3825,2,0.5]},"8":{"level":8,"param_list":[0.21,0.405,2,0.5]},"9":{"level":9,"param_list":[0.225,0.4275,2,0.5]},"10":{"level":10,"param_list":[0.24,0.45,2,0.5]},"11":{"level":11,"param_list":[0.252,0.468,2,0.5]},"12":{"level":12,"param_list":[0.264,0.486,2,0.5]},"13":{"level":13,"param_list":[0.276,0.504,2,0.5]},"14":{"level":14,"param_list":[0.288,0.522,2,0.5]},"15":{"level":15,"param_list":[0.3,0.54,2,0.5]}},"Ultra":{"1":{"level":1,"param_list":[2,6,0.036,3,10]},"2":{"level":2,"param_list":[2,6,0.0384,3,10]},"3":{"level":3,"param_list":[2,6,0.0408,3,10]},"4":{"level":4,"param_list":[2,6,0.0432,3,10]},"5":{"level":5,"param_list":[2,6,0.0456,3,10]},"6":{"level":6,"param_list":[2,6,0.048,3,10]},"7":{"level":7,"param_list":[2,6,0.051,3,10]},"8":{"level":8,"param_list":[2,6,0.054,3,10]},"9":{"level":9,"param_list":[2,6,0.057,3,10]},"10":{"level":10,"param_list":[2,6,0.06,3,10]},"11":{"level":11,"param_list":[2,6,0.0624,3,10]},"12":{"level":12,"param_list":[2,6,0.0648,3,10]},"13":{"level":13,"param_list":[2,6,0.0672,3,10]},"14":{"level":14,"param_list":[2,6,0.0696,3,10]},"15":{"level":15,"param_list":[2,6,0.072,3,10]}},"Talent":{"1":{"level":1,"param_list":[2,0.02,2,3]},"2":{"level":2,"param_list":[2,0.022,2,3]},"3":{"level":3,"param_list":[2,0.024,2,3]},"4":{"level":4,"param_list":[2,0.026,2,3]},"5":{"level":5,"param_list":[2,0.028,2,3]},"6":{"level":6,"param_list":[2,0.03,2,3]},"7":{"level":7,"param_list":[2,0.0325,2,3]},"8":{"level":8,"param_list":[2,0.035,2,3]},"9":{"level":9,"param_list":[2,0.0375,2,3]},"10":{"level":10,"param_list":[2,0.04,2,3]},"11":{"level":11,"param_list":[2,0.042,2,3]},"12":{"level":12,"param_list":[2,0.044,2,3]},"13":{"level":13,"param_list":[2,0.046,2,3]},"14":{"level":14,"param_list":[2,0.048,2,3]},"15":{"level":15,"param_list":[2,0.05,2,3]}},"Maze":{"1":{"level":1,"param_list":[3,20]}}}},"1414":{"base":{"Normal":{"1":{"level":1,"param_list":[0.5]},"2":{"level":2,"param_list":[0.6]},"3":{"level":3,"param_list":[0.7]},"4":{"level":4,"param_list":[0.8]},"5":{"level":5,"param_list":[0.9]},"6":{"level":6,"param_list":[1]},"7":{"level":7,"param_list":[1.1]},"8":{"level":8,"param_list":[1.2]},"9":{"level":9,"param_list":[1.3]},"10":{"level":10,"param_list":[1.4]}},"BPSkill":{"1":{"level":1,"param_list":[0.14,100,3,3]},"2":{"level":2,"param_list":[0.1475,160,3,3]},"3":{"level":3,"param_list":[0.155,205,3,3]},"4":{"level":4,"param_list":[0.1625,250,3,3]},"5":{"level":5,"param_list":[0.17,280,3,3]},"6":{"level":6,"param_list":[0.176,310,3,3]},"7":{"level":7,"param_list":[0.182,332.5,3,3]},"8":{"level":8,"param_list":[0.188,355,3,3]},"9":{"level":9,"param_list":[0.194,377.5,3,3]},"10":{"level":10,"param_list":[0.2,400,3,3]},"11":{"level":11,"param_list":[0.206,422.5,3,3]},"12":{"level":12,"param_list":[0.212,445,3,3]},"13":{"level":13,"param_list":[0.218,467.5,3,3]},"14":{"level":14,"param_list":[0.224,490,3,3]},"15":{"level":15,"param_list":[0.23,512.5,3,3]}},"Ultra":{"1":{"level":1,"param_list":[1.5,0.4,2,0.14,100,3,3,0.4]},"2":{"level":2,"param_list":[1.65,0.44,2,0.1475,160,3,3,0.44]},"3":{"level":3,"param_list":[1.8,0.48,2,0.155,205,3,3,0.48]},"4":{"level":4,"param_list":[1.95,0.52,2,0.1625,250,3,3,0.52]},"5":{"level":5,"param_list":[2.1,0.56,2,0.17,280,3,3,0.56]},"6":{"level":6,"param_list":[2.25,0.6,2,0.176,310,3,3,0.6]},"7":{"level":7,"param_list":[2.4375,0.65,2,0.182,332.5,3,3,0.65]},"8":{"level":8,"param_list":[2.625,0.7,2,0.188,355,3,3,0.7]},"9":{"level":9,"param_list":[2.8125,0.75,2,0.194,377.5,3,3,0.75]},"10":{"level":10,"param_list":[3,0.8,2,0.2,400,3,3,0.8]},"11":{"level":11,"param_list":[3.15,0.84,2,0.206,422.5,3,3,0.84]},"12":{"level":12,"param_list":[3.3,0.88,2,0.212,445,3,3,0.88]},"13":{"level":13,"param_list":[3.45,0.92,2,0.218,467.5,3,3,0.92]},"14":{"level":14,"param_list":[3.6,0.96,2,0.224,490,3,3,0.96]},"15":{"level":15,"param_list":[3.75,1,2,0.23,512.5,3,3,1]}},"Talent":{"1":{"level":1,"param_list":[0.07,50,3,3,165,1]},"2":{"level":2,"param_list":[0.07375,80,3,3,165,1]},"3":{"level":3,"param_list":[0.0775,102.5,3,3,165,1]},"4":{"level":4,"param_list":[0.08125,125,3,3,165,1]},"5":{"level":5,"param_list":[0.085,140,3,3,165,1]},"6":{"level":6,"param_list":[0.088,155,3,3,165,1]},"7":{"level":7,"param_list":[0.091,166.25,3,3,165,1]},"8":{"level":8,"param_list":[0.094,177.5,3,3,165,1]},"9":{"level":9,"param_list":[0.097,188.75,3,3,165,1]},"10":{"level":10,"param_list":[0.1,200,3,3,165,1]},"11":{"level":11,"param_list":[0.103,211.25,3,3,165,1]},"12":{"level":12,"param_list":[0.106,222.5,3,3,165,1]},"13":{"level":13,"param_list":[0.109,233.75,3,3,165,1]},"14":{"level":14,"param_list":[0.112,245,3,3,165,1]},"15":{"level":15,"param_list":[0.115,256.25,3,3,165,1]}},"Maze":{"1":{"level":1,"param_list":[10]}}}},"1015":{"base":{"Normal":{"1":{"level":1,"param_list":[0.5]},"2":{"level":2,"param_list":[0.6]},"3":{"level":3,"param_list":[0.7]},"4":{"level":4,"param_list":[0.8]},"5":{"level":5,"param_list":[0.9]},"6":{"level":6,"param_list":[1]},"7":{"level":7,"param_list":[1.1]},"8":{"level":8,"param_list":[1.2]},"9":{"level":9,"param_list":[1.3]}},"BPSkill":{"1":{"level":1,"param_list":[1.8,0.6,2,1,5]},"2":{"level":2,"param_list":[1.98,0.64,2,1,5]},"3":{"level":3,"param_list":[2.16,0.68,2,1,5]},"4":{"level":4,"param_list":[2.34,0.72,2,1,5]},"5":{"level":5,"param_list":[2.52,0.76,2,1,5]},"6":{"level":6,"param_list":[2.7,0.8,2,1,5]},"7":{"level":7,"param_list":[2.925,0.85,2,1,5]},"8":{"level":8,"param_list":[3.15,0.9,2,1,5]},"9":{"level":9,"param_list":[3.375,0.95,2,1,5]},"10":{"level":10,"param_list":[3.6,1,2,1,5]},"11":{"level":11,"param_list":[3.78,1.04,2,1,5]},"12":{"level":12,"param_list":[3.96,1.08,2,1,5]},"13":{"level":13,"param_list":[4.14,1.12,2,1,5]},"14":{"level":14,"param_list":[4.32,1.16,2,1,5]},"15":{"level":15,"param_list":[4.5,1.2,2,1,5]}},"Ultra":{"1":{"level":1,"param_list":[6,2,4]},"2":{"level":2,"param_list":[6.4,2,4]},"3":{"level":3,"param_list":[6.8,2,4]},"4":{"level":4,"param_list":[7.2,2,4]},"5":{"level":5,"param_list":[7.6,2,4]},"6":{"level":6,"param_list":[8,2,4]},"7":{"level":7,"param_list":[8.5,2,4]},"8":{"level":8,"param_list":[9,2,4]},"9":{"level":9,"param_list":[9.5,2,4]},"10":{"level":10,"param_list":[10,2,4]},"11":{"level":11,"param_list":[10.4,2,4]},"12":{"level":12,"param_list":[10.8,2,4]},"13":{"level":13,"param_list":[11.2,2,4]},"14":{"level":14,"param_list":[11.6,2,4]},"15":{"level":15,"param_list":[12,2,4]}},"Talent":{"1":{"level":1,"param_list":[1]},"2":{"level":2,"param_list":[1.1]},"3":{"level":3,"param_list":[1.2]},"4":{"level":4,"param_list":[1.3]},"5":{"level":5,"param_list":[1.4]},"6":{"level":6,"param_list":[1.5]},"7":{"level":7,"param_list":[1.625]},"8":{"level":8,"param_list":[1.75]},"9":{"level":9,"param_list":[1.875]},"10":{"level":10,"param_list":[2]},"11":{"level":11,"param_list":[2.1]},"12":{"level":12,"param_list":[2.2]},"13":{"level":13,"param_list":[2.3]},"14":{"level":14,"param_list":[2.4]},"15":{"level":15,"param_list":[2.5]}},"Maze":{"1":{"level":1,"param_list":[2,1]}}}},"1412":{"base":{"Normal":{"1":{"level":1,"param_list":[0.5]},"2":{"level":2,"param_list":[0.6]},"3":{"level":3,"param_list":[0.7]},"4":{"level":4,"param_list":[0.8]},"5":{"level":5,"param_list":[0.9]},"6":{"level":6,"param_list":[1]},"7":{"level":7,"param_list":[1.1]},"8":{"level":8,"param_list":[1.2]},"9":{"level":9,"param_list":[1.3]},"10":{"level":10,"param_list":[1.4]}},"BPSkill":{"1":{"level":1,"param_list":[0.36,1,8,6,0.08]},"2":{"level":2,"param_list":[0.396,1,8,6,0.082]},"3":{"level":3,"param_list":[0.432,1,8,6,0.084]},"4":{"level":4,"param_list":[0.468,1,8,6,0.086]},"5":{"level":5,"param_list":[0.504,1,8,6,0.088]},"6":{"level":6,"param_list":[0.54,1,8,6,0.09]},"7":{"level":7,"param_list":[0.585,1,8,6,0.0925]},"8":{"level":8,"param_list":[0.63,1,8,6,0.095]},"9":{"level":9,"param_list":[0.675,1,8,6,0.0975]},"10":{"level":10,"param_list":[0.72,1,8,6,0.1]},"11":{"level":11,"param_list":[0.756,1,8,6,0.102]},"12":{"level":12,"param_list":[0.792,1,8,6,0.104]},"13":{"level":13,"param_list":[0.828,1,8,6,0.106]},"14":{"level":14,"param_list":[0.864,1,8,6,0.108]},"15":{"level":15,"param_list":[0.9,1,8,6,0.11]}},"Ultra":{"1":{"level":1,"param_list":[1.44,2]},"2":{"level":2,"param_list":[1.536,2]},"3":{"level":3,"param_list":[1.632,2]},"4":{"level":4,"param_list":[1.728,2]},"5":{"level":5,"param_list":[1.824,2]},"6":{"level":6,"param_list":[1.92,2]},"7":{"level":7,"param_list":[2.04,2]},"8":{"level":8,"param_list":[2.16,2]},"9":{"level":9,"param_list":[2.28,2]},"10":{"level":10,"param_list":[2.4,2]},"11":{"level":11,"param_list":[2.496,2]},"12":{"level":12,"param_list":[2.592,2]},"13":{"level":13,"param_list":[2.688,2]},"14":{"level":14,"param_list":[2.784,2]},"15":{"level":15,"param_list":[2.88,2]}},"Talent":{"1":{"level":1,"param_list":[1,0.18,0.3,20]},"2":{"level":2,"param_list":[1,0.186,0.33,20]},"3":{"level":3,"param_list":[1,0.192,0.36,20]},"4":{"level":4,"param_list":[1,0.198,0.39,20]},"5":{"level":5,"param_list":[1,0.204,0.42,20]},"6":{"level":6,"param_list":[1,0.21,0.45,20]},"7":{"level":7,"param_list":[1,0.2175,0.4875,20]},"8":{"level":8,"param_list":[1,0.225,0.525,20]},"9":{"level":9,"param_list":[1,0.2325,0.5625,20]},"10":{"level":10,"param_list":[1,0.24,0.6,20]},"11":{"level":11,"param_list":[1,0.246,0.63,20]},"12":{"level":12,"param_list":[1,0.252,0.66,20]},"13":{"level":13,"param_list":[1,0.258,0.69,20]},"14":{"level":14,"param_list":[1,0.264,0.72,20]},"15":{"level":15,"param_list":[1,0.27,0.75,20]}},"Maze":{"1":{"level":1,"param_list":[]}}}}};
 const BREAK_BASE={"1":54,"2":58,"3":62,"4":67.52638,"5":70.5094,"6":73.52282,"7":76.56605,"8":79.638466,"9":82.73946,"10":85.86844,"11":91.49441,"12":97.067986,"13":102.589165,"14":108.057945,"15":113.474335,"16":118.838326,"17":124.14992,"18":129.40912,"19":134.61592,"20":139.77034,"21":149.33229,"22":158.80112,"23":168.17682,"24":177.4594,"25":186.64885,"26":195.74518,"27":204.74838,"28":213.65846,"29":222.4754,"30":231.19923,"31":246.42757,"32":261.18097,"33":275.47333,"34":289.3179,"35":302.72748,"36":315.7144,"37":328.29047,"38":340.46713,"39":352.25537,"40":363.6658,"41":408.124,"42":451.7883,"43":494.67978,"44":536.8188,"45":578.2249,"46":618.9172,"47":658.9138,"48":698.23254,"49":736.8905,"50":774.9041,"51":871.05994,"52":964.87054,"53":1056.4207,"54":1145.791,"55":1233.0585,"56":1318.2965,"57":1401.5751,"58":1482.9608,"59":1562.5178,"60":1640.3068,"61":1752.3215,"62":1861.9011,"63":1969.1241,"64":2074.066,"65":2176.7983,"66":2277.3904,"67":2375.9084,"68":2472.416,"69":2566.9739,"70":2659.6406,"71":2780.3044,"72":2898.6023,"73":3014.603,"74":3128.373,"75":3239.9758,"76":3349.4731,"77":3456.9236,"78":3562.3843,"79":3665.91,"80":3767.5535,"81":3957.8618,"82":4155.212,"83":4359.864,"84":4572.088,"85":4792.164,"86":5020.3833,"87":5257.047,"88":5502.4663,"89":5756.967,"90":6020.884,"91":6294.5654,"92":6578.3735,"93":6872.6826,"94":7177.881,"95":7494.3716,"96":7822.5723,"97":8162.9165,"98":8515.854,"99":8881.85,"100":9261.387,"120":9261.387};
 const KIT_METADATA={"1306":{"base":{"ranks":{"1":[0.4],"2":[0.08],"3":[],"4":[],"5":[],"6":[0.3]},"traces":[{"charId":1306,"key":"point06","id":1306101,"type":3,"typeName":"固有技能","name":"岁时记","desc":"施放普攻时额外恢复<unbreak>#1[i]</unbreak>点能量。","statusAdd":[],"params":[10],"promotionLimit":2},{"charId":1306,"key":"point07","id":1306102,"type":3,"typeName":"固有技能","name":"人造花","desc":"战技提供的暴击伤害提高效果会延长到目标下一个回合开始。","statusAdd":[],"params":[],"promotionLimit":4},{"charId":1306,"key":"point08","id":1306103,"type":3,"typeName":"固有技能","name":"夜想曲","desc":"我方全体的攻击力提高<unbreak>#4[i]%</unbreak>。当我方队伍中存在1名/2名/3名量子属性的角色时，我方量子属性的角色的攻击力额外提高<unbreak>#1[i]%</unbreak>/<unbreak>#2[i]%</unbreak>/<unbreak>#3[i]%</unbreak>。","statusAdd":[],"params":[0.05,0.15,0.3,0.15],"promotionLimit":6}]},"enhanced":{"ranks":{"1":[0.4,0.15,2],"2":[0.1],"3":[],"4":[],"5":[],"6":[0.3]},"traces":[{"id":11306101,"promotionLimit":2,"params":[10,1]},{"id":11306102,"promotionLimit":4,"params":[3]},{"id":11306103,"promotionLimit":6,"params":[0.45,0.1]}]}},"1414":{"base":{"ranks":{"1":[1,0.18,3],"2":[2,2,2],"3":[],"4":[0.2],"5":[],"6":[0.2,3.3,0.12]},"traces":[{"charId":1414,"key":"point06","id":1414101,"type":3,"typeName":"固有技能","name":"神秀","desc":"施放战技时，使成为【同袍】的目标攻击力提高，提高数值等同于丹恒•腾荒<unbreak>#1[i]%</unbreak>攻击力。","statusAdd":[],"params":[0.15],"promotionLimit":2},{"charId":1414,"key":"point07","id":1414102,"type":3,"typeName":"固有技能","name":"葳蕤","desc":"战斗开始时，丹恒•腾荒<u>行动提前</u><unbreak>#1[i]%</unbreak>。【同袍】施放攻击时，丹恒•腾荒恢复<unbreak>#2[i]</unbreak>点能量，使【龙灵】<u>行动提前</u><unbreak>#3[i]%</unbreak>。","statusAdd":[],"params":[0.4,6,0.15],"promotionLimit":4},{"charId":1414,"key":"point08","id":1414103,"type":3,"typeName":"固有技能","name":"峥嵘","desc":"【龙灵】行动时，额外为当前护盾值最低的我方目标提供能够抵消等同于丹恒•腾荒<unbreak>#2[i]%</unbreak>攻击力+<unbreak>#3[i]</unbreak>伤害的护盾。重复获得丹恒•腾荒的护盾时，护盾量可以叠加，最高不超过当前战技提供的护盾量的<unbreak>#4[i]%</unbreak>。强化【龙灵】行动时，额外对当前生命值最高的敌方单体造成1次等同于【同袍】<unbreak>#1[i]%</unbreak>攻击力的相应属性<u>附加伤害</u>。","statusAdd":[],"params":[0.4,0.05,100,3],"promotionLimit":6}]}},"1015":{"base":{"ranks":{"1":[3,2],"2":[0.2,2],"3":[],"4":[1.5],"5":[],"6":[1,0.2]},"traces":[{"charId":1015,"key":"point06","id":1015101,"type":3,"typeName":"固有技能","name":"投影魔术","desc":"<unbreak>Archer</unbreak>在场时，战技点上限额外增加<unbreak>#1[i]</unbreak>点。","statusAdd":[],"params":[2],"promotionLimit":2},{"charId":1015,"key":"point07","id":1015102,"type":3,"typeName":"固有技能","name":"正义伙伴","desc":"<unbreak>Archer</unbreak>进入战斗时获得<unbreak>#1[i]</unbreak>点充能。","statusAdd":[],"params":[1],"promotionLimit":4},{"charId":1015,"key":"point08","id":1015103,"type":3,"typeName":"固有技能","name":"守护者","desc":"我方获得战技点后，若战技点大于等于<unbreak>#3[i]</unbreak>点，<unbreak>Archer</unbreak>的暴击伤害提高<unbreak>#1[i]%</unbreak>，持续<unbreak>#2[i]</unbreak>回合。","statusAdd":[],"params":[1.2,1,4],"promotionLimit":6}]}},"1412":{"base":{"ranks":{"1":[0.16,0.2,2],"2":[0.4,1.6],"3":[],"4":[2.4],"5":[],"6":[0.2,3]},"traces":[{"charId":1412,"key":"point06","id":1412101,"type":3,"typeName":"固有技能","name":"来者","desc":"刻律德菈的攻击力大于<unbreak>#1[i]</unbreak>时，每超过<unbreak>#2[i]</unbreak>点攻击力可使自身暴击伤害提高<unbreak>#3[i]%</unbreak>，最多提高<unbreak>#4[i]%</unbreak>。","statusAdd":[],"params":[2000,100,0.18,3.6],"promotionLimit":2},{"charId":1412,"key":"point07","id":1412102,"type":3,"typeName":"固有技能","name":"见者","desc":"刻律德菈的暴击率提高<unbreak>#1[i]%</unbreak>。当刻律德菈的充能小于上限时，持有【军功】的角色施放终结技时使刻律德菈获得<unbreak>#2[i]</unbreak>点充能，该效果单场战斗中可以触发1次。","statusAdd":[],"params":[1,1],"promotionLimit":4},{"charId":1412,"key":"point08","id":1412103,"type":3,"typeName":"固有技能","name":"征服者","desc":"施放战技时，使自身和持有【军功】的队友速度提高<unbreak>#2[i]</unbreak>点，持续<unbreak>#3[i]</unbreak>回合。持有【军功】的角色施放普攻或战技时，为刻律德菈恢复<unbreak>#1[i]</unbreak>点能量。","statusAdd":[],"params":[5,20,3],"promotionLimit":6}]}}};
-const CONE_TABLES={"20012":{"path":"同谐","params":{"1":{"param_list":[4]},"2":{"param_list":[5]},"3":{"param_list":[6]},"4":{"param_list":[7]},"5":{"param_list":[8]}}},"21000":{"path":"丰饶","params":{"1":{"param_list":[0.08,0.12]},"2":{"param_list":[0.1,0.15]},"3":{"param_list":[0.12,0.18]},"4":{"param_list":[0.14,0.21]},"5":{"param_list":[0.16,0.24]}}},"21003":{"path":"巡猎","params":{"1":{"param_list":[0.16,0.12]},"2":{"param_list":[0.2,0.15]},"3":{"param_list":[0.24,0.18]},"4":{"param_list":[0.28,0.21]},"5":{"param_list":[0.32,0.24]}}},"21004":{"path":"同谐","params":{"1":{"param_list":[0.28,4]},"2":{"param_list":[0.35,5]},"3":{"param_list":[0.42,6]},"4":{"param_list":[0.49,7]},"5":{"param_list":[0.56,8]}}},"21011":{"path":"同谐","params":{"1":{"param_list":[0.12]},"2":{"param_list":[0.15]},"3":{"param_list":[0.18]},"4":{"param_list":[0.21]},"5":{"param_list":[0.24]}}},"21018":{"path":"同谐","params":{"1":{"param_list":[0.16]},"2":{"param_list":[0.18]},"3":{"param_list":[0.2]},"4":{"param_list":[0.22]},"5":{"param_list":[0.24]}}},"21021":{"path":"丰饶","params":{"1":{"param_list":[0.5,8]},"2":{"param_list":[0.5,10]},"3":{"param_list":[0.5,12]},"4":{"param_list":[0.5,14]},"5":{"param_list":[0.5,16]}}},"21025":{"path":"同谐","params":{"1":{"param_list":[0.16,1]},"2":{"param_list":[0.2,1]},"3":{"param_list":[0.24,1]},"4":{"param_list":[0.28,1]},"5":{"param_list":[0.32,1]}}},"22005":{"path":"同谐","params":{"1":{"param_list":[0.16,0.08,3]},"2":{"param_list":[0.2,0.1,3]},"3":{"param_list":[0.24,0.12,3]},"4":{"param_list":[0.28,0.14,3]},"5":{"param_list":[0.32,0.16,3]}}},"23003":{"path":"同谐","params":{"1":{"param_list":[0.1,0.3,1]},"2":{"param_list":[0.12,0.35,1]},"3":{"param_list":[0.14,0.4,1]},"4":{"param_list":[0.16,0.45,1]},"5":{"param_list":[0.18,0.5,1]}}},"23019":{"path":"同谐","params":{"1":{"param_list":[0.6,0.24,3,1.5,10]},"2":{"param_list":[0.7,0.28,3,1.5,12.5]},"3":{"param_list":[0.8,0.32,3,1.5,15]},"4":{"param_list":[0.9,0.36,3,1.5,17.5]},"5":{"param_list":[1,0.4,3,1.5,20]}}},"23021":{"path":"同谐","params":{"1":{"param_list":[0.32,0.28,4,4,0.1,3]},"2":{"param_list":[0.39,0.35,4,4,0.11,3]},"3":{"param_list":[0.46,0.42,4,4,0.12,3]},"4":{"param_list":[0.53,0.49,4,4,0.13,3]},"5":{"param_list":[0.6,0.56,4,4,0.14,3]}}},"23026":{"path":"同谐","params":{"1":{"param_list":[0.03,5,0.24,0.48,1]},"2":{"param_list":[0.035,5,0.28,0.6,1]},"3":{"param_list":[0.04,5,0.32,0.72,1]},"4":{"param_list":[0.045,5,0.36,0.84,1]},"5":{"param_list":[0.05,5,0.4,0.96,1]}}},"23034":{"path":"同谐","params":{"1":{"param_list":[6,0.15,3,3,2]},"2":{"param_list":[6.5,0.1725,3,3,2]},"3":{"param_list":[7,0.195,3,3,2]},"4":{"param_list":[7.5,0.2175,3,3,2]},"5":{"param_list":[8,0.24,3,3,2]}}},"23038":{"path":"同谐","params":{"1":{"param_list":[0.36,12,2,0.48,21,2]},"2":{"param_list":[0.42,12,2,0.6,21,2]},"3":{"param_list":[0.48,12,2,0.72,21,2]},"4":{"param_list":[0.54,12,2,0.84,21,2]},"5":{"param_list":[0.6,12,2,0.96,21,2]}}},"23046":{"path":"巡猎","params":{"1":{"param_list":[0.16,6,0.4,0.1,4]},"2":{"param_list":[0.2,6,0.5,0.125,4]},"3":{"param_list":[0.24,6,0.6,0.15,4]},"4":{"param_list":[0.28,6,0.7,0.175,4]},"5":{"param_list":[0.32,6,0.8,0.2,4]}}},"23048":{"path":"同谐","params":{"1":{"param_list":[0.64,1,1,0.54,3]},"2":{"param_list":[0.8,1,1,0.675,3]},"3":{"param_list":[0.96,1,1,0.81,3]},"4":{"param_list":[1.12,1,1,0.945,3]},"5":{"param_list":[1.28,1,1,1.08,3]}}},"23051":{"path":"存护","params":{"1":{"param_list":[0.64,0.24,0.12,3,0.1,0.1]},"2":{"param_list":[0.8,0.3,0.15,3,0.125,0.125]},"3":{"param_list":[0.96,0.36,0.18,3,0.15,0.15]},"4":{"param_list":[1.12,0.42,0.21,3,0.175,0.175]},"5":{"param_list":[1.28,0.48,0.24,3,0.2,0.2]}}}};
+const CONE_TABLES={"20012":{"path":"同谐","params":{"1":{"param_list":[4]},"2":{"param_list":[5]},"3":{"param_list":[6]},"4":{"param_list":[7]},"5":{"param_list":[8]}}},"21000":{"path":"丰饶","params":{"1":{"param_list":[0.08,0.12]},"2":{"param_list":[0.1,0.15]},"3":{"param_list":[0.12,0.18]},"4":{"param_list":[0.14,0.21]},"5":{"param_list":[0.16,0.24]}}},"21003":{"path":"巡猎","params":{"1":{"param_list":[0.16,0.12]},"2":{"param_list":[0.2,0.15]},"3":{"param_list":[0.24,0.18]},"4":{"param_list":[0.28,0.21]},"5":{"param_list":[0.32,0.24]}}},"21004":{"path":"同谐","params":{"1":{"param_list":[0.28,4]},"2":{"param_list":[0.35,5]},"3":{"param_list":[0.42,6]},"4":{"param_list":[0.49,7]},"5":{"param_list":[0.56,8]}}},"21011":{"path":"同谐","params":{"1":{"param_list":[0.12]},"2":{"param_list":[0.15]},"3":{"param_list":[0.18]},"4":{"param_list":[0.21]},"5":{"param_list":[0.24]}}},"21018":{"path":"同谐","params":{"1":{"param_list":[0.16]},"2":{"param_list":[0.18]},"3":{"param_list":[0.2]},"4":{"param_list":[0.22]},"5":{"param_list":[0.24]}}},"21021":{"path":"丰饶","params":{"1":{"param_list":[0.5,8]},"2":{"param_list":[0.5,10]},"3":{"param_list":[0.5,12]},"4":{"param_list":[0.5,14]},"5":{"param_list":[0.5,16]}}},"21025":{"path":"同谐","params":{"1":{"param_list":[0.16,1]},"2":{"param_list":[0.2,1]},"3":{"param_list":[0.24,1]},"4":{"param_list":[0.28,1]},"5":{"param_list":[0.32,1]}}},"22005":{"path":"同谐","params":{"1":{"param_list":[0.16,0.08,3]},"2":{"param_list":[0.2,0.1,3]},"3":{"param_list":[0.24,0.12,3]},"4":{"param_list":[0.28,0.14,3]},"5":{"param_list":[0.32,0.16,3]}}},"23003":{"path":"同谐","params":{"1":{"param_list":[0.1,0.3,1]},"2":{"param_list":[0.12,0.35,1]},"3":{"param_list":[0.14,0.4,1]},"4":{"param_list":[0.16,0.45,1]},"5":{"param_list":[0.18,0.5,1]}}},"23019":{"path":"同谐","params":{"1":{"param_list":[0.6,0.24,3,1.5,10]},"2":{"param_list":[0.7,0.28,3,1.5,12.5]},"3":{"param_list":[0.8,0.32,3,1.5,15]},"4":{"param_list":[0.9,0.36,3,1.5,17.5]},"5":{"param_list":[1,0.4,3,1.5,20]}}},"23021":{"path":"同谐","params":{"1":{"param_list":[0.32,0.28,4,4,0.1,3]},"2":{"param_list":[0.39,0.35,4,4,0.11,3]},"3":{"param_list":[0.46,0.42,4,4,0.12,3]},"4":{"param_list":[0.53,0.49,4,4,0.13,3]},"5":{"param_list":[0.6,0.56,4,4,0.14,3]}}},"23026":{"path":"同谐","params":{"1":{"param_list":[0.03,5,0.24,0.48,1]},"2":{"param_list":[0.035,5,0.28,0.6,1]},"3":{"param_list":[0.04,5,0.32,0.72,1]},"4":{"param_list":[0.045,5,0.36,0.84,1]},"5":{"param_list":[0.05,5,0.4,0.96,1]}}},"23034":{"path":"同谐","params":{"1":{"param_list":[6,0.15,3,3,2]},"2":{"param_list":[6.5,0.1725,3,3,2]},"3":{"param_list":[7,0.195,3,3,2]},"4":{"param_list":[7.5,0.2175,3,3,2]},"5":{"param_list":[8,0.24,3,3,2]}}},"23038":{"path":"同谐","params":{"1":{"param_list":[0.36,12,2,0.48,21,2]},"2":{"param_list":[0.42,12,2,0.6,21,2]},"3":{"param_list":[0.48,12,2,0.72,21,2]},"4":{"param_list":[0.54,12,2,0.84,21,2]},"5":{"param_list":[0.6,12,2,0.96,21,2]}}},"23046":{"path":"巡猎","params":{"1":{"param_list":[0.16,6,0.4,0.1,4]},"2":{"param_list":[0.2,6,0.5,0.125,4]},"3":{"param_list":[0.24,6,0.6,0.15,4]},"4":{"param_list":[0.28,6,0.7,0.175,4]},"5":{"param_list":[0.32,6,0.8,0.2,4]}}},"23048":{"path":"同谐","params":{"1":{"param_list":[0.64,1,1,0.54,3]},"2":{"param_list":[0.8,1,1,0.675,3]},"3":{"param_list":[0.96,1,1,0.81,3]},"4":{"param_list":[1.12,1,1,0.945,3]},"5":{"param_list":[1.28,1,1,1.08,3]}}},"23051":{"path":"存护","params":{"1":{"param_list":[0.64,0.24,0.12,3,0.1,0.1]},"2":{"param_list":[0.8,0.3,0.15,3,0.125,0.125]},"3":{"param_list":[0.96,0.36,0.18,3,0.15,0.15]},"4":{"param_list":[1.12,0.42,0.21,3,0.175,0.175]},"5":{"param_list":[1.28,0.48,0.24,3,0.2,0.2]}}},"23063":{"path":"记忆","params":{"1":{"param_list":[0.3,0.3,0.2,2]},"2":{"param_list":[0.375,0.325,0.25,2]},"3":{"param_list":[0.45,0.35,0.3,2]},"4":{"param_list":[0.525,0.375,0.35,2]},"5":{"param_list":[0.6,0.4,0.4,2]}}}};
 const SET_TABLES={"101":{"p2":[0.1],"p4":[]},"102":{"p2":[0.12],"p4":[0.06,0.1]},"103":{"p2":[0.15],"p4":[0.2]},"104":{"p2":[0.1],"p4":[0.25,2]},"105":{"p2":[0.1],"p4":[0.05,5]},"106":{"p2":[0.08],"p4":[0.5,0.08,5]},"107":{"p2":[0.1],"p4":[0.12,0.12]},"108":{"p2":[0.1],"p4":[0.1,0.1]},"109":{"p2":[0.1],"p4":[0.2,1]},"110":{"p2":[0.1],"p4":[0.25]},"111":{"p2":[0.16],"p4":[0.16,3]},"112":{"p2":[0.1],"p4":[0.1,0.2]},"113":{"p2":[0.12],"p4":[0.08,2,2]},"114":{"p2":[0.06],"p4":[0.12,1]},"115":{"p2":[0.2],"p4":[0.06,8,3]},"116":{"p2":[0.12],"p4":[0.06,3]},"117":{"p2":[0.12],"p4":[0.04,0.08,0.12,2,3,1]},"118":{"p2":[0.16],"p4":[0.3,2]},"119":{"p2":[0.16],"p4":[1.5,2.5,0.1,0.15]},"120":{"p2":[0.12],"p4":[0.06,0.36,1]},"121":{"p2":[0.06],"p4":[0.18,2,2]},"122":{"p2":[0.08],"p4":[0.2,0.25]},"123":{"p2":[0.12],"p4":[0.06,0.3,2]},"124":{"p2":[0.1],"p4":[-0.08,110,95,0.2,0.32,0.08]},"125":{"p2":[0.06],"p4":[0.06,0.15,2]},"126":{"p2":[0.16],"p4":[2,0.48,1]},"127":{"p2":[0.08],"p4":[0.24,0.15]},"128":{"p2":[0.1],"p4":[0.12,0.15]},"129":{"p2":[0.16],"p4":[0.1,5,0.01,10]},"130":{"p2":[0.06],"p4":[120,160,0.1,0.18,0.1]},"131":{"p2":[0.12],"p4":[0.18,3,1]},"132":{"p2":[0.12],"p4":[0.28,2,0.15]},"133":{"p2":[0.06],"p4":[0.16,3,10,0.12,3]},"134":{"p2":[0.16],"p4":[0.36,0.2,2]},"301":{"p2":[0.12,120,0.12],"p4":[]},"302":{"p2":[0.12,120,0.08],"p4":[]},"303":{"p2":[0.1,0.25,0.25],"p4":[]},"304":{"p2":[0.15,0.5,0.15],"p4":[]},"305":{"p2":[0.16,1.2,0.6],"p4":[]},"306":{"p2":[0.08,0.5,0.15],"p4":[]},"307":{"p2":[0.16,145,0.2],"p4":[]},"308":{"p2":[0.05,120,0.4],"p4":[]},"309":{"p2":[0.08,0.7,0.2],"p4":[]},"310":{"p2":[0.1,0.3,0.1],"p4":[]},"311":{"p2":[0.12,135,160,0.12,0.18],"p4":[]},"312":{"p2":[0.05,0.1],"p4":[]},"313":{"p2":[0.04,10,0.04],"p4":[]},"314":{"p2":[0.12,0.12],"p4":[]},"315":{"p2":[5,0.05,0.25],"p4":[]},"316":{"p2":[0.06,0.4,1],"p4":[]},"317":{"p2":[0.05,0.12],"p4":[]},"318":{"p2":[0.16,0.32],"p4":[]},"319":{"p2":[0.12,5000,0.28],"p4":[]},"320":{"p2":[0.06,135,180,0.12,0.2],"p4":[]},"321":{"p2":[0.09,0.12,4,3],"p4":[]},"322":{"p2":[0.12,2400,3600,0.12,0.24],"p4":[]},"323":{"p2":[0.08,0.08],"p4":[]},"324":{"p2":[0.16,3,0.32,3],"p4":[]},"325":{"p2":[0.08,0.4,0.8,0.2,0.32],"p4":[]},"326":{"p2":[0.24,2,0.12],"p4":[]},"327":{"p2":[0.08,0.32],"p4":[]},"328":{"p2":[200,0.002,0.32],"p4":[]}};
 const ASTRAL_EXPRESS=[1001,1004,1003,1313,1510,1224,1413,1002,1213,1414,8001,8002,8003,8004,8005,8006,8007,8008,8009,8010];
 
@@ -1095,7 +1086,7 @@ return { ROSTER_DATA };
 });
 __def("simulator/gear.mjs", function (__req) {
 const { CONE_TABLES, SET_TABLES } = __req("simulator/game-data.mjs");
-const SUPPORTED_CONES=[23021,23051,23046,23048,21018,21004,21011,21003,22005,23003,23034,23038,20012,21000,21021,21025,23019,23026];
+const SUPPORTED_CONES=[23021,23051,23046,23048,21018,21004,21011,21003,22005,23003,23034,23038,20012,21000,21021,21025,23019,23026,23063];
 const SUPPORTED_SETS=Object.keys(SET_TABLES).map(Number);
 function compileGear(ctx,ch,{lightconeId=null,superimpose=1,relicSets=[]}={}){
   const gear={cone:null,sets:[]},unsupported=[];
@@ -5456,7 +5447,11 @@ const SERVANT={
   1141524:{name:'献予「岁月」之诗',p:[.252,1,.168]},                                                  // 长夜月：迷梦增伤、技能/终结额外忆质、技能暴伤加成+16.8%
   1141520:{name:'献予「诡计」之诗',p:[.504,.28,.168]},                  // 赛飞儿：自身伤害+50.4%，标记目标防御-28%，其他敌人-16.8%
   1141514:{name:'献予「浪漫」之诗',p:[70,1.008,.504]},                         // 阿格莱雅/衣匠：回能、增伤与无视防御
+  1141515:{name:'献予「门径」之诗',p:[1,.168,3]},                            // 缇宝：无视防御 16.8%，追加攻击额外附加伤害
+  1141518:{name:'献予「理性」之诗',p:[3,.56,.84,1]},                          // 那刻夏：战技次数/战技增伤/智识攻击/战技点
+  1141519:{name:'献予「天空」之诗',p:[1.008,33.6]},                          // 风堇：治疗转化 +100.8%，回能 33.6
   1141522:{name:'献予「海洋」之诗',p:[1.68,.84,1.12,60]},                 // 海瑟音：伤害+168%；普攻/战技引爆 DoT 84%/112%，首次攻击回能60
+  1141523:{name:'献予「律法」之诗',p:[.42,1]},                               // 刻律德菈：军功持有者暴伤 +42%，奇袭结束充能 +1
   1141503:{name:'等待，在所有的过去',p:[.336,0]},                                                        // 1415 生命上限 +33.6%
   1141505:{name:'「你好，世界♪」',p:[]},                                                                 // 1415 被召唤解除控制
   1141526:{name:'献予「真我」之诗',p:[.84,3]},                                                           // 1415 额外弹射 / 3 点故事
@@ -5713,11 +5708,25 @@ const factories={
         energyGain:0,spCost:0,spGain:0,toughness:SERVANT[1140702].stance[1],repeatCount:1}});
     const dragonTerm=(u,mult)=>[{scaling:'hp',multiplier:0,flatAdd:combatPanel(u).hp*mult}];
     const breathMult=(n,sv)=>n<=0?sv[1]:n===1?sv[2]:sv[3];
-    function spawnDragon(b,u,{full=false,advanceIt=true}={}){
+    function spawnDragon(b,u,{full=false,advanceIt=true,resetBreath=true}={}){
       const cap=Math.max(1,maxOf(b,u));
+      // spawnServant 按固定 id 复用同一个忆灵对象；先判断这是不是上一条死龙消失后的重新召唤。
+      const prev=b.units.find(t=>t.id===u.id+':dragon');
+      const newLife=!prev||prev.active===false||prev.hp<=1e-8;
       const s=spawnServant(b,u,{key:'dragon',name:'死龙•玻吕刻斯',element:'Quantum',aggro:100,advance:advanceIt,
         hpOf:()=>cap,speedOf:()=>P(u).Ultra[0],actions:servantActions},api);
+      if(newLife){
+        // 上一条死龙的每次生命状态不能带进新血条：
+        // 「晦翼已结算」残留会让 dismissDragon 对新死龙的死亡/到期直接早退，晦翼永不结算；
+        // 「西风的驻足」只持续至原回合结束，带过血条会让新死龙从旧层数起步。
+        // 有持续时间的增益同样属于上一回合，一并清除；整场生效的增益保留。
+        delete s.resources['晦翼已结算'];
+        s.buffs=s.buffs.filter(e=>e.tag!=='castoriceWestWind'&&e.remaining==null);
+        s.dots=[];
+      }
       s.resources['剩余回合']=P(u).Ultra[1];
+      // 1140702：焰息倍率的提高效果只在死龙消失前保留，重新召唤时回到 0.336。
+      if(resetBreath)s.resources['焰息阶数']=0;
       s.hp=full?cap:Math.max(1,Math.floor(cap/2));
       if(advanceIt){s.distance=0;s.advanceOrder=(b.advanceSequence=(b.advanceSequence??0)+1);}
       // 震彻寂壤的怒啸：被召唤时我方全体增伤 10%/3 回合。
@@ -5727,16 +5736,19 @@ const factories={
     function dragonSummonedE2(b,u){
       if(!rank(u,2))return;
       // Rank02 is applied by both Skill03 and the Technique's SkillMaze CreateServant path.
-      resource(b,u,'炽意',rank(u,2,0));
+      // E2：「炽意」最多持有 2 层；重复召唤按上限叠加。
+      resource(b,u,'炽意',Math.min(rank(u,2,1),(u.resources['炽意']??0)+rank(u,2,0)));
       advance(b,u.id,1);
       resource(b,u,'E2新蕊返还',rank(u,2,2));
     }
     function wingBlast(b,u,s){
-      const q=SV(1140706),p=combatPanel(u),pool=enemies(b,u);
+      const q=SV(1140706),p=combatPanel(u);
       const n=q[1]+(u.resources['死龙E6晦翼弹射']??0);
       resource(b,u,'死龙E6晦翼弹射',0);
       const overflow=u.resources['死龙晦翼增伤']??0;
-      for(let i=0;i<n&&pool.length;i++){
+      // 每一段重新取存活敌人，弹射中途击杀不会继续选中已死目标。
+      for(let i=0;i<n;i++){
+        const pool=enemies(b,u);if(!pool.length)break;
         const to=pool[Math.floor(b.random()*pool.length)];
         damageTo(b,s,to,{name:SERVANT[1140706].name,type:'Additional',element:'Quantum',
           terms:[{scaling:'hp',multiplier:0,flatAdd:p.hp*q[0]*(1+overflow)}],toughness:SERVANT[1140706].stance[0]},1,'primary','additional');
@@ -5744,11 +5756,14 @@ const factories={
       for(const to of allies(b,u))heal(b,u,to,p.hp*q[2]+q[3]);
       record(b,'mechanic',u,{name:'灼掠幽墟的晦翼',target:s.id});
     }
-    function dismissDragon(b,u){
-      const s=mem(b,u);if(!s)return;
+    // 1140706「死龙消失时」：被敌方击倒、被 1140703 的 500% 反噬耗尽、或 3 回合到期都算消失。
+    // 旧实现只查 `mem()`（要求 hp>0），死龙被伤害打死时不会触发晦翼。
+    function dismissDragon(b,u,dying){
+      const s=dying??mem(b,u);if(!s||s.resources['晦翼已结算'])return;
+      s.resources['晦翼已结算']=1;
       wingBlast(b,u,s);
       for(const to of b.units)to.buffs=to.buffs.filter(e=>!String(e.id).startsWith(u.id+':resdown:'));
-      dismissServant(b,u,s,api);
+      if(s.active!==false)dismissServant(b,u,s,api);
     }
     function field(b,u){
       // 遗世冥域：敌方全体全属性抗性降低 20%（走共享 allResDown，逐元素登记 7 条）。
@@ -5801,8 +5816,10 @@ const factories={
     return {
       start(b,u){resource(b,u,'新蕊',0);resource(b,u,'炽意',0);},
       entry(b,u){
+        // SkillMazeInLevel 先 CreateServant，再由 StageAbility_Maze 的 OnEnterBattle 扣 40%。
+        spawnDragon(b,u,{full:false});dragonSummonedE2(b,u);
         consumeAllies(b,u,P(u).Maze[0]);
-        spawnDragon(b,u,{full:false});dragonSummonedE2(b,u);field(b,u);
+        field(b,u);
       },
       // 我方任意单位损失生命值 → 获得等量【新蕊】（死龙在场时转化为死龙生命）。
       afterDamage(b,u,from,to,kind){
@@ -5818,7 +5835,15 @@ const factories={
         // Original OnListenHPChange: allied target, negative HP delta, and explicitly
         // exclude Castorice's own CasterServant. The servant's redirected HP payment
         // must not be returned to itself as Newbud healing.
-        if(target.side!==u.side||target===mem(b,u)||!(amount>0)||!['damage','consume'].includes(reason))return;
+        if(target.side!==u.side||!(amount>0)||!['damage','consume'].includes(reason))return;
+        // 死龙自身的生命降低触发 140704，但不能再转成【新蕊】/回血（否则支付会返还给自己）。
+        if(target===mem(b,u)){
+          if(reason==='consume')wound(b,u);
+          return;
+        }
+        // 天赋 140704「我方损失生命值」也覆盖生命消耗（战技 30%/40% 与行迹 5% 消耗）；
+        // 伤害路径由 afterDamage 触发，这里只补消耗，避免同一事件叠两层。
+        if(reason==='consume')wound(b,u);
         gainNewbud(b,u,amount);
       },
       // 1140703: allied HP cannot be reduced below 1; the overkill remainder is charged to the dragon at 500%.
@@ -5844,8 +5869,9 @@ const factories={
         if(key==='summonDragon'&&kind!=='copy'){
           const baseCap=maxOf(b,u),over=Math.max(0,(u.resources['新蕊']??0)-baseCap);
           const poem=SV(1141517),enemyLimit=poem[5];
-          const perPercent=enemies(b,u).length<=enemyLimit?poem[4]:poem[1];
-          const overflowBonus=Math.min(1,(over/baseCap)*100*perPercent);
+          // 原文 #2 是基础档，#5 是「额外提高」；≤2 敌人时应叠加为 0.00336+0.00672=0.01008。
+          const perPercent=enemies(b,u).length<=enemyLimit?poem[1]+poem[4]:poem[1];
+          const overflowBonus=(over/baseCap)*100*perPercent;
           const s=spawnDragon(b,u,{full:true});s.hp=s.panel.hp;
           if(u.resources['新蕊溢出倍率'])resource(b,u,'死龙晦翼增伤',overflowBonus);
           field(b,u);resource(b,u,'新蕊',0);
@@ -5887,14 +5913,25 @@ const factories={
         // E6 permits the dragon to reduce toughness without matching an enemy weakness.
         action.ignoreWeaknessToughness=rank(u,6)>0;
         const q=SV(1140702),e2=rank(u,2)&&(u.resources['炽意']??0)>0;
+        // 1140702：「重复发动时，伤害倍率依次提高至 0.392/0.476，达到后不再提高，
+        // 伤害倍率提高效果在死龙消失前不会降低」——阶数跨动作保留，重新召唤时清零。
+        const tier=Math.min(2,s.resources['焰息阶数']??0);
         // 1140702 checks the current HP before this activation. Crossing 25% with the
         // previous breath does not fire the talent until the next breath is activated.
+        const hpBefore=s.hp;
         if(s.hp<=s.panel.hp*q[4]){
           s.hp=1;action.repeatCount=repeat+1;wingBlast(b,u,s);
         }else if(e2)resource(b,u,'炽意',(u.resources['炽意']??0)-1);
         else s.hp=Math.max(0,s.hp-s.panel.hp*q[0]);
-        action.terms=dragonTerm(u,breathMult(repeat,q));
-        if(trace(u,3))wound(b,u);
+        // 死龙的生命降低同样触发「我方生命降低」监听（140704/141304 等）。
+        if(s.hp<hpBefore&&b.rules?.hpChanged)b.rules.hpChanged(b,s,'consume',hpBefore-s.hp,u);
+        action.terms=dragonTerm(u,breathMult(tier,q));
+        resource(b,s,'焰息阶数',Math.min(2,tier+1));
+        // 行迹 1407103「西风的驻足」：每次焰息使伤害 +30%，最多 6 层，持续至本回合结束。
+        if(trace(u,3)){
+          const n=Math.min(trace(u,3)[1],(tagOf(s,'castoriceWestWind')?.stacks??0)+1);
+          buff(b,u,s,'西风的驻足','dmgBoost',trace(u,3)[0]*n,null,{id:u.id+':west-wind',tag:'castoriceWestWind',stacks:n});
+        }
         void kind;
       },
       weaknessBreak(b,u,actor,target,action,element){
@@ -5920,17 +5957,29 @@ const factories={
       // 死龙回合结束：Ultra[1]=3 回合后消失。
       turnEnd(b,u,actor){
         if(!actor||actor.memospriteOwner!==u.id)return;
+        // 行迹 1407103「持续至本回合结束」：回合结束时清除西风的驻足叠层。
+        actor.buffs=actor.buffs.filter(e=>e.tag!=='castoriceWestWind');
         const left=(actor.resources['剩余回合']??P(u).Ultra[1])-1;
         actor.resources['剩余回合']=left;
         if(left<=0)dismissDragon(b,u);
       },
-      death(b,u,from,to){if(to===u||to.memospriteOwner===u.id)dismissDragon(b,u);void from;},
+      death(b,u,from,to){
+        if(to===u)dismissDragon(b,u);
+        else if(to?.memospriteOwner===u.id)dismissDragon(b,u,to);
+        void from;
+      },
       modifiers(b,u,actor,to,a,kind){
         const out={};if(to.side===u.side)return out;
         const fromDragon=actor&&actor.memospriteOwner===u.id;
         if(rank(u,6)&&(actor===u||fromDragon))out.resPen=(out.resPen??0)+rank(u,6,0);
+        // 140703：若遐蝶持有天赋的造成伤害提高效果，使该效果扩散至死龙。
+        if(fromDragon){
+          const woundBuff=tagOf(u,'castoriceWound');
+          if(woundBuff?.value)out.dmgBoost=(out.dmgBoost??0)+woundBuff.value;
+        }
         // E1：目标生命 ≤50%/80% 时，骸爪 / 爪痕 / 焰息 / 晦翼伤害为原伤害的 1.4 / 1.2 倍。
-        if(rank(u,1)&&(fromDragon||a?.name===u.actions.enhancedSkill?.name||a?.name===u.actions.skill?.name)){
+        // E1 只列【骸爪】【爪痕】【焰息】【晦翼】（死龙动作）与强化战技，不含普通战技 140702。
+        if(rank(u,1)&&(fromDragon||a?.name===u.actions.enhancedSkill?.name)){
           const r=to.hp/combatPanel(to).hp;
           if(r<=rank(u,1,1))out.dmgBoost=(out.dmgBoost??0)+rank(u,1,3)-1;
           else if(r<=rank(u,1,0))out.dmgBoost=(out.dmgBoost??0)+rank(u,1,2)-1;
@@ -5976,11 +6025,13 @@ const factories={
       return s;
     }
     // 累计治疗：扫描战斗日志里风堇造成的治疗（小伊卡的治疗也以风堇为施法者结算）。
+    // 1141519 献予「天空」之诗：持有层数时，计入小伊卡忆灵技的治疗数值额外 +100.8%。
     function scanHeal(b,u){
       const from=u.resources['治疗扫描']??0;if(b.log.length<=from)return;
       let add=0;for(const e of b.log.slice(from))if(e.type==='heal'&&e.actor===u.id)add+=e.amount;
       resource(b,u,'治疗扫描',b.log.length);
-      if(add>0)resource(b,u,'累计治疗',(u.resources['累计治疗']??0)+add);
+      const skyBoost=u.buffs.some(e=>String(e.tag??'').startsWith('cyreneSkyPoem:'))?SV(1141519)[0]:0;
+      if(add>0)resource(b,u,'累计治疗',(u.resources['累计治疗']??0)+add*(1+skyBoost));
     }
     const healMul=(u,base)=>base*(1+(trace(u,3)&&combatPanel(u).speed>trace(u,3)[0]?Math.min(trace(u,3)[4],combatPanel(u).speed-trace(u,3)[0])*trace(u,3)[3]:0));
     function riseTalent(b,u){
@@ -6043,6 +6094,10 @@ const factories={
           riseTalent(b,u);
           // 雨过天晴：风堇施放技能后小伊卡立即获得 1 个额外回合并自动施放【乌云乌云快走开！】。
           if(inSunny(u))icaAction(b,u);
+          // 1141519：先按本次治疗结算（含天空诗篇加成），施放战技/终结技后消耗 1 层。
+          scanHeal(b,u);
+          const sky=u.buffs.find(e=>String(e.tag??'').startsWith('cyreneSkyPoem:'));
+          if(sky){const left=(sky.stacks??1)-1;if(left<=0)u.buffs=u.buffs.filter(e=>e!==sky);else sky.stacks=left;}
         }
         if(rank(u,1)&&['basic','skill','ultimate'].includes(key))heal(b,u,u,healMul(u,combatPanel(u).hp*rank(u,1,1)));
         void a;void selected;void hitTargets;void kind;
@@ -6100,7 +6155,7 @@ const factories={
     function spawnNight(b,u,advanceIt){
       const s=spawnServant(b,u,{key:'night',name:'长夜',element:'Ice',aggro:125,advance:advanceIt,
         hpOf:base=>base.hp*P(u).Talent[4],speedOf:()=>P(u).Talent[3],actions:servantActions},api);
-      buff(b,u,s,'孤独，浮游，漆黑','dmgBoost',SV(1141303)[0],null,{id:u.id+':night-dmg'});
+      // 1141303 的 +70% 由 modifiers 统一给本体与长夜；这里不再额外挂 buff，避免重复计算。
       for(const poemBuff of u.buffs.filter(e=>String(e.tag??'').startsWith('cyreneEvernightPoem:')))
         buff(b,u,s,'献予「岁月」之诗 · 迷梦伤害','dmgBoost',.252,null,{id:poemBuff.id+':night',tag:poemBuff.tag});
       if(advanceIt){s.distance=0;s.advanceOrder=(b.advanceSequence=(b.advanceSequence??0)+1);}
@@ -6111,20 +6166,25 @@ const factories={
       if(rank(u,2))n+=rank(u,2,0);
       resource(b,u,'忆质',chaos(u)+n);
       if(chaos(u)>=THRESH(u)){
-        u.buffs=u.buffs.filter(e=>e.control!=='freeze');
+        // 141304：忆质 ≥16 时解除并免疫控制类负面状态（眩晕/冻结/禁锢等全部控制）。
+        u.buffs=u.buffs.filter(e=>!e.control);
+        u.dots=u.dots.filter(e=>!e.control);
         const s=mem(b,u);
         if(s&&!u.resources['立即行动已用']){resource(b,u,'立即行动已用',1);s.distance=0;s.advanceOrder=(b.advanceSequence=(b.advanceSequence??0)+1);record(b,'advance',u,{name:'长夜立即行动',target:s.id,ratio:1});}
       }
     }
     function skillBuff(b,u){
       const c=combatPanel(u).critDmg,p=P(u),pct=p.BPSkill[0];
+      // 1141524：「战技的暴击伤害提高效果额外提高，提高数值等同于长夜月暴击伤害的 16.8%」。
+      // 因此额外量是 c×0.168，而不是固定 +0.168 个百分点。
       const poem=u.buffs.some(e=>String(e.tag??'').startsWith('cyreneEvernightPoem:'))?SV(1141524)[2]:0;
-      for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'白昼悄然离去 · 忆灵暴伤','critDmg',c*pct+poem,p.BPSkill[1],{id:u.id+':skill-cd'});
+      for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'白昼悄然离去 · 忆灵暴伤','critDmg',c*pct+c*poem,p.BPSkill[1],{id:u.id+':skill-cd',tickOwner:u.id,tickAt:'start'});
       // 行迹 point08：队伍中「记忆」命途数量 1/2/3/4+ 时忆灵暴伤额外 +5/15/50/65%。
       if(trace(u,3)){
-        const n=allies(b,u).filter(t=>t!==u&&(t.path==='记忆'||t.path==='Remembrance')).length;
+        // 原始脚本统计全部「记忆」命途友方，包含长夜月自己。
+        const n=allies(b,u).filter(t=>(t.path==='记忆'||t.path==='Remembrance')).length;
         const v=trace(u,3)[Math.max(0,Math.min(3,n-1))];
-        if(n>0)for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'天亮了，雨落了','critDmg',v,p.BPSkill[1],{id:u.id+':trace8-cd'});
+        if(n>0)for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'天亮了，雨落了','critDmg',v,p.BPSkill[1],{id:u.id+':trace8-cd',tickOwner:u.id,tickAt:'start'});
       }
     }
     function dreamDamage(b,u){
@@ -6141,7 +6201,7 @@ const factories={
       if(darkCharges>0)resource(b,u,'至暗充能',darkCharges-1);
       resource(b,u,'忆质',rank(u,6)?Math.floor(n*rank(u,6,0)):0);
       if(trace(u,1))sp(b,u,1,'长夜月 · 迷梦返还战技点');
-      buff(b,u,u,'与你，再见，无期','speedPct',SV(1141306)[0]+Math.min(SV(1141306)[2],n)*SV(1141306)[1],null,{id:u.id+':night-haste',tickAt:'start'});
+      buff(b,u,u,'与你，再见，无期','speedPct',SV(1141306)[0]+Math.min(SV(1141306)[2],n)*SV(1141306)[1],null,{id:u.id+':night-haste',tag:'night-haste',tickAt:'start'});
       dismissServant(b,u,s,api);
       resource(b,u,'立即行动已用',0);
     }
@@ -6152,16 +6212,24 @@ const factories={
         if(trace(u,2)){energy(b,u,trace(u,2)[1],true);gainMemory(b,u,trace(u,2)[2]);}
       },
       entryAlways:true, // 本体忆灵开场常驻，与秘技无关；运行时不能将其误当作秘技入场钩子。
-      entry(b,u){spawnNight(b,u,false);},
+      entry(b,u){
+        spawnNight(b,u,false);
+        // 秘技 141307：只有携带秘技时，OnEnterBattle 才对全部我方忆灵施加 Skill02_Buff 并 +1 忆质。
+        if(u.kit.technique){skillBuff(b,u);gainMemory(b,u,1);}
+      },
       before(b,u,actor,key,kind,a,selected){
         if(actor!==u)return;
         const p=P(u);
         if(key==='skill'&&kind!=='copy'){
+          // 141302：消耗长夜月当前 10% 生命值召唤忆灵「长夜」。
+          // Ability Skill02_Phase02 的首个任务是 LoseHPByRatio，之后才加入战技的暴伤共享；
+          // 因此该次消耗触发的 141304 暴伤加成已计入 24% 的换算基数。
+          loseHp(b,u,u,p.BPSkill[5],api);
           const s=mem(b,u);
           if(s)heal(b,u,s,combatPanel(s).hp*p.BPSkill[3]);else spawnNight(b,u,true);
           skillBuff(b,u);
           gainMemory(b,u,p.BPSkill[2]+(dark(u)?p.BPSkill[4]:0));
-          // 行迹 point06：施放技能时消耗自身当前生命 5%，双方暴伤 +15%/2 回合。
+          // 行迹 point06：施放战技时消耗自身当前生命 5%，双方暴伤 +15%/2 回合。
           if(trace(u,1)){
             loseHp(b,u,u,trace(u,1)[1],api);
             buff(b,u,u,'天黑黑，月寂寂','critDmg',trace(u,1)[2],trace(u,1)[3],{id:u.id+':trace6-cd'});
@@ -6232,13 +6300,37 @@ const factories={
         }
         void from;void kind;
       },
-      death(b,u,from,to){if(to===u||to.memospriteOwner===u.id){const s=memAny(b,u);if(s)dismissServant(b,u,s,api);}void from;},
+      death(b,u,from,to){
+        if(to===u||to.memospriteOwner===u.id){
+          // 1141306：非迷梦路径的消失只给基础 10% 加速；迷梦路径已在 dreamDamage 中按忆质追加。
+          if(to.memospriteOwner===u.id)
+            buff(b,u,u,'与你，再见，无期','speedPct',SV(1141306)[0],null,{id:u.id+':night-haste',tag:'night-haste',tickAt:'start'});
+          const s=memAny(b,u);if(s)dismissServant(b,u,s,api);
+        }
+        void from;
+      },
+      // 141304「长夜月或忆灵每次生命降低时」：技能/行迹的生命消耗同样触发（伤害由 afterDamage 处理）。
+      // 原始 MAvatar_Evernight_00_HPChange 的 OnHPChange 仅排除治疗，未见按动作去重；
+      // 「每个目标每次受到攻击最多触发1次」的限制属于受击分支，故消耗路径每次生命降低都触发。
+      hpChanged(b,u,target,reason,amount){
+        if(reason!=='consume'||!(amount>0)||target.side!==u.side)return;
+        if(target!==u&&target.memospriteOwner!==u.id)return;
+        const T=P(u).Talent;
+        buff(b,u,u,'今夜与我同行','critDmg',T[1],T[2],{id:u.id+':talent-cd'});
+        const s=mem(b,u);if(s)buff(b,u,s,'今夜与我同行','critDmg',T[1],T[2],{id:u.id+':talent-cd'});
+        gainMemory(b,u,T[0]);
+      },
       // Rank04_Buff: allied servants +25%; CasterServant receives an additional +25%.
       panel(b,u,target,out){
+        // 行迹 point06：长夜月与长夜暴击率 +35%。
+        // 长夜的战斗面板以本体面板为基，只在本体处加一次，避免忆灵继承后重复 +35%。
+        const T6=trace(u,1);
+        if(T6&&target===u)out.critRate=(out.critRate??0)+T6[0];
         // E2 permanently grants CRIT DMG to the owner and her own memosprite.
         if(rank(u,2)&& (target===u||target.memospriteOwner===u.id))out.critDmg=(out.critDmg??0)+rank(u,2,2);
         // Ultra 141303 grants control immunity to both Long Night and Evernight while Dark Mystery is active.
-        if(target===u&&dark(u))out.controlRes=1;
+        // 141304：忆质≥16 时同样解除并免疫控制类负面状态。
+        if(target===u&&(dark(u)||chaos(u)>=THRESH(u)))out.controlRes=1;
         // 1141303：长夜本体免疫控制类负面状态（控制抵抗 100%）。
         if(target.memospriteOwner===u.id)out.controlRes=1;
         if(!rank(u,4)||target.side!==u.side||!target.memospriteOwner)return;
@@ -6250,7 +6342,8 @@ const factories={
         if(s&&(actor===u||actor===s))out.dmgBoost=(out.dmgBoost??0)+SV(1141303)[0];
         if(dark(u)&&(actor===u||actor===s))out.dmgBoost=(out.dmgBoost??0)+P(u).Ultra[2];
         if(dark(u))out.vuln=(out.vuln??0)+P(u).Ultra[3];
-        if(s&&rank(u,1)&&actor?.memospriteOwner===u.id){
+        // 1413 E1 原文「长夜月在场时……我方忆灵造成的伤害」：覆盖所有我方忆灵，不只长夜。
+        if(rank(u,1)&&actor?.memospriteOwner&&actor.side===u.side){
           const n=enemies(b,u).length;
           out.dmgBoost=(out.dmgBoost??0)+(n>=4?rank(u,1,0):n===3?rank(u,1,1):n===2?rank(u,1,2):rank(u,1,3))-1;
         }
@@ -6273,7 +6366,7 @@ const factories={
   // E1[6,12] 追忆 + 弹射 +12；E2[12,0,.06,.24] 开场 +12 追忆、真实伤害倍率最多 +24%；
   //   E4[.06,24] 每次舞曲后弹射倍率 +6%（最多 24 层）；E6[1,.2,.24] 首次终结全体提前 100% 等。
   1415:function(api){
-    const {rank,trace,buff,resource,energy,damageTo,combatPanel,record,advance,heal,allies,enemies,useAction,trueDamage,get}=api;
+    const {rank,trace,buff,resource,energy,damageTo,combatPanel,record,advance,heal,allies,enemies,useAction,trueDamage,get,sp}=api;
     const P=u=>u.kit.params;
     const mem=(b,u)=>memOf(b,u), ripple=u=>has(u,'cyreneRipple'), field=u=>api.live(u)&&has(u,'cyreneField');
     function syncServantSpecialSP(b,u){
@@ -6360,7 +6453,8 @@ const factories={
       const trueSelf=!!u.resources['真我之诗待结算'];resource(b,u,'真我之诗待结算',0);
       resource(b,u,'本次真我诗篇舞曲',trueSelf?1:0);
       if(trueSelf&&rank(u,1))gainMemo(b,u,rank(u,1,0));
-      const storedBounces=u.resources['额外弹射']??0;resource(b,u,'额外弹射',0);
+      // 4.6 文本没有“消耗/重置”字样：不同队友来源的累计弹射对之后每次舞曲都生效。
+      const storedBounces=u.resources['额外弹射']??0;
       const extraBounces=(trueSelf&&rank(u,1)?rank(u,1,1):0)+storedBounces;
       // Rank 4 params are [per-stack ratio, stack cap]; the bonus from earlier dances
       // applies to this true-self poem bounce, then this dance adds the next stack.
@@ -6374,6 +6468,11 @@ const factories={
           terms:[{scaling:'hp',multiplier:q[0]*(1+e4)}],toughness:SERVANT[1141501].stance[0]},1,'primary','additional');
       }
       s.resources['舞曲次数']=(s.resources['舞曲次数']??0)+1;
+      // 1141519 献予「天空」之诗：德谬歌施放忆灵技时，持有诗篇的风堇获得 2 层。
+      for(const to of allies(b,u)){
+        const sky=to.buffs.find(e=>String(e.tag??'')==='cyreneSkyPoem:'+u.id);
+        if(sky)sky.stacks=(sky.stacks??0)+2;
+      }
     }
     const HEIRS=new Set([1402,1403,1404,1405,1406,1407,1408,1409,1410,1412,1413,1414,1415,8007,8008]);
     function castPoem(b,u,s,target){
@@ -6425,6 +6524,39 @@ const factories={
       } else if(id===1408){
         // 献予「负世」之诗：获得6点火种，并标记永续燃烧分支。
         energy(b,target,6,true);resource(b,target,'永续的燃烧',1);
+      } else if(id===1403){
+        // 1141515 献予「门径」之诗：缇宝造成的伤害无视敌方 16.8% 防御（整场生效）。
+        // 追加攻击触发结界附加伤害时额外 1 次：由缇宝模块检测 cyreneGatePoem 标记后 +1 段。
+        buff(b,u,target,'献予「门径」之诗 · 无视防御','defIgnore',SV(1141515)[1],null,
+          {id:u.id+':poem-gate-def:'+target.id,tag:'cyreneGatePoem:'+u.id});
+      } else if(id===1409){
+        // 1141519 献予「天空」之诗：为风堇恢复 33.6 点能量并获得 2 层。
+        // 层数由风堇模块读取：治疗计入小伊卡的数值额外 +100.8%，施放战技/终结技消耗 1 层。
+        const p=SV(1141519),tag='cyreneSkyPoem:'+u.id;
+        energy(b,target,p[1],true);
+        const cur=target.buffs.find(e=>e.tag===tag)?.stacks??0;
+        buff(b,u,target,'献予「天空」之诗 · 层数','marker',0,null,
+          {id:u.id+':poem-sky:'+target.id,tag,stacks:cur+2});
+      } else if(id===1412){
+        // 1141523 献予「律法」之诗：「持有【军功】的角色暴击伤害提高 42%」是持有者状态光环，
+        // 而【军功】持有者会随 1412 的战技/终结技变化（kit-runtime.merit 重新指定目标）。
+        // 因此把诗篇数值记在 1412 身上，merit 在目标变化时把光环迁移到当前持有者；
+        // 诗篇施放时若尚无人持有【军功】，也会在首次指定持有者时补上。
+        resource(b,target,'Cyrene律法诗篇:'+u.id,SV(1141523)[0]);
+        const holder=get(b,target.resources['军功目标']);
+        if(holder)buff(b,u,holder,'献予「律法」之诗 · 暴击伤害','critDmg',SV(1141523)[0],null,
+          {id:u.id+':poem-law-cd:'+holder.id,tag:'cyreneLawPoem:'+u.id});
+        // 「奇袭结束后充能 +1」由 kit-runtime.consumeCopy 检测 Cyrene律法诗篇 资源后结算。
+      } else if(id===1405){
+        // 1141518 献予「理性」之诗：恢复 1 个战技点并使那刻夏立即行动；
+        // 那刻夏下一次普攻/战技时获得【真知】（智识命途攻击力 +84%、战技伤害 +56%），
+        // 持续至下一个那刻夏回合开始；「战技伤害次数 +3」由 1405 的 prepare 消费该次数。
+        const p=SV(1141518);
+        sp(b,target,p[3],'献予「理性」之诗');
+        advance(b,target.id,1);
+        resource(b,target,'Cyrene理性诗篇来源',u.id);
+        resource(b,target,'Cyrene理性诗篇待真知',1);
+        resource(b,target,'Cyrene理性诗篇次数',p[0]);
       } else if(id===8007||id===8008){
         // 献予「创世」之诗：整场生效。攻击力按德谬歌生命上限换算为固定攻击，
         // 暴击率按施放时德谬歌面板暴击率换算；同一增益同时作用于记忆开拓者和迷迷。
@@ -6436,7 +6568,23 @@ const factories={
           buff(b,u,to,'献予「创世」之诗 · 暴击','critRate',crit,null,{id:u.id+':creation-crit:'+to.id,tag:'cyreneCreationPoem:'+u.id});
         }
       }
-      record(b,'mechanic',u,{name:'德谬歌施放诗篇',target:target.id,poem:id===1413?'岁月':id===1406?'诡计':id===1410?'海洋':id===1407?'生死':id===1408?'负世':id===8007||id===8008?'创世':HEIRS.has(id)?'专属诗篇':'一切生命'});
+      record(b,'mechanic',u,{name:'德谬歌施放诗篇',target:target.id,poem:id===1413?'岁月':id===1406?'诡计':id===1410?'海洋':id===1407?'生死':id===1408?'负世':id===1403?'门径':id===1405?'理性':id===1409?'天空':id===1412?'律法':id===8007||id===8008?'创世':HEIRS.has(id)?'专属诗篇':'一切生命'});
+    }
+    // 1141518【真知】：只作用于「智识」命途角色；攻击力与战技伤害两条增益同源，
+    // 在下一个那刻夏回合开始时一并移除。
+    function grantTruth(b,u,owner){
+      const p=SV(1141518),tag='cyreneTruth:'+u.id;
+      for(const to of allies(b,u)){
+        if(!['智识','Erudition'].includes(to.path))continue;
+        buff(b,u,to,'真知 · 攻击','atkPct',p[2],null,{id:u.id+':truth-atk:'+to.id,tag});
+        buff(b,u,to,'真知 · 战技伤害','dmgBoost',p[1],null,{id:u.id+':truth-skill:'+to.id,tag,abilityType:'BPSkill'});
+      }
+      record(b,'mechanic',u,{name:'献予「理性」之诗 · 真知',target:owner.id});
+      resource(b,owner,'Cyrene理性诗篇真知已获',owner.turns??0);
+    }
+    function clearTruth(b,u){
+      const tag='cyreneTruth:'+u.id;
+      for(const to of b.units)to.buffs=to.buffs.filter(e=>e.tag!==tag);
     }
     return {
       start(b,u){
@@ -6471,6 +6619,13 @@ const factories={
       },
       before(b,u,actor,key,kind,a,selected){
         consumeFuture(b,u,actor,kind);
+        // 1141518：那刻夏下一次普攻/战技时获得【真知】。buff 在本次动作结算前挂上，
+        // 因此本次战技也享受 56% 战技伤害加成。
+        if(actor?.characterId===1405&&kind!=='copy'&&kind!=='technique'&&['basic','skill'].includes(key)&&
+           actor.resources?.['Cyrene理性诗篇来源']===u.id&&actor.resources?.['Cyrene理性诗篇待真知']){
+          resource(b,actor,'Cyrene理性诗篇待真知',0);
+          grantTruth(b,u,actor);
+        }
         if(actor!==u)return;
         const p=P(u);
         if(key==='skill'&&kind!=='copy'){
@@ -6538,7 +6693,7 @@ const factories={
             resource(b,u,'本次真我诗篇舞曲',0);
             const count=(u.resources['真我之诗触发次数']??0)+1;resource(b,u,'真我之诗触发次数',count);
             if(rank(u,6)&&count===1)for(const to of enemies(b,u))buff(b,u,to,'记忆，化作涟漪片片 · 防御降低','defShred',rank(u,6,1),null,{id:u.id+':cyrene-e6-def:'+to.id,debuff:true});
-            if(rank(u,6)&&count===2)for(const to of allies(b,u))advance(b,to.id,rank(u,6,2));
+            if(rank(u,6)&&count>=2)for(const to of allies(b,u))advance(b,to.id,rank(u,6,2));
           }
         }
         if(actor===u&&(key==='basic'||key==='enhancedBasic')){
@@ -6568,9 +6723,25 @@ const factories={
         resource(b,u,'创世诗篇待弹射',0);
         useAction(b,s,'basic','extra');
       },
+      // 1141518「持续至下一个那刻夏回合开始时」：只在【真知】已经获得后的下一个
+      // 那刻夏回合开始清除；仅持有待结算标记（尚未施放普攻/战技）时不清。
+      turnStart(b,u,actor){
+        if(actor?.characterId!==1405||actor.resources?.['Cyrene理性诗篇来源']!==u.id)return;
+        const granted=actor.resources?.['Cyrene理性诗篇真知已获'];
+        if(granted==null||(actor.turns??0)<=granted)return;
+        clearTruth(b,u);
+        resource(b,actor,'Cyrene理性诗篇真知已获',null);
+        resource(b,actor,'Cyrene理性诗篇待真知',0);
+        resource(b,actor,'Cyrene理性诗篇来源',null);
+      },
       summonTurn(){},
       death(b,u,from,to){
-        if(to===u||to.memospriteOwner===u.id){const s=memAny(b,u);if(s)dismissServant(b,u,s,api);}
+        if(to===u||to.memospriteOwner===u.id){
+          const s=memAny(b,u);if(s)dismissServant(b,u,s,api);
+          // E6 首次真我诗篇的 -20% 防御只在德谬歌在场时生效；德谬歌/昔涟离场即清除。
+          for(const e of b.units)if(e.side!==u.side)
+            e.buffs=e.buffs.filter(x=>!String(x.id??'').startsWith(u.id+':cyrene-e6-def:'));
+        }
         void from;
       },
       modifiers(b,u,actor,to,a,kind){
@@ -6591,7 +6762,8 @@ const factories={
       resource(b,s,'故事',(s.resources['故事']??0)+n);
       const need=SV(1141526)[1];
       if(s.resources['故事']>=need){
-        resource(b,s,'故事',0);gainMemo(b,u,3);
+        // 1141526 原文只写消耗全部【故事】获得额外回合并施放舞曲，没有追忆增益。
+        resource(b,s,'故事',0);
         useAction(b,s,'basic','extra');
       }
       void get;
@@ -6632,21 +6804,23 @@ const factories={
       const s=mem(b,u);if(!s||!api.live(s))return;
       buff(b,u,s,'知更鸟•晴歌 E4 · 速度','speedPct',rank(u,4,1)+scent(u)*rank(u,4,2),null,{id:u.id+':e4-speed'});
     }
-    function gainScent(b,u,n){
+    function gainScent(b,u,n,source){
       const before=scent(u);
       resource(b,u,'气氛值',Math.min(scentCap(u),before+n));
       refreshBandSpeed(b,u);
-      // 行迹 point06：使我方目标获得气氛值时按攻击力/暴伤分支给增益。
+      // 行迹 point06：使知更鸟获得气氛值的**该目标**按攻击力/暴伤分支获得增益；
+      // 不能固定取队伍里第一个非知更鸟角色（3~4 人队伍会加错人）。
       if(trace(u,1)&&before<scentCap(u)){
-        const to=allies(b,u).find(t=>t!==u)??u,val=scent(u);
+        const to=source&&source.side===u.side?source:(allies(b,u).find(t=>t!==u)??u),val=scent(u);
         const p=combatPanel(u);
         if(combatPanel(to).atk>p.atk)buff(b,u,to,'偏离和弦 · 攻击','atk',p.hp*(trace(u,1)[0]+val*trace(u,1)[1]),trace(u,1)[4],{id:u.id+':trace6-atk'});
         else buff(b,u,to,'偏离和弦 · 暴伤','critDmg',trace(u,1)[2]+val*trace(u,1)[3],trace(u,1)[4],{id:u.id+':trace6-cd'});
       }
       // 行迹 point07：任意目标回合内第一次获得气氛值时若持有【律动】，消耗 1 层并固定回 3 能。
       const rhythm=tagOf(u,'robinRhythm');
-      if(rhythm&&rhythm.stacks>0&&u.resources['本回合已消耗律动']!==b.turns){
-        resource(b,u,'本回合已消耗律动',b.turns);
+      // 原始 PointB2_TurnFlag 只在**我方回合开始**时清除；不能用 b.turns（敌方回合也会推进）。
+      if(rhythm&&rhythm.stacks>0&&u.resources['本回合已消耗律动']!==(u.resources['盟友回合计数']??0)){
+        resource(b,u,'本回合已消耗律动',u.resources['盟友回合计数']??0);
         buff(b,u,u,'即兴蓝调 · 律动','marker',0,null,{id:u.id+':rhythm',tag:'robinRhythm',stacks:rhythm.stacks-1});
         energy(b,u,trace(u,2)[1],true);
       }
@@ -6664,14 +6838,21 @@ const factories={
       const s=spawnBand(b,u);
       buff(b,u,u,'Fever','marker',0,null,{tag:'fever'});
       s.cannotAct=false;
+      // 1151203 Fever 进入时 ResetActionDelay：乐手从满行动条开始。
+      s.distance=10000;s.advanceOrder=0;
       refreshBandSpeed(b,u);
-      u.buffs=u.buffs.filter(e=>e.control!=='freeze');s.buffs=s.buffs.filter(e=>e.control!=='freeze');
+      // 151204 desc：全员登台时解除知更鸟与「晴空乐手」陷入的**所有**控制类负面状态
+      //（旧实现只清冻结，眩晕/禁锢/纠缠等仍会残留）。
+      const cleanseControl=t=>{t.buffs=t.buffs.filter(e=>!e.control);t.dots=t.dots.filter(e=>!e.control);};
+      cleanseControl(u);cleanseControl(s);
       let cd=b.summons.find(x=>x.id===u.id+':fever');
       if(!cd){cd={id:u.id+':fever',name:'【Fever】倒计时',owner:u.id,bondmate:u.id,kind:'countdown',
         speed:SV(1151203)[8],distance:10000,active:true,order:b.units.length+b.summons.length};b.summons.push(cd);}
+      // 退出 Fever 后倒计时只是失活；再次进入 Fever 时必须重新启用并回到满行动条。
+      else{cd.active=true;cd.speed=SV(1151203)[8];cd.distance=10000;}
       if(rank(u,6))u.energyMax=(u.resources['基础能量上限']??ROSTER_DATA[1512].energyMax)*2;
       if(rank(u,6)&&!u.resources['fever回能已用']){resource(b,u,'fever回能已用',1);energy(b,u,rank(u,6,1),true);}
-      if(rank(u,4))gainScent(b,u,rank(u,4,0));
+      if(rank(u,4))gainScent(b,u,rank(u,4,0),u);
       record(b,'mechanic',u,{name:'进入【Fever】'});
     }
     function exitFever(b,u){
@@ -6697,14 +6878,16 @@ const factories={
       entry(b,u){
         const maze=ROSTER_DATA[1512].skills['151207']?.params?.['1']?.param_list??[6,.3,.2];
         advance(b,u.id,maze[2]);
-        gainScent(b,u,maze[0]);
+        gainScent(b,u,maze[0],u);
         for(const to of allies(b,u))buff(b,u,to,'我们自成旋律','dmgBoost',maze[1],2,{id:u.id+':maze-dmg'});
       },
       after(b,u,actor,key,kind,a,selected,hitTargets){
         const scentBeforeAction=scent(u);
         // E1：忆灵技追加伤害按当前记录值和当前气氛值结算，然后仅清除记录值的50%。
         // 先由忆灵自身的基础全体攻击结算，再把真实伤害打到当前生命值最高的存活敌人。
-        if(rank(u,1)&&actor?.memospriteOwner===u.id&&key==='basic'&&kind==='extra'){
+        // 忆灵的真实回合由引擎以 kind='normal' 执行（engine.mjs 的召唤物行动路径），
+        // 旧条件只接受 kind='extra'，导致 E1 在正常战斗中永远不触发。
+        if(rank(u,1)&&actor?.memospriteOwner===u.id&&key==='basic'&&kind!=='copy'&&kind!=='technique'){
           const stored=u.resources['晴空乐手记录伤害']??0;
           const target=enemies(b,u).reduce((best,to)=>!best||to.hp>best.hp?to:best,null);
           if(stored>0&&target){
@@ -6715,23 +6898,31 @@ const factories={
           }
         }
         if(actor===u&&key==='skill'&&kind!=='copy'){
+          // 151202：Success 分支（首次召唤）只 CreateServant；Failed 分支（已在场）才治疗并 +6 气氛。
+          const had=!!memAny(b,u);
           const s=spawnBand(b,u);
-          heal(b,u,s,combatPanel(s).hp*P(u).BPSkill[0]);
-          if(servants(u)===0)resource(b,u,'乐手人数',1);
-          gainScent(b,u,P(u).BPSkill[1]);
+          if(had){
+            heal(b,u,s,combatPanel(s).hp*P(u).BPSkill[0]);
+            gainScent(b,u,P(u).BPSkill[1],u);
+          }else if(servants(u)===0)resource(b,u,'乐手人数',1);
         }
         if(actor===u&&key==='ultimate'&&kind!=='copy'){
           const to=api.get(b,u.policy?.allyTargetId)??allies(b,u).find(t=>t!==u);
           if(to){
             advance(b,to.id,P(u).Ultra[0]);
             energy(b,to,(to.energyMax??0)*P(u).Ultra[2],true);
-            buff(b,u,to,'特邀嘉宾','marker',0,P(u).Ultra[1],{id:u.id+':guest',tag:'robinGuest',tickAt:'start'});
+            // 151203：持有者及其召唤物攻击额外 +2 气氛，且无法使其他友方获得行动提前。
+            // `blockAllyAdvance` 是引擎通用白名单标记（engine.advance）。
+            buff(b,u,to,'特邀嘉宾','marker',0,P(u).Ultra[1],{id:u.id+':guest',tag:'robinGuest',tickAt:'start',blockAllyAdvance:true});
           }
         }
         // 我方目标施放攻击 → +1 气氛值；【特邀嘉宾】攻击额外 +2。
         if(hitTargets.length&&actor&&actor.side===u.side&&!['dot','additional'].includes(kind)){
-          gainScent(b,u,1);
-          if(actor.buffs?.some(e=>e.tag==='robinGuest'))gainScent(b,u,P(u).Ultra[1]);
+          gainScent(b,u,1,actor);
+          // 【特邀嘉宾】：持有者**及其召唤物**攻击时额外 +2 气氛值（151203 desc）。
+          const guestOwner=actor.buffs?.some(e=>e.tag==='robinGuest')
+            ||(actor.memospriteOwner&&b.units.find(t=>t.id===actor.memospriteOwner)?.buffs.some(e=>e.tag==='robinGuest'));
+          if(guestOwner)gainScent(b,u,P(u).Ultra[1],actor);
         }
         // 每个提供者自己的回合首次治疗/施加护盾 → +1 气氛值（扫描日志）。
         // 原始 Passive_HyperCharge 的 TurnFlag 挂在 ModifierOwnerEntity，且只在该单位
@@ -6742,8 +6933,21 @@ const factories={
           for(const e of b.log.slice(from))if(e.type==='heal'||e.type==='shield'){
             const provider=b.units.find(t=>t.id===e.actor);if(!provider||provider.side!==u.side)continue;
             const key='治疗护盾气氛回合:'+provider.id,turn=provider.turns??0;
-            if((u.resources[key]??-1)===turn)continue;
-            resource(b,u,key,turn);gainScent(b,u,1);
+            if((u.resources[key]??-1)!==turn){
+              resource(b,u,key,turn);gainScent(b,u,1,provider);
+            }
+            // 行迹 point07：知更鸟或晴空乐手受到**队友**治疗/护盾时 +12 层【律动】，上限 12。
+            const rhythmTrace=trace(u,2);
+            if(rhythmTrace){
+              const target=b.units.find(t=>t.id===e.target);
+              const robinOrBand=target===u||target?.memospriteOwner===u.id;
+              const fromMate=provider!==u&&provider.memospriteOwner!==u.id;
+              if(robinOrBand&&fromMate){
+                const cur=tagOf(u,'robinRhythm')?.stacks??0,next=Math.min(rhythmTrace[2],cur+rhythmTrace[0]);
+                buff(b,u,u,'即兴蓝调 · 律动','marker',0,null,{id:u.id+':rhythm',tag:'robinRhythm',stacks:next});
+                record(b,'mechanic',u,{name:'即兴蓝调 · 律动',stacks:next,source:provider.id,target:e.target});
+              }
+            }
           }
           resource(b,u,'事件扫描',b.log.length);
         }
@@ -6751,7 +6955,7 @@ const factories={
         // 在该角色下一次正常回合开始后才允许再次触发。只在本次技能确实令气氛值增加时发放。
         if(rank(u,2)&&key==='skill'&&actor?.side===u.side&&scent(u)>scentBeforeAction){
           const key='E2技能气氛回合:'+actor.id,turn=actor.turns??0;
-          if((u.resources[key]??-1)!==turn){resource(b,u,key,turn);gainScent(b,u,rank(u,2,1));}
+          if((u.resources[key]??-1)!==turn){resource(b,u,key,turn);gainScent(b,u,rank(u,2,1),actor);}
         }
         void a;void selected;
       },
@@ -6762,8 +6966,24 @@ const factories={
         if(event?.type==='damage'&&event.damage>0)
           resource(b,u,'晴空乐手记录伤害',(u.resources['晴空乐手记录伤害']??0)+event.damage*rank(u,1,2));
       },
+      // 行迹 point08：知更鸟本人也 +50% 暴击率（乐手的同名增益在 spawnBand 施加，避免叠加）。
+      // 151204 desc：【Fever】期间知更鸟与晴空乐手免疫控制类负面状态。
+      panel(b,u,to,out){
+        const own=to===u,band=to?.memospriteOwner===u.id;
+        if(!own&&!band)return;
+        if(own&&trace(u,3))out.critRate=(out.critRate??0)+trace(u,3)[0];
+        if(fever(u))out.controlRes=1;
+      },
+      // 151204 desc：【Fever】状态结束前知更鸟不会进入自己的回合。
+      // 引擎在 onTurnStart 之后检查 skipTurns，因此这里置 1 即可跳过本次自身回合。
       // 晴空乐手回合开始时施放忆灵技（Fever 期间才会出现在行动序列上）。
       turnStart(b,u,actor){
+        if(actor?.side===u.side)resource(b,u,'盟友回合计数',(u.resources['盟友回合计数']??0)+1);
+        if(actor===u&&fever(u)){
+          u.skipTurns=Math.max(1,u.skipTurns??0);
+          record(b,'mechanic',u,{name:'Fever · 跳过自身回合'});
+          return;
+        }
         if(actor&&actor.memospriteOwner===u.id){
           const q=SV(1151201);
           actor.actions.basic.terms=[{scaling:'hp',multiplier:q[1]*(rank(u,6)?1+rank(u,6,0):1)}];
@@ -6789,6 +7009,9 @@ const factories={
         const out={};if(to.side===u.side)return out;
         // Fever 结界：我方目标造成伤害无视敌方 (15%+气氛值×0.5%) 防御；乐手数量使敌方受到伤害提高。
         if(fever(u))out.defIgnore=(out.defIgnore??0)+P(u).Talent[7]+scent(u)*P(u).Talent[8];
+        // 1151203：Fever 期间知更鸟与晴空乐手造成的伤害提高（84% + 气氛值×2.8%）。
+        if(fever(u)&&(actor===u||actor?.memospriteOwner===u.id))
+          out.dmgBoost=(out.dmgBoost??0)+SV(1151203)[0]+scent(u)*SV(1151203)[1];
         const n=servants(u);if(n>0)out.vuln=(out.vuln??0)+(n>=3?SV(1151203)[4]:n===2?SV(1151203)[3]:SV(1151203)[2]);
         if(rank(u,2))out.resPen=(out.resPen??0)+rank(u,2,2);
         void a;void kind;return out;
@@ -6815,8 +7038,9 @@ const actions={
   // 遐蝶：普攻 2 段（Skill01_Phase02=[.2,.8]）；战技 1 主 + 1 相邻；强化战技 2 段全体；终结为召唤动作。
   1407:(p,d)=>({
     basic:basic(p,d,{terms:hp(p.Normal[0]),hitShares:[.2,.8],toughness:30,energyGain:0}),
+    // 140702 bpNeed=-1：普通战技不消耗战技点。
     skill:skill(p,d,{target:'blast',terms:[...hp(p.BPSkill[1]),{...hp(p.BPSkill[2])[0],target:'adjacent'}],
-      hitShares:[1],toughness:60,adjacentToughness:30,energyGain:0}),
+      hitShares:[1],toughness:60,adjacentToughness:30,energyGain:0,spCost:0}),
     enhancedSkill:{name:'骸爪，冥龙之环拥',type:'BPSkill',element:'Quantum',target:'all',
       terms:[...hp(p.BPSkill[1]),...hp(p.BPSkill[2])],hitShares:[.5,.5],energyGain:0,spCost:0,spGain:0,toughness:60},
     summonDragon:{name:'亡喉怒哮，苏生之颂铃',type:'Ultra',element:'Quantum',target:'self',terms:[],energyGain:0,spCost:0,spGain:0},
@@ -9015,7 +9239,7 @@ __def("simulator/characters/extra/batch14.mjs", function (__req) {
 //              行迹1[10,30] 行迹2[1.4,0.5] 行迹3[0.04]；E1[0.16,2,1] E2[0.2] E4[0.3,2,2] E6[1.3]
 //   1510 姬子  普攻[1.4]；战技[0.25 增伤, 3 回合]；终结[0.4,1,0.25,1,0.375,3,1,3,9.525,3.15]；
 //              天赋[1.0 暴伤, 0.25 抗穿, 4 回能]；助战技 151022[2,3,0.3,2.5,4,0.39,4,2]；
-//              光束 151008[0.4,1,3]；脉冲 151009[0.25,1,0.375]；秘技[30 秒]；
+//              光束 151008[0.4,1,3]；脉冲 151009[0.25,1,0.375]；终击 151014[3,1]（stance 12）；秘技[30 秒]；
 //              行迹1[5] 行迹2[0.5] 行迹3[3,3,0.3]；E1[1,3,1,1] E2[1.3] E4[0.1] E6[0.2,6,0.75,6,1.6]
 //   1508 远坂凛 普攻[1.4]；战技[2.25]；终结[7.5,2.5,12,1 战技点,0.25 易伤,3 回合]；
 //              天赋[20 开场能量,2 回合,0.875 暴伤,7 战技点阈值,15 能量阈值]；
@@ -9408,6 +9632,12 @@ const factories={
       },
       // 天赋：对处于【质性揭露】的目标施放普攻或战技后，额外施放 1 次战技（不消耗战技点、不再次触发）。
       prepare(b,u,key,kind,a){
+        // 1141518 献予「理性」之诗：战技伤害次数 +3（一次性，持续 1 回合）。
+        // 只读取、不在这里消费：prepare 会在选靶与执行阶段被调用多次，消费会导致第二次退回原段数。
+        if(key==='skill'&&(u.resources['Cyrene理性诗篇次数']??0)>0){
+          const n=u.resources['Cyrene理性诗篇次数'];
+          return {...a,bounceCount:(a.bounceCount??0)+n};
+        }
         if(key!=='skill'||kind!=='followup')return a;
         return {...a,spCost:0,spGain:0,extraSkill:true};
       },
@@ -9420,6 +9650,8 @@ const factories={
         if(key==='basic'&&trace(u,1))energy(b,u,trace(u,1)[0]);
         // E1：首次施放战技后恢复 1 个战技点；战技命中使目标防御力降低 16%，持续 2 回合。
         if(key==='skill'){
+          // 理性诗篇的战技次数在动作真正结算后消费，避免 prepare 多次调用提前清空。
+          if((u.resources['Cyrene理性诗篇次数']??0)>0)resource(b,u,'Cyrene理性诗篇次数',0);
           if(rank(u,1)){
             if(!(u.resources['E1 已恢复']??0)){resource(b,u,'E1 已恢复',1);api.sp(b,u,rank(u,1,2),'那刻夏 E1');}
             for(const to of alive)buff(b,u,to,'那刻夏 E1 · 防御降低','defShred',rank(u,1,0),rank(u,1,1),{id:u.id+':e1',debuff:true});
@@ -9463,17 +9695,56 @@ const factories={
   1510:function(api){
     const {live,enemies,allies,rank,trace,buff,resource,energy,damageTo,record}=api;
     const P=u=>u.kit.params;
-    const enqueue=(b,u,key,kind,targetId)=>b.queue.push({actor:u.id,key,kind,targetId:targetId??null});
+    const enqueue=(b,u,key,kind,targetId,extra={})=>b.queue.push({actor:u.id,key,kind,targetId:targetId??null,...extra});
     const capUses=u=>rank(u,2)?2:1;
     const usesOf=t=>t.resources['助战技次数']??0;
     // 上限由姬子•启行的 E2 决定（而非使用者的星魂）。
     const setUses=(b,u,t,n)=>resource(b,t,'助战技次数',Math.max(0,Math.min(capUses(u),n)));
     const capEnergy=u=>rank(u,6)?rank(u,6,1):3;
     const sourceEnergy=u=>u.resources['源能']??0;
+    // 同行协议参数（151025/151026 等级 15）：#8 增伤/暴伤、#9 触发次数、#10 终结/战技额外增伤。
+    const PROTOCOL_SKILL={juecai:151025,jianpo:151026};
+    const protoRow=which=>ROSTER_DATA[1510].skills[String(PROTOCOL_SKILL[which])]?.params?.['15']?.param_list
+      ??[2,3,0.3,2.5,4,0.39,4,1.25,which==='juecai'?2:9,1.25];
+    const protoCap=u=>2+(rank(u,1)?rank(u,1,3):0);
+    function queueFreeAssist(b,u,reason){
+      if((u.resources['协议额外助战已用']??0)>=protoCap(u))return false;
+      resource(b,u,'协议额外助战已用',(u.resources['协议额外助战已用']??0)+1);
+      const to=enemies(b,u)[0];
+      enqueue(b,u,'assistFree','followup',to?.id,{persistWave:true});
+      record(b,'mechanic',u,{name:'同行协议 · 额外助战技',reason,used:u.resources['协议额外助战已用'],cap:protoCap(u)});
+      return true;
+    }
     const enqueueFinalBlow=(b,u)=>{
       if(u.resources['拓星者终击已排程'])return;
       resource(b,u,'拓星者终击已排程',1);
-      enqueue(b,u,'finalBlow','extra');
+      // 最后一击属于同一次「拓星者」接管；若光束 / 脉冲恰好清空当前波，下一波仍须执行终击
+      //（原始脚本 OnWaveMonster → ReStartUltraSkill，AllDarkTeam 改指新一波）。
+      enqueue(b,u,'finalBlow','extra',null,{persistWave:true});
+    };
+    // 原始脚本 Avatar_HimekoNova_00_Skill11/Skill21_TargetHPCanBeDamage：
+    //   · ByCheckTargetHPCanBeDamage(AllDarkTeam.RemoveUnselectable) 为假（没有任何敌人还能掉血）→ Skill31 最后一击；
+    //   · 否则只要存在 1 名不带 MCommon_LockHPThresholdReached_Mark 的敌人就继续光束 / 脉冲。
+    // 引擎没有战斗脚本的动态标记，故用通用字段表达：hpLocked 或 tag='lockHpThreshold' 视为到达锁血阈值。
+    const hpLocked=to=>to.hpLocked===true||to.buffs.some(e=>e.tag==='lockHpThreshold');
+    const hpDamageable=to=>live(to)&&to.hpDamageable!==false&&to.cannotBeDamaged!==true;
+    const pendingWave=(b,u)=>b.units.some(t=>t.side!==u.side&&(t.wave??1)>b.wave&&t.hp>1e-8);
+    const sequenceCanContinue=(b,u)=>{
+      const pool=enemies(b,u);
+      if(pool.some(to=>hpDamageable(to)&&!hpLocked(to)))return true;
+      // 换波后 AllDarkTeam 已是新一波敌人；当前波全灭且还有后续波次时序列继续（不是提前收尾）。
+      return pool.length===0&&pendingWave(b,u);
+    };
+    // 提前收尾：取消本次终结技尚未执行的光束 / 脉冲指令，立刻插入最后一击。
+    // 只有真正跳过了后续指令时才记录「提前收尾」；脉冲作为序列的正常终点不算提前。
+    const earlyFinalBlow=(b,u,reason)=>{
+      const dropped=b.queue.filter(q=>q.actor===u.id&&(q.key==='beam'||q.key==='pulse'));
+      if(dropped.length){
+        b.queue=b.queue.filter(q=>!(q.actor===u.id&&(q.key==='beam'||q.key==='pulse')));
+        for(const q of dropped)if(q.planIndex!=null)b.planQueued=b.planQueued.filter(i=>i!==q.planIndex);
+        record(b,'mechanic',u,{name:'拓星者 · 提前收尾',reason,skipped:dropped.length});
+      }
+      enqueueFinalBlow(b,u);
     };
     const gainSource=(b,u,n=1,reason='星魂6 · 助战技')=>{
       if(!rank(u,6)||n<=0)return;
@@ -9488,11 +9759,26 @@ const factories={
     return {
       start(b,u){
         resource(b,u,'源能',0);
-        // 天赋「共赴灼热的远征」：展开境界并使我方全体获得 1 次助战技使用次数。
+        // 天赋「共赴灼热的远征」：姬子•启行在场时展开境界【拓星视界】，场上出现「拓星者」。
+        // 二者都随姬子离场而关闭（death 钩子），资源值用于战斗日志 / frame.resources 复核。
+        resource(b,u,'境界·拓星视界',1);
+        resource(b,u,'实体·拓星者',1);
+        // 并使我方全体获得 1 次助战技使用次数。
         for(const to of allies(b,u)){
           setUses(b,u,to,1);
           if(to!==u)to.actions.supportSkill={name:'开拓，与你同行',type:'Support',element:'Fire',target:'single',terms:[],hitShares:[1],energyGain:0,spCost:0,spGain:0,toughness:0};
         }
+      },
+      // 境界 / 「拓星者」实体生命周期：姬子•启行离场时关闭境界（原始 FieldExit_Insert 的
+      // SetDieImmediately/ForceKill Partners + RemoveModifier）；其未执行的光束 / 脉冲 / 终击随后按阵亡单位跳过。
+      death(b,u,from,to){
+        void from;
+        if(to!==u)return;
+        resource(b,u,'境界·拓星视界',0);
+        resource(b,u,'实体·拓星者',0);
+        resource(b,u,'拓星者终结技进行中',0);
+        resource(b,u,'拓星者终击已排程',0);
+        record(b,'mechanic',u,{name:'境界【拓星视界】关闭',reason:'姬子•启行离场'});
       },
       // 秘技「拓星巡航」：进入战斗后每个波次开始时立即施放 1 次战技（获得【领航旗语】）。
       waveStart(b,u){
@@ -9506,8 +9792,12 @@ const factories={
       turnStart(b,u,actor){
         if(actor!==u)return;
         if(trace(u,1)&&usesOf(u)>=capUses(u))energy(b,u,trace(u,1)[0]);
-        // 【领航旗语】存在时每个回合开始立即恢复 1 次助战技使用次数。
-        if(u.buffs.some(e=>e.id===u.id+':flag'))for(const to of allies(b,u))setUses(b,u,to,usesOf(to)+1);
+        // 【领航旗语】存在时每个回合开始立即恢复 1 次助战技使用次数；
+        // E2「旗帜，永不降下的帆」：该恢复额外 +1 次（1510 技能文本 E2 明示）。
+        if(u.buffs.some(e=>e.id===u.id+':flag')){
+          const step=1+(rank(u,2)?1:0);
+          for(const to of allies(b,u))setUses(b,u,to,usesOf(to)+step);
+        }
       },
       // 行迹「银轨在旷古中静默」(point08)：施放终结技时立即获得 3 点【源能】；终结技期间 6 次光束各 +1。
       prepare(b,u,key,kind,a){
@@ -9528,7 +9818,10 @@ const factories={
           const stored=sourceEnergy(u);
           a.sourceEnergyAtPulse=stored;
           a.bounceCount=Math.max(0,stored-1);
-          a.bounceTerms=atk(P(u).Ultra[4]);
+          // 行迹 point08「银轨在旷古中静默」：施放脉冲时源能 ≥#2（3）点，
+          // 脉冲的随机单体额外伤害倍率提高 #3（30%）。
+          const bounceBonus=trace(u,3)&&stored>=trace(u,3)[1]?trace(u,3)[2]:0;
+          a.bounceTerms=atk(P(u).Ultra[4]*(1+bounceBonus));
           a.bounceToughness=0;
           // 脉冲先消耗1点；当前源能高于1时，每再消耗1点追加一次随机单体伤害。
           resource(b,u,'源能',0);
@@ -9542,22 +9835,44 @@ const factories={
           energy(b,actor,P(u).Talent[2]);
           // E6：我方使用助战技时姬子获得 1 点源能；姬子随后的协同伤害是同一次助战技的伤害段，不能重复加点。
           gainSource(b,u,1,'队友使用助战技');
-          enqueue(b,u,'assist','followup',(selected.find(t=>t.side!==u.side)??hitTargets.find(t=>t.side!==u.side))?.id);
+          // 已进入同行协议时，队友的助战技走对应协议变体。
+          const proto=u.resources['同行协议'];
+          const assistKey=proto==='juecai'?'assistJuecai':proto==='jianpo'?'assistJianpo':'assist';
+          enqueue(b,u,assistKey,'followup',(selected.find(t=>t.side!==u.side)??hitTargets.find(t=>t.side!==u.side))?.id);
         }
+        // 同行协议：151025/151026 施放后进入对应状态，并清空该协议的计数。
+        if(actor===u&&(key==='assistJuecai'||key==='assistJianpo')){
+          const proto=key==='assistJuecai'?'juecai':'jianpo';
+          resource(b,u,'同行协议',proto);
+          resource(b,u,'协议计数',0);
+          record(b,'mechanic',u,{name:'进入同行协议',protocol:proto,params:protoRow(proto)});
+        }
+        // 裁决：队友主动施放终结技计数，达到 #9（E1 减 #1）后立即发动无消耗助战技。
+        if(actor&&actor!==u&&actor.side===u.side&&key==='ultimate'&&u.resources['同行协议']==='juecai'){
+          const need=Math.max(1,(protoRow('juecai')[8]??2)-(rank(u,1)?rank(u,1,0):0));
+          const n=(u.resources['协议计数']??0)+1;
+          if(n>=need){resource(b,u,'协议计数',0);queueFreeAssist(b,u,'裁决 · 队友终结技');}
+          else resource(b,u,'协议计数',n);
+        }
+        // 姬子本人施放终结技后刷新额外助战技次数。
+        if(actor===u&&key==='ultimate')resource(b,u,'协议额外助战已用',0);
         if(actor===u&&key==='beam'){
           resource(b,u,'拓星者光束次数',(u.resources['拓星者光束次数']??0)+1);
           gainBeamSource(b,u);
           const count=u.resources['拓星者光束次数']??0;
-          if(count>=6)enqueue(b,u,'pulse','extra');
+          // 六束耗尽 → Skill12_End_Enter 自动发动脉冲（脉冲后又接最后一击）。
+          // 本次接管跨波保留：第 6 束若恰好清空当前波，自动脉冲必须在新一波继续结算。
+          if(count>=6)enqueue(b,u,'pulse','extra',null,{persistWave:true});
+          // 原始脚本 Skill11_TargetHPCanBeDamage：这一束之后若场上已无敌人可继续削减生命值
+          // （全灭且无后续波次，或全部到达锁血阈值），立即取消剩余光束并发动最后一击。
+          else if(!sequenceCanContinue(b,u))earlyFinalBlow(b,u,'超频粒子光束后敌方已无法继续削减生命值');
         }
         if(actor===u&&key==='pulse'){
           if(rank(u,6)&&a.sourceEnergyAtPulse>=rank(u,6,3))
             for(const to of enemies(b,u))damageTo(b,u,to,{name:'轨道歼灭脉冲 · E6额外火伤',type:'Ultra',element:'Fire',terms:atk(rank(u,6,4)),toughness:0},1,'primary','direct');
-          // 脉冲结束超频选择，立刻接终击；同一终结技中未执行的光束指令取消。
-          b.queue=b.queue.filter(q=>!(q.actor===u.id&&q.key==='beam'&&q.planIndex!=null));
-          enqueueFinalBlow(b,u);
+          // 脉冲结束超频选择，立刻接终击；同一终结技中未执行的光束指令取消（含操作轴占用清理）。
+          earlyFinalBlow(b,u,'轨道歼灭脉冲结束');
         }
-        if(actor===u&&key==='beam'&&(u.resources['拓星者光束次数']??0)>=6)enqueueFinalBlow(b,u);
         if(actor===u&&key==='finalBlow')resource(b,u,'拓星者终结技进行中',0);
         if(actor!==u)return;
         // 战技：立即恢复所有助战技使用次数，并获得【领航旗语】：我方全体造成的伤害提高 BPSkill[0]=25%，持续 BPSkill[1]=3 回合。
@@ -9568,16 +9883,42 @@ const factories={
           }
         }
         // 使用助战技视为姬子施放了战技：获得 Talent[1]=25% 全属性抗性穿透与 Talent[0]=100% 暴击伤害。
-        if(key==='assist'){
+        if(key==='assist'||key==='assistJuecai'||key==='assistJianpo'||key==='assistFree'){
           // E4：助战技抗穿改为全队效果；姬子本人额外提高 10 个百分点。
+          // 境界关闭（姬子离场）时全队共享的抗穿随之移除；姬子本人的增益随其死亡自然失效。
           for(const to of rank(u,4)?allies(b,u):[u])
-            buff(b,u,to,'共赴灼热的远征 · 抗性穿透','resPen',P(u).Talent[1]+(to===u&&rank(u,4)?rank(u,4,0):0),null,{id:to===u?u.id+':talent-pen':u.id+':talent-pen:'+to.id});
-          buff(b,u,u,'共赴灼热的远征 · 暴击伤害','critDmg',P(u).Talent[0],null,{id:u.id+':talent-cd'});
+            buff(b,u,to,'共赴灼热的远征 · 抗性穿透','resPen',P(u).Talent[1]+(to===u&&rank(u,4)?rank(u,4,0):0),null,
+              {id:to===u?u.id+':talent-pen':u.id+':talent-pen:'+to.id,removeOnSourceDeath:true});
+          buff(b,u,u,'共赴灼热的远征 · 暴击伤害','critDmg',P(u).Talent[0],null,{id:u.id+':talent-cd',removeOnSourceDeath:true});
         }
+      },
+      // 歼破：我方每击中 1 名敌方目标获得 1 点充能；达到 #9（E1 减 #2）后立即发动无消耗助战技。
+      // 无消耗助战技本身不获得充能（assistFree）。
+      afterHit(b,u,actor,to,a,kind){
+        void a;void kind;
+        if(u.resources['同行协议']!=='jianpo')return;
+        if(!actor||actor.side!==u.side||to.side===u.side)return;
+        if(b.activeAction?.key==='assistFree')return;
+        const need=Math.max(1,(protoRow('jianpo')[8]??9)-(rank(u,1)?rank(u,1,1):0));
+        const n=(u.resources['协议计数']??0)+1;
+        if(n>=need){resource(b,u,'协议计数',0);queueFreeAssist(b,u,'歼破 · 充能');}
+        else resource(b,u,'协议计数',n);
       },
       modifiers(b,u,actor,to,a,kind){
         const out={};
-        if(actor!==u||to.side===u.side)return out;
+        if(to.side===u.side)return out;
+        const proto=u.resources['同行协议'];
+        // 歼破：我方全体暴击伤害 + #8；战技暴击伤害额外 + #10。
+        if(proto==='jianpo'&&actor.side===u.side){
+          const row=protoRow('jianpo');
+          out.critDmg=(out.critDmg??0)+(row[7]??0)+(a.type==='BPSkill'?(row[9]??0):0);
+        }
+        if(actor!==u)return out;
+        // 裁决：姬子造成的伤害 + #8，终结技伤害额外 + #10。
+        if(proto==='juecai'){
+          const row=protoRow('juecai');
+          out.dmgBoost=(out.dmgBoost??0)+(row[7]??0)+(a.type==='Ultra'?(row[9]??0):0);
+        }
         // E6：姬子火属性抗性穿透 +20%；助战技造成的伤害提高 E6[2]=75%。
         if(rank(u,6))out.resPen=(out.resPen??0)+rank(u,6,0);
         if(rank(u,6)&&a.type==='Assist')out.dmgBoost=(out.dmgBoost??0)+rank(u,6,2);
@@ -9761,6 +10102,10 @@ const actions={
     const A=HIMEKO_ASSIST;
     const beam=rowFor(1510,151003,151008,p.Ultra[0]);
     const pulse=rowFor(1510,151003,151009,p.Ultra[0]);
+    // 最后一击对应内部技能 151014（simpleDesc 与 151003 #6/#7 一致：3 次随机单体），
+    // 其倍率 / 段数 / 削韧一并从 151014 的同等级行与 stance 读取，避免与终结技主表脱钩。
+    const fin=rowFor(1510,151003,151014,p.Ultra[0]);
+    const finStance=ROSTER_DATA[1510].skills?.[151014]?.stance?.[0]??0;
     return {
       basic:basic(p,d,{terms:atk(p.Normal[0])}),
       skill:skill(p,d,{target:'self',terms:[],toughness:0}),
@@ -9768,10 +10113,23 @@ const actions={
       ultimate:ultimate(p,d,{target:'self',terms:[],toughness:0}),
       beam:{name:ROSTER_DATA[1510].skills[151008].name,type:'Ultra',element:'Fire',target:'all',terms:atk(beam[0]),hitShares:[1],toughness:6,energyGain:0,spCost:0,spGain:0,persistWave:true},
       pulse:{name:ROSTER_DATA[1510].skills[151009].name,type:'Ultra',element:'Fire',target:'all',terms:atk(pulse[0]),hitShares:[1],toughness:6,energyGain:0,spCost:0,spGain:0,persistWave:true},
-      finalBlow:{name:'拓星者 · 最后一击',type:'Ultra',element:'Fire',target:'single',terms:atk(p.Ultra[6]),hitShares:[1],
-        bounceCount:Math.max(0,p.Ultra[5]-1),bounceTerms:atk(p.Ultra[6]),toughness:0,bounceToughness:0,energyGain:0,spCost:0,spGain:0,persistWave:true},
+      finalBlow:{name:'拓星者 · 最后一击',type:'Ultra',element:'Fire',target:'single',
+        terms:atk(fin[1]??p.Ultra[6]),hitShares:[1],
+        bounceCount:Math.max(0,(fin[0]??p.Ultra[5])-1),bounceTerms:atk(fin[1]??p.Ultra[6]),
+        toughness:finStance,bounceToughness:finStance,energyGain:0,spCost:0,spGain:0,persistWave:true},
       assist:{name:'开拓，与你同行',type:'Assist',element:'Fire',target:'all',
         terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:18,spCost:0,spGain:0,
+        bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
+      // 同行协议：151025 / 151026 是助战技的协议变体（同一段数/倍率，附加协议状态）。
+      assistJuecai:{name:'同行协议：裁决',type:'Assist',element:'Fire',target:'all',protocol:'juecai',
+        terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:0,spCost:0,spGain:0,
+        bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
+      assistJianpo:{name:'同行协议：歼破',type:'Assist',element:'Fire',target:'all',protocol:'jianpo',
+        terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:0,spCost:0,spGain:0,
+        bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
+      // 协议触发的无消耗助战技：不恢复能量，也不计入歼破充能。
+      assistFree:{name:'同行协议 · 无消耗助战技',type:'Assist',element:'Fire',target:'all',freeAssist:true,
+        terms:atk(A[3]),hitShares:[1],toughness:15,energyGain:0,spCost:0,spGain:0,
         bounceCount:A[4]+(eidolon>=1?(d.ranks?.[1]?.[2]??1):0),bounceTerms:atk(A[5]),bounceToughness:0,bounceEnergy:0},
     };
   },
@@ -9905,10 +10263,15 @@ function H(api){
     if(!to||!live(to)||!(n>0))return 0;
     const addBatch=(recipient,amount,source=u)=>{
       if(!(amount>0))return;
+      // 150304 天赋：真珠的【好活当赏】持有上限为 #3（4.6 = 50 点）；超出上限的部分不发放，
+      // 也不能写成会被后续到期事件重复转化的批次。
+      const cap=recipient.kit?.characterId===1503?(recipient.kit.params?.Talent?.[2]??Infinity):Infinity;
+      const current=punchOf(recipient),next=Math.min(cap,current+amount),granted=next-current;
+      if(!(granted>0))return;
       const seq=(recipient.resources['好活当赏批次序号']??0)+1;recipient.resources['好活当赏批次序号']=seq;
-      recipient.resources['好活当赏']=punchOf(recipient)+amount;
-      record(b,'resource',source,{target:recipient.id,name:'好活当赏',value:recipient.resources['好活当赏']});
-      buff(b,source,recipient,'好活当赏','marker',0,punchDurationFor(recipient,duration),{id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks:amount});
+      recipient.resources['好活当赏']=next;
+      record(b,'resource',source,{target:recipient.id,name:'好活当赏',value:next});
+      buff(b,source,recipient,'好活当赏','marker',0,punchDurationFor(recipient,duration),{id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks:granted});
     };
     // The source fires whenever a lower-index teammate gains Banger, not only after a natural Aha.
     const evanescia=b.units.find(t=>t.side===to.side&&t.kit?.characterId===1505&&live(t));
@@ -9916,10 +10279,14 @@ function H(api){
     const fromIndex=participantId(to),evanesciaIndex=participantId(evanescia);
     if(evanescia&&to!==evanescia&&point06>0&&Number.isFinite(fromIndex)&&Number.isFinite(evanesciaIndex)&&fromIndex<evanesciaIndex){
       const e2=evanescia.kit.eidolon>=2?(evanescia.kit.ranks?.[2]?.[1]??0):0;
-      const converted=Math.min(n,n*point06*(1+e2));
-      addBatch(to,n-converted);
+      // 先按接收者的持有上限（150304 #3）算出实际可发放量，再据此计算瞰众乐转化；
+      // 被上限拦下的请求不能凭空变成绯英的好活当赏。
+      const cap=to.kit?.characterId===1503?(to.kit.params?.Talent?.[2]??Infinity):Infinity;
+      const accepted=Math.min(n,Math.max(0,cap-punchOf(to)));
+      const converted=Math.min(accepted,accepted*point06*(1+e2));
+      addBatch(to,accepted-converted);
       addBatch(evanescia,converted,evanescia);
-      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:n,converted,participantId:fromIndex});
+      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:accepted,requested:n,converted,participantId:fromIndex});
       return punchOf(to);
     }
     addBatch(to,n);
@@ -9951,7 +10318,11 @@ function H(api){
   // 欢愉追加伤害使用共享 ElationDamage 公式。
   function hitElation(b,u,to,o){
     if(!to||!live(to))return;
-    damageTo(b,u,to,{name:o.name,type:'ElationDamage',punchlineSource:'certifiedBanger',punchlineFloor:o.punchlineFloor,element:o.element??u.element,terms:atk(o.mult),toughness:0},1,o.role??'primary','elation');
+    damageTo(b,u,to,{name:o.name,type:'ElationDamage',punchlineSource:'certifiedBanger',punchlineFloor:o.punchlineFloor,
+      ...(o.punchlineFrom?{punchlineFrom:o.punchlineFrom.id}:{}),
+      // 角色文案里的「本次造成的欢愉伤害固定计入 N 点好活当赏」不走持有量，直接覆盖计入值。
+      ...(o.punchlineOverride!=null?{punchlineOverride:o.punchlineOverride}:{}),
+      element:o.element??u.element,terms:atk(o.mult),toughness:0},1,o.role??'primary','elation');
   }
   const elationOf=u=>combatPanel(u).elation??0;
   function adjacentOf(b,u,to){
@@ -10034,8 +10405,10 @@ const actions={
       skill:skill(p,d,{target:'blast',terms:[...atk(p.BPSkill[1]),{...atk(p.BPSkill[2])[0],target:'adjacent'}],
         hitShares:[.2,.2,.2,.4],toughness:60,adjacentToughness:30}),
       // 150503：全体 #1=1.6，随后 #2=5 次随机单体 #3=1.2（行迹「瞰众乐」追加弹射）。
+      // 5 次随机单体段在 Avatar_Evanescia_00_Skill03_Phase02 里用 StanceValue 动态哈希 1659254037，
+      // 与主段 1182064154 分列 show_stance_list 的 [0]/[1]；150503.stance=[15,60,0] → 每段弹射削韧 15。
       ultimate:ultimate(p,d,{target:'all',terms:atk(p.Ultra[0]),toughness:60,hitShares:[1],
-        bounceCount:p.Ultra[1],bounceTerms:atk(p.Ultra[2]),bounceToughness:0}),
+        bounceCount:p.Ultra[1],bounceTerms:atk(p.Ultra[2]),bounceToughness:d.skills['150503'].stance?.[0]??0}),
       // 【狐狸老师】追加攻击：全体 #1=1.0 攻击力物理伤害（欢愉伤害在 after 里结算）。
       followup:talentAction(p,d,{target:'all',terms:atk(p.Talent[0]),toughness:30,energyGain:0,hitShares:[1]}),
       elation:elationAction(1505,d,{eidolon}),
@@ -10073,6 +10446,9 @@ const actions={
       // 151303：全体 #1=4.0，获得 #2=8 热意与 #3=6 笑点，自身速度 +#4 持续 #5 回合。
       ultimate:ultimate(p,d,{terms:atk(p.Ultra[0]),target:'all',toughness:60,hitShares:[1]}),
       elation:elationAction(1513,d,{eidolon}),
+      // 热意阈值触发的【举杯】是角色自身插入动作（InsertElationSkillSave），
+      // 不是全队阿哈额外回合；单独动作键便于固定计入 #5=20 笑点且不误用 All in。
+      elationHeat:elationAction(1513,d,{eidolon}),
     };
   },
 };
@@ -10090,23 +10466,32 @@ const factories={
       const {live,enemies,rank,trace,buff,resource,damageTo,record,sp}=api;
     const h=H(api);
     const d=ROSTER_DATA[1501];
+    // E2 的额外回合是 TurnInsertAction，没有动作类型限制；允许策略选择普攻/战技。
+    const extraTurnKey=u=>['basic','skill'].includes(u.policy?.extraTurnKey)?u.policy.extraTurnKey:'basic';
     const enhOf=u=>plist(d,150108,u.kit.skillLevels?.Normal)??plist(d,150108,6)??[1,.5];
     const trapOf=u=>plist(d,150109,u.kit.skillLevels?.BPSkill)??plist(d,150109,10)??[2,1,2,.2,.1];
     const connected=u=>(u.resources['直播连线']??0)>0;
     const traps=u=>u.resources['互动陷阱']??0;
     // 互动陷阱的随机礼物（150109 #1=2 战技点 + #3=2 笑点 / #2=1 笑点）。
     function gift(b,u,T){
-      if(b.random()<.5){h.gainLaughter(b,u,T[2],'互动陷阱 · 红红火火');sp(b,u,T[0],'互动陷阱 · 红红火火');}
-      else h.gainLaughter(b,u,T[1],'互动陷阱 · 恍恍惚惚');
-      record(b,'mechanic',u,{name:'互动陷阱 · 礼物'});
+      // 150109 礼包状态机：小奖后若大奖概率仍 >0，下一次强制大奖；
+      // 大奖/小奖各消耗一次对应概率，二者耗尽后重置。基础概率的原始动态哈希未解析，暂按 50/50。
+      const minor=u.resources['互动陷阱小奖数']??0,grandChance=u.resources['大奖概率']??1,smallChance=u.resources['小奖概率']??1;
+      const grand=minor>=1&&grandChance>0?true:b.random()<.5;
+      let nextGrand=grandChance,nextSmall=smallChance,nextMinor=minor;
+      if(grand){h.gainLaughter(b,u,T[2],'互动陷阱 · 红红火火');sp(b,u,T[0],'互动陷阱 · 红红火火');nextMinor=0;nextGrand=Math.max(0,grandChance-1);}
+      else{h.gainLaughter(b,u,T[1],'互动陷阱 · 恍恍惚惚');nextMinor=minor+1;nextSmall=Math.max(0,smallChance-1);}
+      if(nextGrand<=0&&nextSmall<=0){nextGrand=1;nextSmall=1;}
+      resource(b,u,'互动陷阱小奖数',nextMinor);resource(b,u,'大奖概率',nextGrand);resource(b,u,'小奖概率',nextSmall);
+      record(b,'mechanic',u,{name:'互动陷阱 · 礼物',grand,nextGrand,nextSmall,nextMinor});
     }
     return {
-      start(b,u){resource(b,u,'直播连线',0);resource(b,u,'互动陷阱',0);resource(b,u,'爆点',0);},
+      start(b,u){resource(b,u,'直播连线',0);resource(b,u,'互动陷阱',0);resource(b,u,'爆点',0);resource(b,u,'互动陷阱小奖数',0);resource(b,u,'大奖概率',1);resource(b,u,'小奖概率',1);},
       waveStart(b,u){
         const pending=u.resources['火花 E2待插入回合']??0;
         if(pending>0&&enemies(b,u).some(live)){
           resource(b,u,'火花 E2待插入回合',0);
-          b.queue.unshift(...Array.from({length:pending},()=>({actor:u.id,key:'basic',kind:'extra'})));
+          b.queue.unshift(...Array.from({length:pending},()=>({actor:u.id,key:extraTurnKey(u),kind:'extra'})));
           record(b,'mechanic',u,{name:'火花 E2 · 新波次恢复暂存额外回合',count:pending});
         }
       },
@@ -10143,10 +10528,9 @@ const factories={
       before(b,u,actor,key,kind,a,selected){
         void selected;
         if(actor!==u||kind==='copy'||kind==='technique')return;
-        const cost=a.spCost??0,cur=u.resources['爆点']??0;
-        if(!cost||!cur)return;
-        const n=Math.min(cost,cur);
-        resource(b,u,'爆点',cur-n);sp(b,u,n,'爆点抵扣战技点');
+        // 引擎已按「SP + 爆点」拆分并扣除了爆点；这里只结算 E2 的暴伤叠层。
+        const n=a.spSubstituteUsed??0;
+        if(!n)return;
         if(rank(u,2))for(let i=0;i<n;i++)
           api.stacks(b,u,u,'火花 E2 · 暴击伤害','critDmg',rank(u,2,1),rank(u,2,3),rank(u,2,2),{id:u.id+':e2-crit'});
       },
@@ -10160,7 +10544,7 @@ const factories={
             resource(b,u,'爆点',(u.resources['爆点']??0)+rank(u,2,0));
             const to=selected.find(live)??hitTargets.find(live)??enemies(b,u).find(live);
             if(enemies(b,u).some(live)){
-              b.queue.push({actor:u.id,key:'basic',kind:'extra',targetId:to?.id,persistWave:true});
+              b.queue.push({actor:u.id,key:extraTurnKey(u),kind:'extra',targetId:to?.id,persistWave:true});
               record(b,'mechanic',u,{name:'火花 E2 · 阿哈时刻结束获得额外回合'});
             }else{
               resource(b,u,'火花 E2待插入回合',(u.resources['火花 E2待插入回合']??0)+1);
@@ -10169,6 +10553,13 @@ const factories={
           }
         });
         if(actor!==u||kind==='technique')return;
+        if(key==='elation'){
+          // 150120 desc：欢愉技除了造成伤害，还使火花获得 #4 个【爆点】（可抵扣战技点消耗）。
+          const row=elationRow(d,150120,elationLevel(u.kit.eidolon??0));
+          const n=row?.[3]??0;
+          if(n>0)resource(b,u,'爆点',(u.resources['爆点']??0)+n);
+          return;
+        }
         if(key==='skill'){
           // 150102：开启直播连线，本次技能内发动 1 次互动陷阱（上限 #1=20），并拾取一次礼物。
           resource(b,u,'直播连线',1);
@@ -10179,6 +10570,8 @@ const factories={
         }
         if(key==='basic'){
           if(!connected(u))return;
+          // 强化普攻（Skill11_Phase02）重置礼包的两项概率。
+          resource(b,u,'大奖概率',1);resource(b,u,'小奖概率',1);
           // 「结算直播连线结果」：连线关闭，按已累计的互动陷阱结算天赋欢愉伤害。
           const n=traps(u);
           resource(b,u,'直播连线',0);resource(b,u,'互动陷阱',0);
@@ -10248,7 +10641,9 @@ const factories={
     function grigri(b,u,actor,to,a,times){
       const P=u.kit.params;
       const source=(combatPanel(actor).elation??0)>=(combatPanel(u).elation??0)?actor:u;
-      for(let i=0;i<times&&live(to);i++)h.hitElation(b,source,to,{name:'大吉大利',element:a?.element??actor.element??u.element,mult:P.Talent[0]});
+      // Passive_ToMember 的 OnListenBeforeHitAll：DamageTag_HongBao 的笑点基数
+      // 固定读取 Caster（爻光）的 ElationEchoPoint，与攻击者是谁无关；欢愉度则取两者较高值。
+      for(let i=0;i<times&&live(to);i++)h.hitElation(b,source,to,{name:'大吉大利',element:a?.element??actor.element??u.element,mult:P.Talent[0],punchlineFrom:u});
       record(b,'mechanic',u,{name:'大吉大利',target:to.id,times});
     }
     return {
@@ -10300,7 +10695,9 @@ const factories={
         void selected;
         h.onAhaEnd(b,u);
         // 在完整动作后从实际命中目标中随机选取，避免多段攻击固定触发首段目标。
-        if(h.hasPunch(u)&&actor.side===u.side&&!['dot','elation'].includes(kind)&&hitTargets?.length&&!fired(b,u)){
+        // Passive_ToMember 的 OnAfterAttack 只要求爻光持有 ElationEchoPoint，未排除欢愉伤害；
+        // DoT / 间接附加伤害不是一次攻击，仍排除。
+        if(h.hasPunch(u)&&actor.side===u.side&&!['dot','additional'].includes(kind)&&hitTargets?.length&&!fired(b,u)){
           u.resources['大吉大利动作']=b.activeAction?.sequence??-1;
           const pool=[...new Set(hitTargets)].filter(live);
           if(pool.length){const to=pool[Math.floor(b.random()*pool.length)];
@@ -10415,9 +10812,18 @@ const factories={
       start(b,u){
         resource(b,u,'深度学习充能',0);
         // 秘技 150307：战斗开始时获得 #2=20 点好活当赏，并以 #1=2 点充能进入【深度学习】。
+        // desc 同时规定「获得【美学底本】……深度学习持有【美学底本】的角色，真珠只能深度学习
+        // 除自身以外的角色」。秘技在战斗外使用，持有者是玩家当时操作的角色；模拟器无权读取
+        // 战斗外状态，因此按与终结技默认选靶一致的口径取第一名除真珠外的我方角色作为持有者。
+        // 具体持有者选择属于战斗外操作，若与录像不符需由配置显式指定（source-blocked 的交界）。
         if(u.kit.technique){
           const P=u.kit.params;
           h.grantPunch(b,u,u,P.Maze[1],null);
+          const holder=allies(b,u).find(to=>to!==u);
+          if(holder){
+            resource(b,holder,'美学底本',1);
+            record(b,'mechanic',u,{name:'秘技 · 美学底本',target:holder.id});
+          }
           resource(b,u,'深度学习充能',P.Maze[0]);
           record(b,'mechanic',u,{name:'秘技 · 深度学习'});
         }
@@ -10444,7 +10850,10 @@ const factories={
       panel(b,u,to,out){
         const T=trace(u,1);
         if(to===u&&T){
-          const e=T[1]+Math.min(T[4]-T[0],Math.max(0,(out.def??0)-T[0]))/T[2]*T[3];
+          // 1503101 desc：「之后每超过 #3=100 点防御力使自身欢愉度提高 #4=3%，最多计入 #5=3600 点**超出的**防御力」。
+          // #5 是超出部分的上限（与 1506101 / 1513101 的「最多计入 #5 点超出的速度」同构），
+          // 不是「防御力总量上限」；写成 T[4]-T[0] 会把上限误砍到 1200 点超出。
+          const e=T[1]+Math.min(T[4],Math.max(0,(out.def??0)-T[0]))/T[2]*T[3];
           out.elation=(out.elation??0)+e;
           out.healingBoost=(out.healingBoost??0)+e*T[5];
         }
@@ -10457,11 +10866,13 @@ const factories={
           else if(n===3)out.elation=(out.elation??0)+rank(u,1,1);
           else if(n===2)out.elation=(out.elation??0)+rank(u,1,0);
         }
-        if(rank(u,6)&&studying(u))out.resPen=(out.resPen??0)+rank(u,6,0);
       },
       modifiers(b,u,actor,to,a,kind){
         void to;void a;
         const out={};
+        // E6：深度学习期间我方全体全属性抗性穿透 +20%。必须写在 modifiers（damageTo 读取 mod.resPen），
+        // 不能写进 panel.out.resPen —— 伤害路径从不读取该字段。
+        if(rank(u,6)&&studying(u)&&actor.side===u.side)out.resPen=(out.resPen??0)+rank(u,6,0);
         // E2：我方全体欢愉伤害「增笑」15%。
         if(kind==='elation'&&rank(u,2)&&actor.side===u.side)out.elationBoost=(out.elationBoost??0)+rank(u,2,0);
         return out;
@@ -10500,7 +10911,9 @@ const factories={
         // 真珠欢愉技：每名我方角色的下一次实际攻击后，对其命中的每个敌人追加一次对应属性的欢愉伤害。
         // Gachabase 4.6 的 150320 参数为 1/2/3/4+ 名欢愉角色各 10/15/20/40%；E4 把原倍率提高 100%。
         // 欢愉技动作本身是辅助动作，不能消费上一轮留下的攻击票；空目标/未命中的动作也不能消费。
-        if(actor?.side===u.side&&key==='elation'&&kind==='aha'&&actor===u){
+        // 欢愉技可能来自自然阿哈（kind='aha'）或 8009/8010 终结技的插入施放（kind='extra'）；
+        // 两者都是真珠实际施放欢愉技，都应发放下一次攻击票。
+        if(actor?.side===u.side&&key==='elation'&&actor===u){
           const n=h.elationCount(b,u),level=Math.min(15,10+((u.kit.eidolon??0)>=3?1:0)+((u.kit.eidolon??0)>=5?1:0));
           const P=plist(d,150320,level)??plist(d,150320,10)??[.1,.15,.2,.4];
           const ratio=n>=4?P[3]:n===3?P[2]:n===2?P[1]:P[0];
@@ -10567,9 +10980,17 @@ const factories={
         const T2=trace(u,2);
         if(actor===u)resource(b,u,'本回合已获好活当赏',0);
         else if(T2){
-          const got=u.resources['本回合已获好活当赏']??0,cap=T2[1]-T2[0];
+          // 1503102 desc：「我方目标回合开始时，真珠获得 #1=5 点好活当赏，最多获得 #2=50 点」。
+          // 上限按本轮累计发放量计算（真珠自己的回合开始只重置计数，不占额度）。
+          const got=u.resources['本回合已获好活当赏']??0,cap=T2[1];
           const add=Math.min(T2[0],Math.max(0,cap-got));
-          if(add>0){h.grantPunch(b,u,u,add,null);resource(b,u,'本回合已获好活当赏',got+add);}
+          if(add>0){
+            // 「最多获得」按实际到账量累计：被 150304 #3=50 持有上限拦下的份额不消耗本轮额度。
+            const before=h.punchOf(u);
+            h.grantPunch(b,u,u,add,null);
+            const gained=h.punchOf(u)-before;
+            if(gained>0)resource(b,u,'本回合已获好活当赏',got+gained);
+          }
         }
         resource(b,u,'抵御值',Math.min(u.kit.params.Talent[2],h.punchOf(u))*u.kit.params.Talent[4]);
         refreshGuard(b,u);
@@ -10621,6 +11042,7 @@ const factories={
   1505:function(api){
     const {live,allies,enemies,rank,trace,buff,resource,energy,damageTo,record}=api;
     const h=H(api);
+    const d=ROSTER_DATA[1505];
     // 天赋：获得能量 ⇄ 获得等值好活当赏（单次不超过 100）；累计获得 #3=240 点能量后消耗该累计值，
     // 由【狐狸老师】发动追加攻击并恢复 #4=10 点能量（单次获得能量最多计入 #3 点）。
     function syncEP(b,u){
@@ -10633,15 +11055,22 @@ const factories={
           h.grantPunch(b,u,u,Math.min(100,dE),2);
           const threshold=P.Talent[2];
           let acc=(u.resources['狐狸累计']??0)+Math.min(threshold,dE);
-          let triggers=0;
-          while(acc>=threshold){acc-=threshold;triggers++;}
-          resource(b,u,'狐狸累计',acc);
-          for(let i=0;i<triggers;i++){
+          // 150504 desc：狐狸老师为绯英恢复 #4=10 点能量也是「获得能量」，应计入下一次 #3=240 累计。
+          // 旧实现把回能并进能量快照，导致这 10 点永远不参与累计；回能同样应触发等值好活当赏。
+          let refunded=0;
+          for(let guard=0;guard<20&&acc>=threshold;guard++){
+            acc-=threshold;
             const to=b.units.find(t=>t.side!==u.side&&live(t));
             b.queue.push({actor:u.id,key:'followup',kind:'followup',targetId:to?.id,persistWave:true});
-            energy(b,u,P.Talent[3]);
-            record(b,'mechanic',u,{name:'狐狸老师 · 累计能量触发'});
+            const refund=Math.min(threshold,P.Talent[3]);
+            energy(b,u,refund);
+            refunded+=refund;
+            acc+=refund;
+            record(b,'mechanic',u,{name:'狐狸老师 · 累计能量触发',refund,carry:acc});
           }
+          // 回能也是「获得能量」：按天赋等值转好活当赏（单次上限 100）。
+          if(refunded>0)h.grantPunch(b,u,u,Math.min(100,refunded),2);
+          resource(b,u,'狐狸累计',acc);
         }
         if(dP>1e-9)energy(b,u,Math.min(100,dP));
         u.resources['能量快照']=u.energy;u.resources['好活当赏快照']=h.punchOf(u);
@@ -10719,9 +11148,11 @@ const factories={
         }
         if(key==='followup'){
           // 【狐狸老师】追加攻击：全体 #1 攻击力物理伤害（动作表）+ #2=25% 欢愉伤害；行迹 2=point07 施加易伤。
-          const T=trace(u,2);
+          // 150504 desc / Avatar_EvanesciaCombat_00_Insert_Phase02：欢愉伤害只在绯英持有【好活当赏】时结算
+          //（`ByContainBehaviorFlag Caster ElationEchoPoint`）；易伤属于行迹 2，不受该条件限制。
+          const T=trace(u,2),elation=h.hasPunch(u);
           for(const to of hitTargets.filter(live)){
-            h.hitElation(b,u,to,{name:'狐狸老师 · 欢愉伤害',mult:P.Talent[1]});
+            if(elation)h.hitElation(b,u,to,{name:'狐狸老师 · 欢愉伤害',mult:P.Talent[1]});
             if(T)buff(b,u,to,'狐狸老师 · 易伤','vuln',T[0],T[1],{id:u.id+':fox-vuln',debuff:true});
           }
           // E1：行迹 1505101「【狐狸老师】施放攻击后会额外触发一次欢愉技」→ 排队 1 次欢愉技（去重）。
@@ -10730,6 +11161,9 @@ const factories={
           return;
         }
         if(key==='elation'){
+          // 150520 desc：#1=5 点【好活当赏】（欢愉技基础获取）。
+          const row=plist(d,150520,elationLevel(u.kit.eidolon??0));
+          if(row?.[0]>0)h.grantPunch(b,u,u,row[0],2);
           // E1 #2=10：欢愉技使绯英额外获得 10 点【好活当赏】
           //（E2 的 50%/100% 只加在行迹【瞰众乐】/【开不败】的获取上，不适用于本次）。
           if(rank(u,1))h.grantPunch(b,u,u,rank(u,1,1),2);
@@ -10814,22 +11248,35 @@ const factories={
       const seen=u.resources['笑点快照']??0,cur=h.laughterOf(b,u);
       if(cur!==seen){u.resources['笑点快照']=cur;if(cur>seen)setHidden(b,u,hidden(u)+(cur-seen));}
     }
-    // 【头号补给盲盒】：固定概率初始 100%，成功后下一次降为当前 ×#4=20%。结界内每消耗 1 点战技点判定 1 次。
+    // 【头号补给盲盒】本体：150621 / 强化普攻的固定触发也复用这一份结算。
+    // opts.punchline：文案里的「本次造成的欢愉伤害固定计入 N 点好活当赏」（秘技 150607 #1=99）。
+    function supplyBox(b,u,ramp=1,opts={}){
+      const P=u.kit.params;
+      const hit={name:'头号补给盲盒',element:'Imaginary',mult:P.Ultra[2]/Math.max(1,enemies(b,u).length)*ramp,
+        ...(opts.punchline!=null?{punchlineOverride:opts.punchline}:{})};
+      const pool=enemies(b,u),mark=b.log.length;
+      if(pool.length)for(const to of pool)h.hitElation(b,u,to,hit);
+      const r=b.random();
+      if(r<1/3){
+        const top=enemies(b,u).slice().sort((x,c)=>c.hp-x.hp)[0];
+        // 150603 desc：【超超超大剑】「对生命值最高的敌方目标额外造成等同于本次总伤害值 #5% 的真实伤害」。
+        // 必须以本盲盒实际造成的欢愉伤害为基数（欢愉伤害不吃攻击力，不能用 atk 近似）。
+        const total=b.log.slice(mark).filter(e=>e.type==='damage'&&e.actor===u.id).reduce((n,e)=>n+(e.damage??0),0);
+        if(top&&total>0)trueDamage(b,u,top,total*P.Ultra[4],'超超超大剑');
+      }else if(r<2/3)sp(b,u,P.Ultra[6],'爆爆爆炸蛋');
+      else h.gainLaughter(b,u,P.Ultra[5],'怪怪怪味豆');
+      record(b,'mechanic',u,{name:'头号补给盲盒'});
+    }
+    // 150603 desc：初始固定概率 100%，**成功触发后**下一次降低至当前概率的 #4=20%；
+    // 判定失败不改变固定概率。150621 会把概率重置为初始值。
     function mysteryBox(b,u,spent){
       const P=u.kit.params;
       if(!h.hasPunch(u)||!spent)return;
       for(let i=0;i<spent;i++){
         const p=u.resources['盲盒概率']??1;
-        if(b.random()>=p){resource(b,u,'盲盒概率',p*(1-P.Ultra[3]));continue;}
-        resource(b,u,'盲盒概率',1);
-        const pool=enemies(b,u);
-        if(pool.length)for(const to of pool)h.hitElation(b,u,to,{name:'头号补给盲盒',element:'Imaginary',mult:P.Ultra[2]/pool.length});
-        const r=b.random();
-        if(r<1/3){
-          const top=enemies(b,u).slice().sort((x,c)=>c.hp-x.hp)[0];
-          if(top)trueDamage(b,u,top,combatPanel(u).atk*P.Ultra[2]*P.Ultra[4],'超超超大剑');
-        }else if(r<2/3)sp(b,u,P.Ultra[6],'爆爆爆炸蛋');
-        else h.gainLaughter(b,u,P.Ultra[5],'怪怪怪味豆');
+        if(b.random()>=p)continue;
+        resource(b,u,'盲盒概率',p*P.Ultra[3]);
+        supplyBox(b,u);
       }
     }
     return {
@@ -10844,6 +11291,8 @@ const factories={
       // 行迹 1=point06：速度达标 → 欢愉度（超出部分最多计入 #5）。
       panel(b,u,to,out){
         if(to!==u)return;
+        // 150604 desc：【无敌玩家】状态下免疫控制类负面状态。
+        if(inUlt(u))out.controlRes=1;
         const P=u.kit.params,T=trace(u,1);
         const hs=hidden(u),base=out.critRate??0,need=Math.max(0,1-base),pts=need/P.Talent[3];
         if(hs<=pts)out.critRate=base+hs*P.Talent[3];
@@ -10853,11 +11302,32 @@ const factories={
       // 【无敌玩家】期间普攻替换为 150608（#1=2.4 总倍率均分为 #3=100 段弹射，收尾在 after 结算）。
       prepare(b,u,key,kind,a){
         if(kind==='technique'||kind==='copy')return a;
+        // 150620「殿堂级操作回放」是常态欢愉技（Enhance，只获得 #1=15 隐藏分，不造成伤害）；
+        // 150621「崩坏级伤害演示」是【无敌玩家】状态下的强化欢愉技（原始脚本 Skill04 / Skill41）。
+        if(key==='elation'){
+          if(inUlt(u))return a;
+          return {...a,name:sname(d,150620),terms:[],bounceCount:0,bounceTerms:[],bounceToughness:0,
+            punchlineMultiplier:1,baseElation:true};
+        }
         if(key==='basic'&&inUlt(u)){
           const e=plist(d,150608,u.kit.skillLevels?.Normal)??plist(d,150608,6)??[2.4,0,100,1,3,60,2,.15];
           const seg=e[0]/Math.max(1,e[2]);
+          // 150608 desc：每拥有 #6=60 点隐藏分，强化普攻期间伤害提高 #8=15%，最多 #7=2 层。
+          const stacks=Math.min(Math.max(0,e[6]??0),Math.floor(hidden(u)/Math.max(1,e[5]??1)));
+          const ramp=1+stacks*(e[7]??0);
+          // 150604 desc：持有【好活当赏】时，强化普攻的技能伤害改为相同倍率的欢愉伤害。
+          const elation=h.hasPunch(u);
+          // 150608 desc：「若对场上所有敌方造成了致命伤害则结束本次技能，当存在可攻击的敌方
+          // 目标后获得1个额外回合并基于剩余弹射段数和【头号补给盲盒】次数再次施放。」
+          // 续放由 waveStart 以 kind='extra' 入队；只有该动作消费挂起的剩余段数/盲盒次数，
+          // 普通回合的强化普攻仍从完整的 #3=100 段开始。
+          const pending=kind==='extra'?u.resources['强化普攻续放']:null;
+          const segments=pending?.segments??e[2];
+          const boxes=pending?.boxes??(e[4]??0);
           return {...a,name:sname(d,150608),target:'single',hitShares:[1],toughness:30/e[2],
-            energyGain:0,spGain:0,terms:atk(seg),bounceCount:Math.max(0,e[2]-1),bounceTerms:atk(seg),bounceToughness:30/e[2]};
+            ...(elation?{type:'ElationDamage',punchlineSource:'certifiedBanger'}:{}),
+            continuation:!!pending,continuationSegments:segments,continuationBoxes:boxes,
+            energyGain:0,spGain:0,terms:atk(seg*ramp),bounceCount:Math.max(0,segments-1),bounceTerms:atk(seg*ramp),bounceToughness:30/e[2]};
         }
         return a;
       },
@@ -10866,26 +11336,57 @@ const factories={
       waveStart(b,u){
         // 自然阿哈在角色模块 start 后才加入首个笑点；开局立即同步，避免首帧隐藏分/面板落后一整次行动。
         syncHidden(b,u);
-        if(u.resources['怪怪怪味豆'])h.grantPunch(b,u,u,u.kit.params.Maze[0],2);
+        // 150608 desc：全灭中断后，「当存在可攻击的敌方目标后获得1个额外回合并基于
+        // 剩余弹射段数和【头号补给盲盒】次数再次施放」。新波次入场时把续放动作排到队首。
+        const pending=u.resources['强化普攻续放'];
+        if(pending&&inUlt(u)){
+          // 原始脚本从可攻击敌人中随机重选目标（不是固定第一个）。
+          const pool=enemies(b,u).filter(live);
+          const target=pool.length?pool[Math.floor(b.random()*pool.length)]:null;
+          if(target){
+            b.queue.unshift({actor:u.id,key:'basic',kind:'extra',targetId:target.id,persistWave:true});
+            record(b,'mechanic',u,{name:'狼尊时刻 · 全灭后续放',segments:pending.segments,boxes:pending.boxes});
+          }
+        }
         // E6：敌方目标进入战斗时植入【禁限弱点】（全属性弱点；基础抗性 0 则改为对应属性抗性降低 20%）。
+        // 必须先于本波次的【头号补给盲盒】结算，否则波次盲盒的欢愉伤害吃不到抗性降低。
         for(const to of enemies(b,u))applyE6Weakness(b,u,to);
+        // 150607 desc：【怪怪怪味豆】在场时，每个波次开始时触发 1 次【头号补给盲盒】，
+        // 本次造成的欢愉伤害**固定计入** #1=99 点好活当赏（不是直接获得 99 点好活当赏）。
+        if(u.resources['怪怪怪味豆']&&enemies(b,u).some(live)){
+          supplyBox(b,u,1,{punchline:u.kit.params.Maze[0]});
+          record(b,'mechanic',u,{name:'怪怪怪味豆 · 波次头号补给盲盒',fixedPunchline:u.kit.params.Maze[0]});
+        }
       },
-      unitCreated(b,u,to){applyE6Weakness(b,u,to);},
+      unitCreated(b,u,to){
+        applyE6Weakness(b,u,to);
+        // 全灭中断后新敌人在同一波次入场：同样恢复续放动作。
+        const pending=u.resources['强化普攻续放'];
+        if(pending&&inUlt(u)&&to.side!==u.side&&live(to)&&!b.queue.some(q=>q.actor===u.id&&q.key==='basic')){
+          b.queue.unshift({actor:u.id,key:'basic',kind:'extra',targetId:to.id,persistWave:true});
+          record(b,'mechanic',u,{name:'狼尊时刻 · 新敌人入场续放',segments:pending.segments,boxes:pending.boxes});
+        }
+      },
       before(b,u,actor,key,kind,a,selected){
-        void a;void selected;
-        if(actor!==u||kind==='copy'||key!=='ultimate')return;
+        void selected;
+        if(actor!==u||kind==='copy')return;
+        // 续放动作真正执行时才消费挂起的剩余段数；prepare 的普通回合预览不得清掉它。
+        if(a?.continuation)delete u.resources['强化普攻续放'];
+        if(key!=='ultimate')return;
         const P=u.kit.params;
         // 终结技消耗 #1=60 点隐藏分（引擎已扣能量），并重置盲盒概率。
         resource(b,u,'隐藏分',Math.max(0,hidden(u)-P.Talent[0]));
         resource(b,u,'盲盒概率',1);
         resource(b,u,'强化普攻剩余',P.Talent[4]);
         advance(b,u.id,1);                                   // 行动提前 100%
-        buff(b,u,u,'无敌玩家','marker',0,P.Talent[4],{id:u.id+':sw999-ult',tag:'sw999Ult'});
+        buff(b,u,u,'无敌玩家','marker',0,P.Talent[4],{id:u.id+':sw999-ult',tag:'sw999Ult',noUltimate:true});
         if(rank(u,2))resource(b,u,'E2 累计',hidden(u));       // Rank02 SumScore starts from current EP when Ultra aura is created.
         const T=trace(u,3);
         if(T)setHidden(b,u,hidden(u)+T[0]);                  // 行迹 3=point08：进入状态 +20 隐藏分
         triggerE2(b,u);                                       // 初始隐藏分（含入口后点数）也参与阈值检查。
-        if(rank(u,2))for(const to of allies(b,u))for(const e of to.buffs)if(e.remaining!=null)e.remaining+=1;  // E2：增益延长 1 回合
+        // Rank02 desc：「进入【无敌玩家】状态后，使**自身**所有增益效果延长 1 回合」——只延长银狼自己的
+        // 增益，不能把队友的增益一起延长。
+        if(rank(u,2))for(const e of u.buffs)if(e.remaining!=null&&!e.debuff)e.remaining+=1;
         record(b,'mechanic',u,{name:'进入无敌玩家'});
       },
       // 150603 desc：结界内**我方目标**每消耗 1 个战技点，有概率触发 1 次【头号补给盲盒】。
@@ -10895,12 +11396,23 @@ const factories={
         if(!inUlt(u)||!spender||spender.side!==u.side)return;
         mysteryBox(b,u,amount);
       },
-      after(b,u,actor,key,kind,a,selected,hitTargets){
-        void a;void selected;
+      after(b,u,actor,key,kind,a,selected,hitTargets,bounceTargets=[]){
+        void selected;
         syncHidden(b,u);
         if(actor!==u||kind==='technique')return;
         const P=u.kit.params;
         if(key==='elation'){
+          if(a.baseElation){
+            // 150620 #1=15：常态欢愉技只获得隐藏分，不产生伤害事件。
+            // Skill04_Phase02 的 PointB2 档位同样生效：计入笑点 ≥20/≥40 各再 +20 隐藏分。
+            const row=plist(d,150620,elationLevel(u.kit.eidolon??0))??[15];
+            const T=trace(u,2),counted=h.countedAhaLaughter(b,u,kind);
+            const bonus=T?(counted>=T[0]?T[2]:0)+(counted>=T[1]?T[3]:0):0;
+            setHidden(b,u,hidden(u)+(row[0]??15)+bonus);
+            return;
+          }
+          // 150621 desc：施放后把【头号补给盲盒】固定概率重置为初始值。
+          resource(b,u,'盲盒概率',1);
           // 行迹 point07：按本次欢愉技实际计入的笑点，达到20/40分别增加20隐藏分。
           // 固定阿哈回合必须读 instant 的固定笑点，自然阿哈则读当前共享笑点。
           const T=trace(u,2),counted=h.countedAhaLaughter(b,u,kind);
@@ -10910,7 +11422,13 @@ const factories={
           }
           return;
         }
-        if(key==='skill'){h.gainLaughter(b,u,P.BPSkill[1],'战技');return;}
+        if(key==='skill'){
+          // 150604 desc：持有【好活当赏】时，施放普攻**或战技**都要对受到攻击的敌方目标造成 #3 虚数欢愉伤害。
+          // Avatar_SilverWolf999_00_Skill02_Phase02 与 Skill01_Phase02 同构，都带
+          // ByContainBehaviorFlag Caster ElationEchoPoint → FormulaType=ByElationDamage 的附加段。
+          if(h.hasPunch(u))for(const to of hitTargets.filter(live))h.hitElation(b,u,to,{name:'顺风局 · 欢愉伤害',element:'Imaginary',mult:P.Talent[2]});
+          h.gainLaughter(b,u,P.BPSkill[1],'战技');return;
+        }
         if(key==='basic'){
           // 天赋 #3=40%：持有好活当赏时，普攻 / 战技对受到攻击的目标造成 40% 虚数欢愉伤害。
           if(h.hasPunch(u))for(const to of hitTargets.filter(live))h.hitElation(b,u,to,{name:'顺风局 · 欢愉伤害',element:'Imaginary',mult:P.Talent[2]});
@@ -10924,9 +11442,42 @@ const factories={
           // 故收尾对每个目标削韧 stance[1]=30，而不是 0，也不是把 30 均分给全体。
           const e=plist(d,150608,u.kit.skillLevels?.Normal)??[2.4,0,100,1,3,60,2,.15];
           const st=d.skills['150608'].stance?.[1]??0;
+          const stacks=Math.min(Math.max(0,e[6]??0),Math.floor(hidden(u)/Math.max(1,e[5]??1)));
+          const ramp=1+stacks*(e[7]??0);
+          // 150608 desc：「若对场上所有敌方造成了致命伤害则结束本次技能……基于剩余弹射段数和
+          // 【头号补给盲盒】次数再次施放。」已结算段数 = 主段 1 + 实际弹射段数（全灭时引擎提前 break）。
+          const totalSegments=a.continuation?a.continuationSegments:(e[2]??0);
+          const totalBoxes=a.continuation?a.continuationBoxes:(e[4]??0);
+          const delivered=1+(bounceTargets?.length??0);
+          const remainingSegments=Math.max(0,totalSegments-delivered);
+          const cleared=!enemies(b,u).some(live);
+          // 150608 desc：弹射途中暂停并触发【头号补给盲盒】，总计 #5=3 次。动态段位哈希尚未映射，
+          // 因此按技能描述的三次触发在动作内连续结算，不臆造具体段号。全灭后不再空放盲盒。
+          let boxesTriggered=0;
+          if(!cleared&&h.hasPunch(u))for(let i=0;i<Math.max(0,totalBoxes);i++){
+            // 每结算一个盲盒都可能击杀最后一个敌人；剩余次数必须留到续放，不能空放后丢失。
+            if(!enemies(b,u).some(live))break;
+            supplyBox(b,u,ramp);boxesTriggered++;
+          }
+          // 即使致命一击发生在最后一段（remainingSegments=0），也要进入续放/增益延长流程。
+          if(!enemies(b,u).some(live)){
+            // 150608 desc：「每回合首次触发该效果时，使自身所有增益效果延长1回合。」
+            if((u.resources['续放增益延长回合']??-1)!==u.turns){
+              u.resources['续放增益延长回合']=u.turns;
+              for(const e2 of u.buffs)if(e2.remaining!=null&&!e2.debuff)e2.remaining+=1;
+              record(b,'mechanic',u,{name:'狼尊时刻 · 首次全灭续放增益延长'});
+            }
+            // 本次施放没有完成的剩余段数与尚未结算的盲盒次数挂起，等新波次入场后续放。
+            const remainingBoxes=Math.max(0,totalBoxes-boxesTriggered);
+            u.resources['强化普攻续放']={segments:remainingSegments,boxes:remainingBoxes};
+            record(b,'mechanic',u,{name:'狼尊时刻 · 全灭中断',remainingSegments,remainingBoxes});
+            return;              // 中断不算完整施放：不扣强化普攻次数、不退出无敌玩家
+          }
           const pool=enemies(b,u);
-          if(pool.length){const m=e[3]/pool.length;
-            for(const to of pool)damageTo(b,u,to,{name:'狼尊时刻 · 收尾',type:'Normal',element:'Imaginary',terms:atk(m),toughness:st},1,'primary','direct');}
+          if(pool.length){const m=e[3]/pool.length*ramp;
+            // 持有好活当赏时，强化普攻的技能伤害改为欢愉伤害（150604 desc）。
+            const finalType=h.hasPunch(u)?'ElationDamage':'Normal';
+            for(const to of pool)damageTo(b,u,to,{name:'狼尊时刻 · 收尾',type:finalType,punchlineSource:'certifiedBanger',element:'Imaginary',terms:atk(m),toughness:st},1,'primary','direct');}
           const left=(u.resources['强化普攻剩余']??P.Talent[4])-1;
           resource(b,u,'强化普攻剩余',left);
           if(left<=0){
@@ -10950,11 +11501,12 @@ const factories={
       modifiers(b,u,actor,to,a,kind){
         void a;
         const out={};
-        if(actor!==u||to.side===u.side)return out;
-        // E1：结界中的敌方目标受到的伤害提高 20%。
+        if(to.side===u.side)return out;
+        // E1：「结界中的敌方目标受到的伤害提高 20%」是全队易伤，不限于银狼本人出手。
         if(rank(u,1)&&inUlt(u))out.vuln=(out.vuln??0)+rank(u,1,1);
-        // E6：强化普攻期间造成的欢愉伤害「增笑」50%。
-        if(kind==='elation'&&rank(u,6)&&inUlt(u))out.elationBoost=(out.elationBoost??0)+rank(u,6,1);
+        if(actor!==u)return out;
+        // E6：仅强化普攻期间造成的欢愉伤害「增笑」50%（不含强化欢愉技本身）。
+        if(kind==='elation'&&rank(u,6)&&inUlt(u)&&b.activeAction?.key==='basic')out.elationBoost=(out.elationBoost??0)+rank(u,6,1);
         return out;
       },
     };
@@ -10986,11 +11538,37 @@ const factories={
       const before=heat(u);
       resource(b,u,'热意',Math.min(cap(u),before+n));
       for(const t of thresholds(u))if(before<t&&heat(u)>=t){
-        h.ahaMoment(b,u,u.kit.params.Talent[4],'举杯！敬炽烈一夏');
-        resource(b,u,'AllIn',1);
+        // 151304 desc / InsertElationSkillSave：达到阈值时砂金**自身**插入施放 1 次
+        // 固定计入 #5=20 笑点的【举杯】，不是全队阿哈额外回合。
+        b.queue.push({actor:u.id,key:'elationHeat',kind:'extra',persistWave:true});
+        // AllIn 标记在插入动作真正结算后由 after 添加（UpGradeElationSkill_OnceMark 在 OnInsertActionFinish 生效）。
         resource(b,u,'欢愉技次数',(u.resources['欢愉技次数']??0)+1);
-        record(b,'mechanic',u,{name:'举杯！敬炽烈一夏',threshold:t});
-        // 固定计入笑点的 Aha Instant 已在 ahaMoment 中把全体欢愉角色排入同一额外回合。
+        record(b,'mechanic',u,{name:'举杯！敬炽烈一夏',threshold:t,fixedPunchline:u.kit.params.Talent[4]});
+      }
+    }
+    // 队友行动后的天赋/行迹结算：同一动作只结算一次；PointB2 只在单欢愉队伍生效。
+    function teammateAction(b,u,actor,key,kind){
+      if(!actor||actor.side!==u.side||actor===u)return;
+      if(kind==='dot')return;
+      if((b.activeAction?.sequence??-1)===u.resources['热意触发动作'])return;
+      u.resources['热意触发动作']=b.activeAction?.sequence??-1;
+      const P=u.kit.params,T=trace(u,2),T8=trace(u,3);
+      h.gainLaughter(b,u,P.Talent[5],'队友行动');
+      addHeat(b,u,P.Talent[6]);
+      if(T&&(u.resources['soloElationFollowup']??0)>0){
+        if(T[3])h.gainLaughter(b,u,T[3],'纵享惊涛 · 队友攻击');
+        h.grantPunch(b,u,u,T[1],2);
+        // 原始 PointB2 modifier 是 Stacking=Replace，目标为阿哈，且在 ElationTimeEnd 移除。
+        b.ahaSpeedBonus=T[2];
+        record(b,'resource',u,{name:'阿哈速度加成',value:b.ahaSpeedBonus,reason:'同行攻击，持续至阿哈时刻结束'});
+      }
+      if(T8&&['basic','skill','followup','ultimate'].includes(key)){
+        const used=u.resources['旧梦淘金已用']??0;
+        if(used<T8[4]){
+          resource(b,u,'旧梦淘金已用',used+1);
+          addHeat(b,u,T8[3]);
+          for(const t of allies(b,u))buff(b,u,t,'旧梦淘金 · 暴伤','critDmg',T8[1],T8[2],{id:u.id+':aw-e8b:'+t.id});
+        }
       }
     }
     return {
@@ -11015,22 +11593,29 @@ const factories={
         const T=trace(u,1);
         if(T)out.elation=(out.elation??0)+T[1]+Math.min(T[4],Math.max(0,(out.speed??0)-T[0]))*T[3];
       },
-      // 欢愉技形态选择：无 AllIn → 动作表默认的 151320【举杯！敬炽烈一夏】；
-      // AllIn=1 → 151321【All in！敬炽烈一夏】：#1=0.6 全体、#3=10 次固定弹射 #4=0.18，
-      // 另外每消耗 1 点【热意】额外 1 次 #2=0.21。
-      // 固定 #3 次弹射使用 #4 倍率；每点热意另增 1 次弹射，使用 #2 倍率。
-      // 假设：本批没有阿哈时刻窗口（E9-2 blocked_source），阈值触发的这次排队欢愉技即承载
-      // All in 强化形态；`before` 施放时清零【热意】与 AllIn。
+      // 欢愉技形态选择：
+      //   elationHeat（热意阈值插入）→ 151320【举杯】，固定计入 #5=20 笑点；
+      //   elation（真正的阿哈时刻欢愉技）且 AllIn=1 → 151321【All in！】；
+      //   E6 施放 2 次后，后续欢愉技强制 All in。
+      // All in 的 #1 全体、#3 次固定弹射 #4、每点热意 #2；`before` 仅在 All in 时清空热意。
       prepare(b,u,key,kind,a){
-        if(kind==='technique'||kind==='copy'||key!=='elation')return a;
+        if(kind==='technique'||kind==='copy')return a;
+        if(key!=='elation'&&key!=='elationHeat')return a;
         const countAsFollowup=(u.resources['soloElationFollowup']??0)>0;
+        const heatInsert=key==='elationHeat';
         const forcedE6=!!rank(u,6)&&(u.resources['欢愉技施放次数']??0)>=rank(u,6,0);
-        if((u.resources['AllIn']??0)<=0&&!forcedE6)return countAsFollowup?{...a,countAsFollowup:true}:a;
+        // 阈值插入不是阿哈时刻，不得消耗 AllIn 标记；该标记只强化下一次阿哈欢愉技。
+        const allIn=forcedE6||(!heatInsert&&kind==='aha'&&(u.resources['AllIn']??0)>0);
+        if(!allIn){
+          return {...a,name:sname(d,151320),countAsFollowup:countAsFollowup||a.countAsFollowup,
+            ...(heatInsert?{punchlineOverride:u.kit.params.Talent[4],heatInsert:true}:{})};
+        }
         const E=elationRow(d,151321,elationLevel(u.kit.eidolon??0))??[0.6,0.21,10,0.18];
-        return {...a,name:sname(d,151321),countAsFollowup:countAsFollowup||a.countAsFollowup,terms:atk(E[0]),bounceGroups:[
+        return {...a,name:sname(d,151321),allIn:true,countAsFollowup:countAsFollowup||a.countAsFollowup,terms:atk(E[0]),bounceGroups:[
           {count:E[2],terms:atk(E[3]),toughness:0},
           {count:heat(u),terms:atk(E[1]),toughness:0},
-        ],preserveHeatOutsideAha:forcedE6&&kind!=='aha'};
+        ],...(heatInsert?{punchlineOverride:u.kit.params.Talent[4]}:{}),
+        preserveHeatOutsideAha:forcedE6&&kind!=='aha'};
       },
       // 秘技 151307：进入战斗对敌方全体造成 #1=100% 攻击力量子伤害，自身获得 #2=2 热意与 #3=20 好活当赏。
       entry(b,u){
@@ -11053,10 +11638,11 @@ const factories={
       before(b,u,actor,key,kind,a,selected){
         void a;void selected;
         if(actor!==u||kind==='copy')return;
-        // 【举杯】/【All in！】施放时消耗所有【热意】，并消耗 All in 强化标记。
-        if(key==='elation'){
-          if(heat(u)>0&&!a.preserveHeatOutsideAha)resource(b,u,'热意',0);
-          if((u.resources['AllIn']??0)>0)resource(b,u,'AllIn',0);
+        // 只有【All in！】施放时消耗所有【热意】；基础【举杯】不消耗。
+        // All in 强化标记在**阿哈时刻**的欢愉技施放后消耗（UpGradeElationSkill_OnceMark）。
+        if(key==='elation'||key==='elationHeat'){
+          if(a.allIn&&heat(u)>0&&!a.preserveHeatOutsideAha)resource(b,u,'热意',0);
+          if(key==='elation'&&kind==='aha'&&(u.resources['AllIn']??0)>0)resource(b,u,'AllIn',0);
           return;
         }
         // E4：施放战技时使我方全体造成的伤害无视 18% 防御，持续 3 回合。
@@ -11066,10 +11652,16 @@ const factories={
       after(b,u,actor,key,kind,a,selected,hitTargets){
         void a;void selected;
         h.onAhaEnd(b,u);
+        // 队友的普攻/战技/终结/欢愉技/追击即使没有伤害也应触发天赋与行迹；
+        // 同一动作由 teammateAction 去重，afterHit 命中路径不会重复结算。
+        if(actor!==u&&actor?.side===u.side&&['basic','skill','ultimate','elation','followup'].includes(key))
+          teammateAction(b,u,actor,key,kind);
         if(actor!==u||kind==='technique')return;
         const P=u.kit.params;
-        if(key==='elation'){
+        if(key==='elation'||key==='elationHeat'){
           resource(b,u,'欢愉技施放次数',(u.resources['欢愉技施放次数']??0)+1);
+          // 阈值插入真正结算后，才把下一次阿哈欢愉技标记为 All in。
+          if(key==='elationHeat')resource(b,u,'AllIn',1);
           // E2：每次施放欢愉技后获得 #2=4 点热意。
           if(rank(u,2))addHeat(b,u,rank(u,2,1));
           return;
@@ -11084,6 +11676,8 @@ const factories={
           return;
         }
         if(key==='ultimate'){
+          // 在阿哈时刻内施放终结技会移除 All-in 强化标记（AVE:2541-2556）。
+          if(b.ahaInstant)resource(b,u,'AllIn',0);
           h.gainLaughter(b,u,P.Ultra[2],'终结技');
           addHeat(b,u,P.Ultra[1]);
           buff(b,u,u,'胜局 · 速度','speedPct',P.Ultra[3],P.Ultra[4],{id:u.id+':aw-ult-speed'});
@@ -11097,27 +11691,8 @@ const factories={
       // 自身额外 +2 热意，最多触发 #5=6 次，施放战技时重置。
       afterHit(b,u,actor,to,a,kind){
         void a;
-        if(actor.side!==u.side||actor===u||to.side===u.side)return;
-        if(kind==='dot'||kind==='elation')return;
-        if((b.activeAction?.sequence??-1)===u.resources['热意触发动作'])return;
-        u.resources['热意触发动作']=b.activeAction?.sequence??-1;
-        const P=u.kit.params,T=trace(u,2),T8=trace(u,3);
-        h.gainLaughter(b,u,P.Talent[5],'队友攻击');
-        addHeat(b,u,P.Talent[6]);
-        if(T){
-          h.grantPunch(b,u,u,T[1],2);
-          // 原始 PointB2 modifier 是 Stacking=Replace，目标为阿哈，且在 ElationTimeEnd 移除。
-          b.ahaSpeedBonus=T[2];
-          record(b,'resource',u,{name:'阿哈速度加成',value:b.ahaSpeedBonus,reason:'同行攻击，持续至阿哈时刻结束'});
-        }
-        if(T8){
-          const used=u.resources['旧梦淘金已用']??0;
-          if(used<T8[4]){
-            resource(b,u,'旧梦淘金已用',used+1);
-            addHeat(b,u,T8[3]);
-            for(const t of allies(b,u))buff(b,u,t,'旧梦淘金 · 暴伤','critDmg',T8[1],T8[2],{id:u.id+':aw-e8b:'+t.id});
-          }
-        }
+        if(!actor||actor.side!==u.side||actor===u||!to||to.side===u.side)return;
+        teammateAction(b,u,actor,b.activeAction?.key??'basic',kind);
       },
     };
   },
@@ -11163,8 +11738,13 @@ __def("simulator/characters/extra/batch16.mjs", function (__req) {
 // 2) 共享欢愉伤害公式现由 engine.mjs 的 elationBase 结算：等级基础值、欢愉度与笑点系数，
 //    不受攻击力、元素增伤或一般增伤影响；独立合同测试见 test_codex_elation_formula.mjs。
 //    8009/8010 的角色攻击段与额外触发仍须按角色脚本分别核对。
-// 3) 爻光、砂金与开拓者的固定笑点阿哈额外回合会触发全队欢愉技且不消费共享笑点；
-//    自然阿哈行动条、速度/行动值与参演者真实ID排序尚未接入，严格模式仍阻断。
+// 3) 8009 / 8010 终结技的「立即施放 1 次固定计入 Ultra[4]=20 笑点的欢愉技」是**目标自身**的插入行动
+//    （Skill03_Phase02 把 Rank01_InsertActionSaveMark / InsertElationSkillShow 挂到目标；
+//    Temp_MAvatar_PlayerBoy_40_InsertActionSave 在 OnEnterBattle / OnCustomEvent / OnWaveMonster
+//    中执行 TurnInsertAction(BIKKDNAMGMG)），不是 Elation_StartElationTime 发动的阿哈时刻；
+//    因此它只排入目标 1 条带 punchlineOverride 的 extra 行动，不建立 ahaInstant、不增加 ahaCount、
+//    不消费共享笑点，也不会覆盖正在进行的自然阿哈。真正发动全队阿哈时刻的是爻光 1502 的终结技。
+//    自然阿哈行动条、速度/行动值与参演者真实ID排序仍由引擎全局结算（见 test_codex_aha_action_bar）。
 // 4) 1504 不死途：
 //    · 【饲饵】的转移（MAvatar_Ashveil_00_Skill02_DebuffShift / DebuffRemove 模板 +
 //      `OnListenCharacterLimbo`）已按脚本落地：持有者阵亡 / 场上无饲饵时，最低生命百分比敌人自动成为饲饵。
@@ -11501,34 +12081,66 @@ function harmony(api){
 // E4 [0.1,2]：施放欢愉技时敌方目标受伤 +10%、2 回合；E6 [1,3]：施放欢愉技时自身暴击伤害 +100%、3 回合。
 const ELATION_RARE='开怀大笑',ELATION_COMMON='忍俊不禁',PUNCH='好活当赏';
 function elation(api){
-  const {live,allies,enemies,rank,trace,buff,resource,energy,sp,advance,cleanseOne,damageTo,combatPanel,record,get}=api;
+  const {live,allies,enemies,rank,trace,buff,resource,energy,sp,advance,damageTo,combatPanel,record,get}=api;
   const punchOf=to=>to?.resources?.[PUNCH]??0;
   const hasPunch=u=>punchOf(u)>0;
+  // Skill03_Phase02 OnStart[0]：DispelStatus(AbilityTargetEntity, BehaviorFlags:["STAT_CTRL"])。
+  // 只解除该目标的**控制类**负面，且要清除全部控制类条目；不碰非控制类负面。
+  // 不能复用共享 cleanseOne：它只移除第一条（找不到控制类时会退化为移除任意负面）。
+  function cleanseControls(b,u,to){
+    const gone=[];
+    to.buffs=to.buffs.filter(e=>{if(!e.control)return true;gone.push(e);return false;});
+    to.dots=(to.dots??[]).filter(e=>{if(!e.control)return true;gone.push(e);return false;});
+    for(const e of gone)record(b,'cleanse',u,{target:to.id,name:e.name});
+    return gone.length;
+  }
   function gainLaughter(b,u,n,reason){
     if(!n)return;
     b.laughter[u.side]=(b.laughter[u.side]??0)+n;
     record(b,'resource',u,{name:'累计获得笑点',value:b.laughter[u.side],reason:reason??'笑点'});
   }
-  // 好活当赏：每次获得的层数独立计时，基础持续 2 回合。
+  // 好活当赏：每次获得的层数独立计时，基础持续 2 回合（额外效果 10000029）。
+  // 接收者自身的延长效果按各自的 4.6 文本生效，与发放者是谁无关：
+  //   1502 point08 鸿运鳞集「爻光获得【好活当赏】时，使其持续时间增加 #2 回合」→ trace[3][1]；
+  //   1505 E6「绯英的【好活当赏】的持续时间增加 #2 回合」→ ranks[6][1]；
+  //   1513 天赋「砂金•戏浪的【好活当赏】的持续时间增加 1 回合」→ 天赋 #6/#7。
+  function punchDurationFor(to,base){
+    const cid=to.kit?.characterId;
+    // 1503 真珠：【好活当赏】持续时间无限（与 engine.mjs 的 certifiedBangerDuration 同口径）。
+    if(cid===1503)return null;
+    // 调用方允许传 null 表示「不限期」，不能被下面的加法折算成有限回合。
+    if(base==null)return null;
+    let bonus=0;
+    if(cid===1502)bonus+=to.kit.trace?.['3']?.[1]??0;
+    if(cid===1505&&(to.kit.eidolon??0)>=6)bonus+=to.kit.ranks?.[6]?.[1]??0;
+    if(cid===1513)bonus+=1;
+    return Math.max(1,base+bonus);
+  }
   function grantPunch(b,u,to,n,duration=2){
     if(!to||!live(to)||!(n>0))return 0;
+    // 与 engine.mjs 的 punchCapOf 同口径：1503 真珠的好活当赏持有上限为 #3=50。
+    const punchCapOf=recipient=>recipient?.kit?.characterId===1503?(recipient.kit.params?.Talent?.[2]??Infinity):Infinity;
     const addBatch=(recipient,amount,source=u)=>{
       if(!(amount>0))return;
+      const cap=punchCapOf(recipient),current=punchOf(recipient),next=Math.min(cap,current+amount),stacks=next-current;
+      if(!(stacks>0))return;
       const seq=(recipient.resources['好活当赏批次序号']??0)+1;recipient.resources['好活当赏批次序号']=seq;
-      recipient.resources[PUNCH]=punchOf(recipient)+amount;
-      buff(b,source,recipient,PUNCH,'marker',0,Math.max(1,duration),
-        {id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks:amount});
-      record(b,'resource',source,{target:recipient.id,name:PUNCH,value:recipient.resources[PUNCH]});
+      recipient.resources[PUNCH]=next;
+      buff(b,source,recipient,PUNCH,'marker',0,punchDurationFor(recipient,duration),
+        {id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks});
+      record(b,'resource',source,{target:recipient.id,name:PUNCH,value:next});
     };
     const evanescia=b.units.find(t=>t.side===to.side&&t.kit?.characterId===1505&&live(t));
     const point06=evanescia?.kit?.trace?.['1']?.[4]??0;
     const fromIndex=elationParticipantId(to),evanesciaIndex=elationParticipantId(evanescia);
     if(evanescia&&to!==evanescia&&point06>0&&Number.isFinite(fromIndex)&&Number.isFinite(evanesciaIndex)&&fromIndex<evanesciaIndex){
       const e2=evanescia.kit.eidolon>=2?(evanescia.kit.ranks?.[2]?.[1]??0):0;
-      const converted=Math.min(n,n*point06*(1+e2));
-      addBatch(to,n-converted);
+      // 先按接收者上限截断，再参与瞰众乐转化（与 engine.finishAhaInstant 同口径）。
+      const accepted=Math.min(n,Math.max(0,punchCapOf(to)-punchOf(to)));
+      const converted=Math.min(accepted,accepted*point06*(1+e2));
+      addBatch(to,accepted-converted);
       addBatch(evanescia,converted,evanescia);
-      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:n,converted,participantId:fromIndex});
+      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:accepted,converted,participantId:fromIndex});
       return punchOf(to);
     }
     addBatch(to,n);
@@ -11541,19 +12153,20 @@ function elation(api){
     const maxEcho=b.units.filter(t=>t.side===u.side).reduce((n,t)=>Math.max(n,punchOf(t)),0);
     damageTo(b,u,to,{name:o.name,type:'ElationDamage',element:u.element,terms:atk(o.mult),punchlineFloor:maxEcho,toughness:0},1,'primary','elation');
   }
-  // 固定笑点阿哈额外回合由共享助手排入全体欢愉角色；这里不再伪造笑点或好活当赏。
-  function ahaMoment(b,u,counted,label){
-    const actors=allies(b,u).filter(to=>live(to)&&isElationPath(to)&&to.actions?.elation)
-      .sort((a,c)=>(a.participantId??a.order)-(c.participantId??c.order));
-    const id=(b.ahaInstantSequence??0)+1;b.ahaInstantSequence=id;
-    b.ahaInstant={id,fixedPunchline:counted,natural:false,ending:false,participants:actors.map(x=>x.id),completed:[],deferred:[]};
-    b.ahaCount=(b.ahaCount??0)+1;b.ahaCounted=counted;
-    for(const to of actors){
-      to.buffs=to.buffs.filter(e=>!e.control);
-      to.dots=to.dots.filter(e=>!e.control);
-    }
-    b.queue.unshift(...actors.map(to=>({actor:to.id,key:'elation',kind:'aha',ahaInstantId:id})));
-    record(b,'mechanic',u,{name:'阿哈额外回合',counted,label:label??'',participants:actors.map(x=>x.id),consumesSharedPunchline:false});
+  // 终结技「若目标拥有欢愉技…使其立即施放 1 次」是**目标自身**的插入行动，不是阿哈时刻。
+  // 原始脚本 Skill03_Phase02 在 ByHasSkillTag 成功后把 Rank01_InsertActionSaveMark /
+  // InsertElationSkillShow 加在 AbilityTargetEntity（终结技目标）上。modifier
+  // MAvatar_Player_40_Rank01_InsertActionSave 的 OnListenAllowAction 只是 RemoveSelfModifier；
+  // 真正执行 TurnInsertAction（BIKKDNAMGMG）的模板 Temp_MAvatar_PlayerBoy_40_InsertActionSave
+  // 挂在 OnEnterBattle / OnCustomEvent / OnWaveMonster 三个回调上。整个文件没有调用
+  // Elation_StartElationTime（全服只有爻光 1502 的终结技调用它来发动全队阿哈时刻）。
+  // 因此不建立 ahaInstant、不增加 ahaCount，也不清空全队控制；只排入目标 1 次带
+  // punchlineOverride=Ultra[4] 的欢愉技。persistWave 对应脚本里 OnWaveMonster / FailedTaskList
+  // 的「施放前敌方被消灭则对新入场敌方发动」。
+  function insertElation(b,u,to,counted,label){
+    b.queue.unshift({actor:to.id,key:'elation',kind:'extra',persistWave:true,
+      overrides:{punchlineOverride:counted}});
+    record(b,'mechanic',u,{name:'立即施放欢愉技',target:to.id,counted,label:label??'',consumesSharedPunchline:false});
   }
   return {
     entry(b,u){
@@ -11570,14 +12183,27 @@ function elation(api){
       resource(b,u,'欢愉技施放次数',0);
       resource(b,u,'下次战技额外好活当赏',0);
     },
-    // 欢愉技收尾「由敌方全体均分」：把 #3 的总倍率按当前存活敌人数折算到每个目标。
+    // 欢愉技收尾「由敌方全体均分」。原始脚本 ElationSkill_Phase02 的顺序是：
+    //   1) LoopExecuteTaskList（#1=8 次、每次 #2=20% 随机单体弹射）
+    //   2) DamageByAttackProperty（AllEnemy.GetAliveOnly，#3=60%，EqualSplitInTargets=true）→ 最后均分。
+    // 引擎固定先结算 hitShares 再结算 bounceGroups，所以这里把收尾均分移到 after 结算，
+    // 让弹射按脚本先执行；均分分母取「收尾结算时」的存活敌人数（EqualSplitInTargets 口径）。
     prepare(b,u,key,kind,a){
       if(key!=='elation'||kind==='copy')return a;
-      const n=enemies(b,u).filter(live).length||1;
-      return {...a,terms:(a.terms??[]).map(t=>({...t,multiplier:t.multiplier/n}))};
+      return {...a,terms:[],elationSplit:(a.terms??[])[0]?.multiplier??0};
     },
     before(b,u,actor,key,kind){
       if(actor!==u||kind==='copy')return;
+      // 原始脚本 OnStart[3]：行迹 point08 的 +2 在战技主伤害（OnStart[4]）之前发放，
+      // 所以放在 before 而不是 after；它先计入【好活当赏】，并参与 OnStart[5] 额外欢愉伤害的
+      // 触发判定与「全队最高」取值。BPSkill[1]=20 仍按 OnStart[7] 留在 after。
+      if(key==='skill'){
+        if(trace(u,3)&&u.resources['下次战技额外好活当赏']){
+          grantPunch(b,u,u,trace(u,3)[0]);
+          resource(b,u,'下次战技额外好活当赏',0);
+        }
+        return;
+      }
       if(key!=='elation')return;
       // E4：施放欢愉技时使敌方目标受到的伤害提高 ranks[4][0]=10%、ranks[4][1]=2 回合。
       if(rank(u,4))for(const to of enemies(b,u))
@@ -11588,36 +12214,49 @@ function elation(api){
       record(b,'mechanic',u,{name:'欢愉技（倍率取自 ROSTER_DATA）'});
     },
     after(b,u,actor,key,kind,a,selected,hitTargets){
-      void a;void hitTargets;
+      void hitTargets;
       const P=u.kit.params;
       // 行迹 point08「阿哈咬它」：我方目标施放欢愉技后，开拓者下一次战技额外获得 trace[3][0] 点好活当赏。
       if(actor?.side===u.side&&key==='elation'&&kind!=='copy')resource(b,u,'下次战技额外好活当赏',1);
       if(actor!==u||kind==='copy')return;
+      // 欢愉技收尾：弹射结束后的 #3 均分（见 prepare 注释）。damageTo 仍在 activeAction 之内，
+      // 固定笑点 / 共享笑点的取值口径与弹射一致。
+      if(key==='elation'){
+        const mult=a?.elationSplit??0;
+        if(mult>0){
+          const pool=enemies(b,u),n=pool.length||1;
+          for(const to of pool)
+            damageTo(b,u,to,{...a,name:a.name??'欢愉技',type:'ElationDamage',element:u.element,terms:atk(mult/n),toughness:0},1,'primary','elation');
+        }
+      }
       if(key==='basic'||key==='skill'||key==='elation'){
         // 天赋：施放攻击后固定恢复 Talent[0]=10 点能量并获得 Talent[1]=3 个笑点。
         energy(b,u,P.Talent[0],true);
         gainLaughter(b,u,P.Talent[1],'英雄一笑，生死难料');
       }
       if(key==='skill'){
-        // 战技的额外欢愉伤害判定在「本次获得好活当赏」之前（原始脚本 OnStart[4] 早于 OnStart[6]）。
+        // OnStart[4]~[5]：持有【好活当赏】时，战技对敌方全体额外造成 Talent[2] 欢愉伤害，
+        // 该伤害读取全队最高的 ElationEchoPoint（Passive.OnBeforeHitAll → Skill02_ElationDamage）。
         if(hasPunch(u))for(const to of enemies(b,u))hitElation(b,u,to,{name:'英雄一笑，生死难料 · 欢愉伤害',mult:P.Talent[2]});
-        let add=P.BPSkill[1];
-        if(trace(u,3)&&u.resources['下次战技额外好活当赏']){add+=trace(u,3)[0];resource(b,u,'下次战技额外好活当赏',0);}
-        grantPunch(b,u,u,add);
+        // OnStart[7]：BPSkill[1]=20 点在伤害之后发放。
+        grantPunch(b,u,u,P.BPSkill[1]);
         // E1：施放战技后，下一次终结技使我方目标获得的好活当赏 +ranks[1][0]，最多 ranks[1][1] 层。
         if(rank(u,1))resource(b,u,'E1层数',Math.min(rank(u,1,1),(u.resources['E1层数']??0)+1));
       }
       if(key==='ultimate'){
         const to=selected[0]??get(b,u.policy?.allyTargetId);
         if(to&&live(to)){
-          cleanseOne(b,u,to);
+          cleanseControls(b,u,to);
           buff(b,u,to,'放心飞，开拓永相随！','critDmg',P.Ultra[0],P.Ultra[1],{id:u.id+':elation-ult:'+to.id});
           if(rank(u,2))buff(b,u,to,'名场面酝酿中……','elation',rank(u,2,0),rank(u,2,1),{id:u.id+':elation-e2:'+to.id});
           if(isElationPath(to)&&to.actions?.elation){
             const bonus=rank(u,1)?(u.resources['E1层数']??0)*rank(u,1,0):0;
             grantPunch(b,u,to,P.Ultra[3]+bonus);
-            // 「立即施放 1 次固定计入 Ultra[4]=20 笑点的阿哈额外回合」：全队欢愉角色各施放一次欢愉技。
-            ahaMoment(b,u,P.Ultra[4],'放心飞，开拓永相随！');
+            // 「使其立即施放 1 次固定计入 Ultra[4]=20 笑点的欢愉技」——目标自身插入行动。
+            insertElation(b,u,to,P.Ultra[4],'放心飞，开拓永相随！');
+            // 原始脚本只在 ByHasSkillTag 成功且 E1 生效的分支 RemoveModifier（E1层数清空）。
+            // 目标没有欢愉技时走 ModifyActionDelay 分支，E1 层数保留到下一次终结技。
+            resource(b,u,'E1层数',0);
           } else {
             advance(b,to.id,P.Ultra[2]);
           }
@@ -11626,7 +12265,6 @@ function elation(api){
         gainLaughter(b,u,P.Ultra[5],'放心飞，开拓永相随！');
         // 行迹 point07「跟你爆了」：施放终结技后为我方恢复 trace[2][1] 个战技点。
         if(trace(u,2))sp(b,u,trace(u,2)[1],'开拓者 · 跟你爆了');
-        resource(b,u,'E1层数',0);
       }
     },
     // 行迹 point07「跟你爆了」：自身暴击率 +trace[2][0]=15%；point06 快哉快哉：攻击力转欢愉度。
@@ -12441,14 +13079,37 @@ function phainon(api){
     const count=P(u).Ultra[3],speed=eventSpeed(u);
     const cycle=(u.resources['永续行动循环']??0)+1;resource(b,u,'永续行动循环',cycle);
     resource(b,u,'卡厄斯兰那回合',count);
-    // 源描述：8个倒计时事件的初始行动值均匀分布于0～100%；故按八分位显示，速度取基础速度60%。
+    // 源码确证：8 个 BattleEvent（11408）由 LoopExecuteTaskList 创建，各自 SetActionDelay。
+    // NormalizedValue 的三个动态哈希（608586940 / 696029444 / 1979030979）在本地缓存中
+    // 全部 ReadInfo.Type=None；但社区实测与配速计算给出一致口径：
+    //   8 个额外回合共享一次行动条，总行动值 = 10000 / (基础速度 × 0.6)；
+    //   首动不占行动值，其余 7 等分。因此距离为 0, 10000/7, …, 10000。
+    // 来源：NGA 白厄配速帖（tid=44710678 / 44574669 / 44855203）与米游社机制文。
+    // 该公式不使用动态哈希，哈希仍未映射；实现按社区实测口径落地，并在缺口台账注明来源层级。
+    // Ultra 的 OnListenBattleEventDie 在有 Phainon_UltraBE 阵亡时才安装
+    // RedirectActionDelayChange（→ Phainon_UltraBE.SortByActionOrder.Select2），倒计时归零时
+    // 以 IsCancel 取消；因此倒计时初始不开启重定向，由 actionEventEnd 在首个阵亡后打开。
     scheduleActionEvents(b,u.id,Array.from({length:count},(_,i)=>({
       id:u.id+':phainon-khaos:'+String(cycle)+':'+String(i+1),name:'卡厄斯兰那倒计时 '+(i+1)+'/'+count,
-      key:'basic',speed,distance:10000*(i+1)/count,
-    })),{group:eventGroup,suspendNormalGauge:true,redirectAdvance:true,noWaveReset:true});
+      key:'basic',speed,distance:count>1?10000*i/(count-1):0,
+    })),{group:eventGroup,suspendNormalGauge:true,redirectAdvance:false,noWaveReset:true});
+  }
+  // 境界【时墟铁墓】：变身期间敌方全体始终拥有物理属性弱点。
+  // 原始脚本把 MAvatar_Phainon_00_Ultra_Weakness 作为 Ultra 的 Halo 子修饰器挂在
+  // AllEnemyWithUnSelectable 上（STAT_AttachWeakness → StackWeakness Physical），
+  // Ultra 移除时由 OnDestroy 一并删除，因此这里用同名 tag 的 buff 复刻该光环。
+  function attachKhaosWeakness(b,u){
+    for(const to of enemies(b,u))if(!to.buffs.some(e=>e.tag==='phainonUltraWeakness'))
+      buff(b,u,to,'时墟铁墓 · 物理弱点','marker',0,null,{id:u.id+':khaos-weak',tag:'phainonUltraWeakness',weakness:'Physical'});
   }
   function endTransform(b,u){
     u.buffs=u.buffs.filter(e=>!['phainonKhaos','phainonKhaosAtk','phainonKhaosHp','phainonKhaosSpd'].includes(e.tag));
+    // Ultra 的 OnDestroy 同时移除 Ultra_Weakness 光环，以及 MAvatar_Phainon_00_Guard
+    // （Guard 的层数即【弑魂之炽】，因此层数与减伤 buff 一并清除）。
+    for(const to of b.units)to.buffs=to.buffs.filter(e=>e.tag!=='phainonUltraWeakness');
+    u.buffs=u.buffs.filter(e=>e.tag!=='phainonSoulfire');
+    resource(b,u,'弑魂之炽',0);resource(b,u,'敌行动未叠层',0);
+    u.counterMarkIds=[];
     // 行迹 point06：变身结束时获得 3 点【火种】；Talent 的溢出点数一并返还。
     addKindling(b,u,(trace(u,1)?trace(u,1)[0]:0)+(u.resources['火种溢出']??0));
     resource(b,u,'火种溢出',0);
@@ -12464,13 +13125,16 @@ function phainon(api){
     const cur=tagOf(u,tag)?.stacks??0;if(cur>=max)return;
     const n=cur+1;buff(b,u,u,name,key,per*n,null,{id:u.id+':'+tag,tag,stacks:n});
   }
-  // 最后一击：960% 攻击力物理终结伤害，由敌方全体均分；每剩余 1 个额外回合倍率 -12.5%。
-  function finalBlow(b,u,stacks){
+  // 最后一击：960% 攻击力物理终结伤害，由敌方全体均分；
+  // 「每剩余 1 个卡厄斯兰那的额外回合，最后一击的伤害倍率减少原倍率的 #3=12.5%」。
+  // remaining = 触发时点仍在行动条上的倒计时事件数；正常在第 8 个额外回合触发时为 0（全额）。
+  function finalBlow(b,u,remaining=0){
     const pool=enemies(b,u);if(!pool.length)return;
-    const mult=P(u).Ultra[0]*(1-kForm[2]*Math.max(0,stacks-1))/pool.length;
+    const mult=P(u).Ultra[0]*(1-kForm[2]*Math.max(0,remaining))/pool.length;
     for(const to of pool)damageTo(b,u,to,{name:'永劫燔世，其将背负 · 最后一击',type:'Ultra',element:'Physical',
       terms:atk(mult),toughness:60},1,'primary','direct');
   }
+  function activeCountdowns(b,u){return b.actionEvents.filter(e=>e.active&&e.owner===u.id&&e.group===eventGroup).length;}
   return {
     start(b,u){
       resource(b,u,'毁伤',0);resource(b,u,'火种溢出',0);resource(b,u,'弑魂之炽',0);resource(b,u,'反击层数',0);
@@ -12490,7 +13154,11 @@ function phainon(api){
       gainRuin(b,u,sk(1408,'140807','1')[1]);
       api.sp(b,u,sk(1408,'140807','1')[3],'终结之始');
     },
-    waveStart(b,u){if(u.kit.technique)for(const to of enemies(b,u))damageTo(b,u,to,{name:'终结之始 · 波次',type:'Maze',element:'Physical',terms:atk(P(u).Maze[0]),toughness:mazeStance(1408)},1,'primary','technique');},
+    waveStart(b,u){
+      if(u.kit.technique)for(const to of enemies(b,u))damageTo(b,u,to,{name:'终结之始 · 波次',type:'Maze',element:'Physical',terms:atk(P(u).Maze[0]),toughness:mazeStance(1408)},1,'primary','technique');
+      // Ultra_Weakness 是光环：新入场的敌人同样获得物理弱点。
+      if(kh(u))attachKhaosWeakness(b,u);
+    },
     // 卡厄斯兰那：普攻 →【创生•血棘渡亡】；战技 →【支柱•死星天裁】。
     prepare(b,u,key,kind,a){
       if(key==='ultimate'&&kind!=='copy'&&!kh(u))resource(b,u,'本次变身火种来源',(u.energy??0)+(u.resources['火种溢出']??0));
@@ -12529,6 +13197,13 @@ function phainon(api){
         buff(b,u,u,'卡厄斯兰那 · 攻击力','atkPct',kForm[3],null,{id:u.id+':khaos-atk',tag:'phainonKhaosAtk'});
         buff(b,u,u,'卡厄斯兰那 · 生命上限','hpPct',kForm[4],null,{id:u.id+':khaos-hp',tag:'phainonKhaosHp'});
         beginKhaosCountdown(b,u);
+        attachKhaosWeakness(b,u);
+        // Ultra 的 OnStack：ByTargetListIntersects(AllTeamMemberWithUnselectable, CurrentTurnOwnerEntity)
+        // → Remodifier(CurrentTurnOwnerEntity, StatusTypeMask="Buff", LifeTime>0) → LifeTime +1。
+        // StatusTypeMask 只含 Buff，负面效果（e.debuff）不延长；判定不排除自身回合。
+        const turnOwner=b.turnActor?b.units.find(x=>x.id===b.turnActor):null;
+        if(turnOwner&&turnOwner.side===u.side)
+          for(const e of turnOwner.buffs)if(!e.debuff&&e.remaining!=null&&e.remaining>0)e.remaining+=1;
         gainRuin(b,u,kForm[0]);
         if(u.resources['永续的燃烧']){
           const surplus=Math.max(0,(u.resources['本次变身火种来源']??12)-poem[4]);
@@ -12548,7 +13223,8 @@ function phainon(api){
       const index=Number(e.id.split(':').at(-1)),count=P(u).Ultra[3];
       if(index>=count){
         if(u.resources['永续的燃烧']){gainRuin(b,u,poem[8]);beginKhaosCountdown(b,u);return false;}
-        finalBlow(b,u,1);endTransform(b,u);return false;
+        // 最后一个额外回合开始时发动最后一击；此时本次倒计时已消耗，剩余事件为 0 → 全额倍率。
+        finalBlow(b,u,activeCountdowns(b,u));endTransform(b,u);return false;
       }
       if(u.resources['永续的燃烧']){
         const lost=Math.min(Math.max(0,u.hp-1),u.hp*poem[1]);
@@ -12564,19 +13240,45 @@ function phainon(api){
     },
     actionEventEnd(b,u,e,result){
       if(e.group!==eventGroup)return;
+      // Ultra 的 OnListenBattleEventDie：任一 Phainon_UltraBE 阵亡后，为仍在行动条上的倒计时
+      // 安装 RedirectActionDelayChange（行动提前 → 最早倒计时）；归零时由 cancelActionEvents 一并清理。
+      for(const other of b.actionEvents)if(other.group===eventGroup&&other.active)other.redirectAdvance=true;
       const parts=e.id.split(':'),eventCycle=Number(parts.at(-2)),index=Number(parts.at(-1));
       if(eventCycle!==(u.resources['永续行动循环']??1))return;
       resource(b,u,'卡厄斯兰那回合',Math.max(0,P(u).Ultra[3]-index));
       if(!result.executed&&index<P(u).Ultra[3])record(b,'assumption',u,{message:'卡厄斯兰那倒计时额外行动未执行'});
     },
-    // 【支柱•死星天裁】/【灾厄•弑魂焚诏】的伤害在 before 内逐段结算（段数随【毁伤】变化）。
+    // E1「火与光，善恶的化身」：原始 Rank01 的 OnListenCharacterDie 只要求
+    // 「ParamEntity = TeamDark（阵亡者）且 ParamEntity2 != TeamDark（击杀者为我方）」，
+    // 并不要求击杀者是白厄、也不要求处于卡厄斯兰那形态——单场战斗中每次敌方阵亡都累加。
     death(b,u,from,to){
       if(to.side===u.side)return;
-      if(from===u&&kh(u)){
+      if(rank(u,1)&&from&&from.side===u.side){
         resource(b,u,'消灭计数',(u.resources['消灭计数']??0)+1);
         updateActionEventSpeed(b,u.id,eventSpeed(u),eventGroup);
       }
+    },
+    // 卡厄斯兰那受到致命攻击时不会陷入无法战斗状态，而是回复 #2=25% 生命上限并立即发动最后一击。
+    // （Ultra 的 OnLimboWaitHeal → Skill31_SelectTarget_OnLimbo，优先级 AvatarReviveSelf。）
+    beforeLethal(b,u,from,to){
+      if(to!==u||!kh(u))return false;
+      resource(b,u,'致命反击待结算',1);
       void from;
+      return true;
+    },
+    afterDamage(b,u,from,to,kind){
+      if(to!==u||!u.resources['致命反击待结算'])return;
+      resource(b,u,'致命反击待结算',0);
+      // 原始 Skill31_SelectTarget_OnLimbo 的首个任务是 SetHP（ADF_MaxHPValue × #2=25%）：
+      // 把当前生命直接设为生命上限的 25%，不是在此之上追加治疗；随后插入 Skill31 结算最后一击。
+      const maxHp=combatPanel(u).hp,previous=u.hp;
+      u.hp=Math.max(1,maxHp*kForm[1]);
+      if(u.hp>previous)record(b,'heal',u,{target:u.id,amount:u.hp-previous,hp:u.hp,name:'命运•此躯即神 · 生命回复'});
+      const remaining=activeCountdowns(b,u);
+      finalBlow(b,u,remaining);
+      endTransform(b,u);
+      record(b,'mechanic',u,{name:'命运•此躯即神 · 致命反击',remaining});
+      void from;void kind;
     },
     // 卡厄斯兰那免疫控制类负面状态。
     attacked(b,u,to){if(to===u&&kh(u))u.buffs=u.buffs.filter(e=>e.control!=='freeze');},
@@ -12629,16 +13331,46 @@ function phainonExtra(api){
   const counter=sk(1408,'140809'),nuke=sk(1408,'140811');
   function randomEnemy(b,u){const pool=enemies(b,u);return pool.length?pool[Math.floor(b.random()*pool.length)]:null;}
   function setRuin(b,u,n){resource(b,u,'毁伤',Math.max(0,n));}
+  // MAvatar_Phainon_00_Guard 的命中回溯（TAvatar_Phainon_00_HitBackCheck）：
+  // Skill21_Phase02 的 OnStart 依次执行 SetActionDelay(AllEnemy, 0) 与
+  // AddModifier(AllEnemy, M_Phainon_00_Skill21_Mark)，即把「施放时在场的全部敌人」记为待反击目标；
+  // Guard 的 OnListenBeforeSkillUse 在敌人行动前移除它自己的标记，随后 OnListenAfterAction /
+  // OnAfterBeingAttacked 执行 HitBackCheck：Retarget(AllEnemy, 带 M_Phainon_00_Skill21_Mark,
+  // MaxNumber 1) 失败（所有被标记的敌人都已行动完）且仍有存活敌人时，执行
+  // TurnInsertAbility(Avatar_Phainon_00_Skill21_Insert_Phase01)。这正是 4.6 文本的
+  // 「上述敌方目标行动完毕后，立即发动反击」，因此反击由最后一个被标记敌人的行动结束触发，
+  // 而不是等到下一个卡厄斯兰那额外回合。
+  function markSoulfireTargets(b,u){u.counterMarkIds=enemies(b,u).map(t=>t.id);}
+  function consumeSoulfireMark(b,u,actorId){
+    if(!Array.isArray(u.counterMarkIds))return false;
+    // 已阵亡 / 退场的被标记目标不再阻塞判定（AllEnemy 只统计存活敌人）。
+    u.counterMarkIds=u.counterMarkIds.filter(id=>{
+      const t=b.units.find(x=>x.id===id);return !!t&&t.active!==false&&t.hp>1e-8;
+    });
+    const at=u.counterMarkIds.indexOf(actorId);if(at>=0)u.counterMarkIds.splice(at,1);
+    return u.counterMarkIds.length===0;
+  }
   function resolveSoulfire(b,u,actor){
     const layers=u.resources['弑魂之炽']??0;if(!(layers>0))return;
     const scale=1+counter[4]*layers;
     for(const to of enemies(b,u))damageTo(b,u,to,{name:'灾厄•弑魂焚诏 · 反击',type:'BPSkill',element:'Physical',terms:atk(counter[0]*scale),toughness:30},1,'primary','direct');
     for(let i=0;i<counter[2];i++){const to=randomEnemy(b,u);if(to)damageTo(b,u,to,{name:'灾厄•弑魂焚诏 · 额外伤害',type:'BPSkill',element:'Physical',terms:atk(counter[3]*scale),toughness:0},1,'primary','direct');}
     u.buffs=u.buffs.filter(e=>e.tag!=='phainonSoulfire');resource(b,u,'弑魂之炽',0);
-    record(b,'mechanic',u,{name:'灾厄•弑魂焚诏 · 反击',trigger:actor.id,layers});
+    u.counterMarkIds=[];
+    record(b,'mechanic',u,{name:'灾厄•弑魂焚诏 · 反击',trigger:actor?.id??null,layers});
+  }
+  // 卡厄斯兰那在此形态下没有普通回合；受到行动提前/插入时按队伍策略选择强化普攻 / 强化战技。
+  function chooseKhaosKey(b,u){
+    const rotation=u.policy?.rotation;
+    let key=u.policy?.basicOnly?'basic':Array.isArray(rotation)&&rotation.length?rotation[u.turns%rotation.length]:(u.actions.skill&&b.sp>=(u.actions.skill.spCost??0)&&b.rules.shouldUseSkill(b,u)!==false?'skill':'basic');
+    if(!['basic','skill'].includes(key))key='basic';
+    return key;
   }
   return {
     before(b,u,actor,key,kind,a,selected){
+      // MAvatar_Phainon_00_Guard 的 OnListenBeforeSkillUse：敌方（TeamDark）开始行动时，
+      // 记下「本次行动尚未通过受击获得层数」。
+      if(actor?.side==='enemy')resource(b,u,'敌行动未叠层',1);
       if(actor!==u||kind==='copy')return;
       if(a?.name===ROSTER_DATA[1408].skills['140809'].name){
         // 灾厄•弑魂焚诏：获得等同于敌方全体数量的【毁伤】和 1 层【弑魂之炽】（E4 +1），
@@ -12648,6 +13380,7 @@ function phainonExtra(api){
         const layers=1+(rank(u,4)?rank(u,4,0):0);
         resource(b,u,'弑魂之炽',layers);
         buff(b,u,u,'弑魂之炽 · 减伤','dmgReduction',counter[1],null,{id:u.id+':soulfire',tag:'phainonSoulfire'});
+        markSoulfireTargets(b,u);
         for(const to of enemies(b,u))advance(b,to.id,1);
         record(b,'mechanic',u,{name:'灾厄•弑魂焚诏 · 等待敌方行动',targets:n,layers});
       }
@@ -12660,8 +13393,15 @@ function phainonExtra(api){
         for(let i=0;i<n;i++)for(let j=0;j<nuke[2];j++){const to=randomEnemy(b,u);if(to)damageTo(b,u,to,{name:'支柱•死星天裁',type:'BPSkill',element:'Physical',terms:atk(nuke[1]),toughness:10},1,'primary','direct');}
         if(n>=nuke[3]){const pool=enemies(b,u);const each=pool.length?nuke[0]/pool.length:0;
           for(const to of pool)damageTo(b,u,to,{name:'支柱•死星天裁 · 终结',type:'BPSkill',element:'Physical',terms:atk(each),toughness:60},1,'primary','direct');}
-        // E2：单次消耗 4 点及以上【毁伤】时获得 1 个额外回合。
-        if(rank(u,2)&&n>=rank(u,2,0))advance(b,u.id,1);
+        // E2：单次消耗 #1=4 点及以上【毁伤】时获得 1 个额外回合。
+        // 原始 Skill22_Phase02：ByRankActivated + ByCompareDynamicValue(_prev_energy) 通过后
+        // 直接 TurnInsertAction（插入一个可用回合），不是行动提前；因此这里向插入动作队列
+        // 追加一个真实的额外行动，而不是推进行动条。
+        if(rank(u,2)&&n>=rank(u,2,0)){
+          const extraKey=chooseKhaosKey(b,u);
+          b.queue.push({actor:u.id,key:extraKey,kind:'extra',targetId:selected?.[0]?.id});
+          record(b,'mechanic',u,{name:'天与地 · 额外回合',key:extraKey,ruin:n});
+        }
         // E6：攻击后对生命值最高的敌方目标额外造成本次总伤害 36% 的真实伤害。
         if(rank(u,6)){
           const total=b.log.slice(start).filter(e=>e.type==='damage'&&e.actor===u.id).reduce((s,e)=>s+e.damage,0);
@@ -12673,22 +13413,38 @@ function phainonExtra(api){
       void a;void selected;
     },
     after(b,u,actor,key,kind,a,selected,hitTargets){
-      // Guard 的数据库回调：友方施放战技后若未通过受击获得层数，再增加一层。
-      if(actor?.side==='ally'&&actor!==u&&a?.type==='BPSkill'&&(u.resources['弑魂之炽']??0)>0)
-        resource(b,u,'弑魂之炽',(u.resources['弑魂之炽']??0)+1);
+      // MAvatar_Phainon_00_Guard 的 OnListenAfterAction：敌方单位行动结束、且本回合内没有
+      // 因「受击」叠层（_haveNotGainCountFromEnemyAction >= 1）时增加 1 层【弑魂之炽】，
+      // 随后执行 TAvatar_Phainon_00_HitBackCheck。
+      if(actor?.side==='enemy'){
+        if((u.resources['弑魂之炽']??0)>0){
+          if((u.resources['敌行动未叠层']??0)>=1)resource(b,u,'弑魂之炽',(u.resources['弑魂之炽']??0)+1);
+          resource(b,u,'敌行动未叠层',0);
+        }
+        // 最后一个被标记的敌人行动完毕 → 立即插入反击（若仍有存活敌人且 Guard 仍在）。
+        if(consumeSoulfireMark(b,u,actor.id)&&(u.resources['弑魂之炽']??0)>0&&enemies(b,u).length)
+          resolveSoulfire(b,u,null);
+      }
       // 强化普攻 140808【创生•血棘渡亡】获得 2 点【毁伤】。
       if(actor===u&&a?.name===ROSTER_DATA[1408].skills['140808'].name&&kind!=='copy')resource(b,u,'毁伤',ruin(u)+sk(1408,'140808','6')[2]);
       // 卡厄斯兰那施放攻击后回复 20% 生命上限。
       if(actor===u&&hitTargets?.length&&kh(u))api.heal(b,u,u,combatPanel(u).hp*sk(1408,'140805')[6]);
       void key;void kind;void selected;void a;
     },
-    // Ability JSON 的 MAvatar_Phainon_00_Guard 使用 OnListenTurnBegin + TurnInsertAbility；
-    // 模拟器在该敌方回合开始处结算插入反击，再继续敌人的原行动。
-    turnStart(b,u,actor){if(actor?.side==='enemy')resolveSoulfire(b,u,actor);},
+    // 兜底路径：主触发点已改为「最后一个被标记敌人行动结束」（见 after 的 HitBackCheck）。
+    // 若被标记的敌人没有机会行动（被冻结 / 跳过），仍有层数时在下一个卡厄斯兰那倒计时
+    // 开始时按 MAvatar_Phainon_00_Guard 的 OnListenTurnBegin 结算一次，避免反击永久悬挂。
+    actionEventStart(b,u,e){
+      if(e.owner!==u.id)return;
+      resolveSoulfire(b,u,null);
+    },
     attacked(b,u,to,from){
-      // MAvatar_Phainon_00_Guard 的 OnAfterBeingAttacked 只计友方单位受击事件。
-      if(to?.side==='ally'&&from?.side==='enemy'&&(u.resources['弑魂之炽']??0)>0)
+      // MAvatar_Phainon_00_Guard 的 OnAfterBeingAttacked：Guard 的持有者（卡厄斯兰那本人）
+      // 被敌方攻击时 +1 层，并把「未叠层」标记清零。
+      if(to===u&&from?.side==='enemy'&&(u.resources['弑魂之炽']??0)>0){
         resource(b,u,'弑魂之炽',(u.resources['弑魂之炽']??0)+1);
+        resource(b,u,'敌行动未叠层',0);
+      }
     },
   };
 }
@@ -12899,6 +13655,9 @@ const factories={
     return {...a,before(b2,u,actor,key,kind,act,selected){a.before?.(b2,u,actor,key,kind,act,selected);b.before?.(b2,u,actor,key,kind,act,selected);},
       after(b2,u,actor,key,kind,act,selected,hitTargets){a.after?.(b2,u,actor,key,kind,act,selected,hitTargets);b.after?.(b2,u,actor,key,kind,act,selected,hitTargets);},
       turnStart(b2,u,actor){a.turnStart?.(b2,u,actor);b.turnStart?.(b2,u,actor);},
+      // 倒计时事件开始：先按 Guard 的 OnListenTurnBegin 结算反击（TurnInsertAbility），
+      // 再走倒计时自身的「最后一击 / 永续的燃烧刷新 / 强化行动」判定。
+      actionEventStart(b2,u,e){b.actionEventStart?.(b2,u,e);return a.actionEventStart?.(b2,u,e);},
       attacked(b2,u,to,from){a.attacked?.(b2,u,to,from);b.attacked?.(b2,u,to,from);}};},
   1509:gilgamesh,
 };
@@ -14365,7 +15124,9 @@ function tribbie(api){const {allies,enemies,live,rank,trace,buff,stacks,energy,r
       if(actor.side!==u.side||!hits.length||!field(u))return;
       const pool=hits.filter(live);if(!pool.length)return;
       const native=b.log.slice(b.activeAction?.sequence??b.log.length).filter(e=>e.type==='damage'&&e.actor===actor.id&&!['true','dot','break_dot'].includes(e.kind)).reduce((n,e)=>n+e.damage,0);
-      const mult=u.kit.params.Ultra[2]*(rank(u,2)?rank(u,2):1),count=hits.length*(1+(u.kit.eidolon>=2?u.kit.ranks[2][1]:0));
+      // 1141515 献予「门径」之诗：追加攻击触发结界附加伤害时额外 1 次附加伤害。
+      const gateBonus=kind==='followup'&&u.buffs.some(e=>String(e.tag??'').startsWith('cyreneGatePoem:'))?1:0;
+      const mult=u.kit.params.Ultra[2]*(rank(u,2)?rank(u,2):1),count=hits.length*(1+(u.kit.eidolon>=2?u.kit.ranks[2][1]:0))+gateBonus;
       // The raw target alias selects the highest-current-HP living marked enemy
       // for each loop iteration. Re-resolve after every damage packet so a kill
       // does not discard the remaining field hits.
@@ -15113,7 +15874,7 @@ return { rosterRuntime };
 });
 __def("simulator/equipment-runtime.mjs", function (__req) {
 // Additional cones share the same battle events as character modules.
-function equipmentRuntime(api){const {allies,live,buff,stacks,energy,sp,resource,combatPanel,record}=api;
+function equipmentRuntime(api){const {allies,live,buff,stacks,energy,sp,resource,combatPanel,record,advance}=api;
   const oracle=(b,u,d)=>{const p=u.gear.cone.p;buff(b,u,u,'谕示','marker',0,d,{tag:'flowerOracle'});for(const t of allies(b,u))buff(b,u,t,'谕示 · 全队暴伤','critDmg',p[3],d,{tickOwner:u.id,requiresTag:{unit:u.id,tag:'flowerOracle'},removeOnSourceDeath:true});};
   const cogs=(b,u)=>{if(u.gear?.cone?.id===20012&&u.resources['轮契触发回合']!==u.turns){resource(b,u,'轮契触发回合',u.turns);energy(b,u,u.gear.cone.p[0]);}};
   const mirror=(b,u)=>{const p=u.gear?.cone?.p;if(!p)return;
@@ -15127,11 +15888,19 @@ function equipmentRuntime(api){const {allies,live,buff,stacks,energy,sp,resource
     for(const to of allies(b,u))buff(b,u,to,'华彩 · 增伤','dmgBoost',p[2],p[4],{id:'cone:23026:dmgBoost',tickOwner:u.id});
     record(b,'mechanic',u,{name:'夜色流光溢彩 · 华彩',duration:p[4]});};
   return {
-    start(b){for(const u of b.units.filter(live)){const id=u.gear?.cone?.id,p=u.gear?.cone?.p;if(!p)continue;if(id===23003||id===21000)buff(b,u,u,u.gear.cone.name+' · 回能','energyRegen',p[0]);if(id===21000)buff(b,u,u,'一场术后对话 · 终结治疗','healingBoost',p[1],null,{abilityType:'Ultra'});if(id===23038){buff(b,u,u,'如果时间是一朵花 · 暴伤','critDmg',p[0]);energy(b,u,p[4]);oracle(b,u,p[5]);}if(id===23019)buff(b,u,u,'镜中故我 · 击破特攻','breakEffect',p[0]);}},
+    start(b){for(const u of b.units.filter(live)){const id=u.gear?.cone?.id,p=u.gear?.cone?.p;if(!p)continue;if(id===23003||id===21000)buff(b,u,u,u.gear.cone.name+' · 回能','energyRegen',p[0]);if(id===21000)buff(b,u,u,'一场术后对话 · 终结治疗','healingBoost',p[1],null,{abilityType:'Ultra'});if(id===23038){buff(b,u,u,'如果时间是一朵花 · 暴伤','critDmg',p[0]);energy(b,u,p[4]);oracle(b,u,p[5]);}if(id===23019)buff(b,u,u,'镜中故我 · 击破特攻','breakEffect',p[0]);
+      // 23063「你将起身歌唱」：生命上限 +30%，入场行动提前 30% 并获得【新声】2 回合；
+      // 持有【新声】时我方全体速度 +20%。参数 [生命%, 提前, 速度%, 持续回合]。
+      if(id===23063){buff(b,u,u,u.gear.cone.name+' · 生命上限','hpPct',p[0],null,{id:'cone:23063:hp'});
+        buff(b,u,u,'新声','marker',0,p[3],{id:'cone:23063:voice',tag:'cone23063Voice'});
+        for(const to of allies(b,u))buff(b,u,to,'新声 · 速度','speedPct',p[2],p[3],{id:'cone:23063:speed:'+to.id,tickOwner:u.id,requiresTag:{unit:u.id,tag:'cone23063Voice'},removeOnSourceDeath:true});
+        advance(b,u.id,p[1]);}}},
     // 每个波次开始时：镜中故我使我方全体立即恢复能量，同类技能无法重复生效。
     waveStart(b){const wearers=b.units.filter(u=>live(u)&&u.gear?.cone?.id===23019);if(!wearers.length)return;const p=wearers[0].gear.cone.p;for(const to of b.units.filter(t=>live(t)&&t.side===wearers[0].side))energy(b,to,p[4]);},
     before(b,actor,key,kind){if(kind!=='normal')return;for(const u of b.units.filter(u=>live(u)&&u.side===actor.side&&u!==actor&&u.resources?.['下位增伤待生效'])){const p=u.resources['下位增伤待生效'];resource(b,u,'下位增伤待生效',null);buff(b,u,actor,p.name,'dmgBoost',p.value,p.duration);}},
     after(b,u,key,kind,a,selected,hits){const id=u.gear?.cone?.id,p=u.gear?.cone?.p;
+      // 23063：装备者施放终结技后，为我方恢复 1 个战技点（固定 1 点，参数表无此项）。
+      if(id===23063&&key==='ultimate'&&kind!=='copy')sp(b,u,1,'你将起身歌唱');
       // 夜色流光溢彩：我方角色每次攻击时装备者获得 1 层【歌咏】（攻击者不限定为装备者）。
       if(hits.length)for(const t of b.units.filter(t=>live(t)&&t.side===u.side&&t.gear?.cone?.id===23026)){const q=t.gear.cone.p,st=stacks(b,t,t,'歌咏','energyRegen',q[0],q[1],null,{id:'cone:23026:regen'});resource(b,t,'歌咏层数',st.stacks);}
       if(!p)return;
@@ -15260,7 +16029,32 @@ function kitRuntime(api) {
   }
   function cleanseOne(b,u,to){const negative=[...to.buffs.filter(e=>e.debuff),...to.dots];const first=negative.find(e=>e.control)??negative[0];if(!first)return;to.buffs=to.buffs.filter(e=>e!==first);to.dots=to.dots.filter(e=>e!==first);record(b,'cleanse',u,{target:to.id,name:first.name});}
   function supportTarget(b,u){const id=u.policy?.allyTargetId??u.actions.skill?.targetId;return get(b,id)??allies(b,u).find(t=>is(t,1015))??allies(b,u).find(t=>t!==u)??u;}
-  function merit(b,u,to){const old=u.resources['军功目标'];if(old!==to.id){resource(b,u,'充能',0);resource(b,u,'军功目标',to.id);for(const t of b.units)t.buffs=t.buffs.filter(e=>!(e.source===u.id&&e.merit));}
+  // 1141523「持有【军功】的角色暴击伤害提高 42%」是持有者状态光环。昔涟的诗篇把数值记在
+  // 1412 的 resources（castPoem），这里保证光环总是挂在当前【军功】持有者身上：
+  // 旧持有者身上的光环被移走，首次指定持有者时补挂。
+  function syncLawPoem(b,u,to){
+    for(const t of b.units){
+      for(const e of [...t.buffs]){
+        const tag=String(e.tag??'');
+        if(!tag.startsWith('cyreneLawPoem:'))continue;
+        if(t===to)continue;
+        t.buffs=t.buffs.filter(x=>x!==e);
+        if(!to.buffs.some(x=>x.tag===e.tag)){
+          // id 里含旧持有者，迁移后同步重写，避免同一光环出现两条。
+          e.id=tag.slice('cyreneLawPoem:'.length)+':poem-law-cd:'+to.id;
+          to.buffs.push(e);
+        }
+      }
+    }
+    for(const key of Object.keys(u.resources)){
+      if(!key.startsWith('Cyrene律法诗篇:'))continue;
+      const cyreneId=key.slice('Cyrene律法诗篇:'.length),tag='cyreneLawPoem:'+cyreneId;
+      if(to.buffs.some(e=>e.tag===tag))continue;
+      buff(b,u,to,'献予「律法」之诗 · 暴击伤害','critDmg',u.resources[key],null,
+        {id:cyreneId+':poem-law-cd:'+to.id,tag});
+    }
+  }
+  function merit(b,u,to){const old=u.resources['军功目标'];if(old!==to.id){resource(b,u,'充能',0);resource(b,u,'军功目标',to.id);for(const t of b.units)t.buffs=t.buffs.filter(e=>!(e.source===u.id&&e.merit));syncLawPoem(b,u,to);}
     buff(b,u,to,'军功','atk',0,null,{tag:'merit',merit:true,convert:{source:u.id,stat:'atk',ratio:u.kit.params.Talent[1]}});
     if(rank(u,1))buff(b,u,to,'军功 · 无视防御','defIgnore',rank(u,1),null,{merit:true});
     if(rank(u,2))buff(b,u,to,'军功 · 增伤','dmgBoost',rank(u,2),null,{merit:true});
@@ -15356,7 +16150,10 @@ function kitRuntime(api) {
     }
   }
   function copyOwner(b,u,key,kind,a){if(key!=='skill'||kind==='copy'||kind==='technique'||!(a.terms?.length))return null;return b.units.find(c=>live(c)&&is(c,1412)&&c.resources['军功目标']===u.id&&tag(u,'peerage'));}
-  function consumeCopy(b,c,u){resource(b,c,'充能',Math.max(0,c.resources['充能']-c.kit.params.BPSkill[3]));u.buffs=u.buffs.filter(e=>!(e.source===c.id&&(e.peerage||e.tag==='peerage')));record(b,'mechanic',c,{name:'奇袭结束 · 爵位降为军功',target:u.id});}
+  function consumeCopy(b,c,u){resource(b,c,'充能',Math.max(0,c.resources['充能']-c.kit.params.BPSkill[3]));
+    // 1141523 献予「律法」之诗：奇袭结束后，使刻律德菈获得 1 点充能。
+    if(Object.keys(c.resources??{}).some(k=>k.startsWith('Cyrene律法诗篇:')))ceryCharge(b,c,1);
+    u.buffs=u.buffs.filter(e=>!(e.source===c.id&&(e.peerage||e.tag==='peerage')));record(b,'mechanic',c,{name:'奇袭结束 · 爵位降为军功',target:u.id});}
   function after(b,u,key,kind,a,selected,hitTargets,bounceTargets){
     if(u.enemyKit?.id===8012010&&hitTargets.length){const p=u.enemyKit;stacks(b,u,u,'掠夺者 · 速度叠层','speedPct',p.speedPerLayer,p.speedLayers,p.speedDuration,{tickAt:'start'});}
     if(is(u,1306)){
@@ -15849,20 +16646,41 @@ function certifiedBangerDuration(u,base=2){
   if(id===1513)extra++;
   return Math.max(1,base+extra);
 }
+const punchCapOf=u=>u?.kit?.characterId===1503?(u.kit.params?.Talent?.[2]??Infinity):Infinity;
 function addCertifiedBanger(b,to,amount,reason='阿哈时刻结算',source='aha:ally'){
   if(!alive(to)||!(amount>0))return;
+  // 150304 天赋：真珠的【好活当赏】持有上限为 #3（4.6 = 50 点）。自然阿哈结算与
+  // 战斗开始的发放也必须走同一上限，超出部分既不进资源也不生成到期批次。
+  const cap=punchCapOf(to),current=to.resources['好活当赏']??0,next=Math.min(cap,current+amount),stacks=next-current;
+  if(!(stacks>0))return;
   const seq=(to.resources['好活当赏批次序号']??0)+1;to.resources['好活当赏批次序号']=seq;
-  const id='punchline:'+to.id+':'+seq,stacks=amount;
-  to.resources['好活当赏']=(to.resources['好活当赏']??0)+stacks;
+  const id='punchline:'+to.id+':'+seq;
+  to.resources['好活当赏']=next;
   to.buffs.push({type:'buff',id,name:'好活当赏',key:'marker',value:0,remaining:certifiedBangerDuration(to),
     tickOwner:to.id,tickAt:'end',appliedTurn:to.turns,source,tag:'punchline',stacks});
-  record(b,'resource',to,{name:'好活当赏',value:to.resources['好活当赏'],reason,added:stacks});
+  record(b,'resource',to,{name:'好活当赏',value:next,reason,added:stacks});
 }
 function startElationBattle(b){
   const team=elationTeam(b);b.aha={id:'aha:ally',name:'阿哈',side:'ally',kind:'aha_actor',order:-1,distance:ACTION_DISTANCE,speed:80,active:team.length>0};
   if(!team.length)return;
   b.laughter.ally+=team.length;
-  for(const u of team)addCertifiedBanger(b,u,20,'战斗开始','battle:start');
+  // 战斗开始的 20 点好活当赏同样经过绯英【瞰众乐】转化：参演编号低于 1505 的队友，
+  // 其获得量的 50%（E2 再 +50%）转给绯英（EVA:3587-3869）。
+  const ev=team.find(u=>u.kit?.characterId===1505);
+  for(const u of team){
+    let converted=0;
+    if(ev&&u!==ev){
+      const p06=ev.kit.trace?.['1']?.[4]??0;
+      const ri=u.participantId??ELATION_PARTICIPANT_IDS[u.kit?.characterId];
+      const ei=ev.participantId??ELATION_PARTICIPANT_IDS[1505];
+      if(p06>0&&Number.isFinite(ri)&&Number.isFinite(ei)&&ri<ei){
+        const e2=ev.kit.eidolon>=2?(ev.kit.ranks?.[2]?.[1]??0):0;
+        converted=Math.min(20,20*p06*(1+e2));
+      }
+    }
+    addCertifiedBanger(b,u,20-converted,converted>0?'战斗开始 · 瞰众乐转出':'战斗开始','battle:start');
+    if(converted>0)addCertifiedBanger(b,ev,converted,'瞰众乐 · 战斗开始转化','battle:start');
+  }
   b.aha.speed=currentAhaSpeed(b);
 }
 function createBattle(config) {
@@ -15992,7 +16810,17 @@ function energy(b,u,amount,fixed=false){const old=u.energy,gain=amount*(fixed?1:
 function scheduleActionEvents(b,ownerId,specs,options){return b.eventActions.schedule(b,ownerId,specs,options);}
 function cancelActionEvents(b,ownerId,group){return b.eventActions.cancel(b,ownerId,group);}
 function updateActionEventSpeed(b,ownerId,speed,group){return b.eventActions.updateSpeed(b,ownerId,speed,group);}
-function advance(b,id,ratio){const owner=b.units.find(x=>x.id===id);if(!owner)throw new Error('未知单位');const u=b.eventActions?.redirect(b,id)??owner;u.distance=Math.max(0,u.distance-ACTION_DISTANCE*finite(ratio,'行动提前'));if(u.distance<=EPS&&ratio>0)u.advanceOrder=b.advanceSequence=(b.advanceSequence??0)+1;record(b,'advance',owner,{ratio,distance:u.distance,...(u!==owner?{eventId:u.id}:{} )});}
+function advance(b,id,ratio){
+  const owner=b.units.find(x=>x.id===id);if(!owner)throw new Error('未知单位');
+  // 通用白名单标记：持有该标记的单位（或其忆灵）不能使**其他友方**获得行动提前。
+  // 例：知更鸟•晴歌【特邀嘉宾】151203。标记由角色模块写入 buff，引擎不识别具体角色。
+  const from=b.activeAction?b.units.find(x=>x.id===b.activeAction.actor):null;
+  const fromOwner=from?.memospriteOwner?b.units.find(x=>x.id===from.memospriteOwner):from;
+  if(from&&from.id!==id&&fromOwner&&owner.side===fromOwner.side&&fromOwner.buffs?.some(e=>e.blockAllyAdvance)){
+    record(b,'mechanic',fromOwner,{name:'阻止友方行动提前',target:id,ratio});
+    return;
+  }
+  const u=b.eventActions?.redirect(b,id)??owner;u.distance=Math.max(0,u.distance-ACTION_DISTANCE*finite(ratio,'行动提前'));if(u.distance<=EPS&&ratio>0)u.advanceOrder=b.advanceSequence=(b.advanceSequence??0)+1;record(b,'advance',owner,{ratio,distance:u.distance,...(u!==owner?{eventId:u.id}:{} )});}
 function delay(b,id,ratio){const u=b.units.find(x=>x.id===id);if(!u)throw new Error('未知单位');u.distance+=ACTION_DISTANCE*finite(ratio,'行动延后');record(b,'delay',u,{ratio,distance:u.distance});}
 function receiveDamage(b,from,to,amount,kind,detail={}){
   finite(amount,'伤害');
@@ -16113,10 +16941,13 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
     const inAha=b.ahaInstant&&b.activeAction?.kind==='aha';
     const fixedAha=inAha&&!b.ahaInstant.natural;
     const source=action.punchlineSource??(inAha?'punchline':'certifiedBanger');
-    const counted=inAha
+    // 角色专属的固定计入（如砂金•戏浪热意阈值触发的【举杯】固定 20 点）可显式覆盖。
+    // `punchlineFrom`：伤害归属者与笑点基数来源不同的情况（爻光大吉大利固定读爻光的 ElationEchoPoint）。
+    const punchlineUnit=action.punchlineFrom?b.units.find(t=>t.id===action.punchlineFrom)??u:u;
+    const counted=action.punchlineOverride!=null?Math.max(0,action.punchlineOverride):inAha
       ?fixedAha?(b.ahaInstant.fixedPunchline??0):(b.laughter?.[u.side]??0)
       :source==='laughter'||source==='punchline'
-        ?(b.laughter?.[u.side]??0):(u.resources?.['好活当赏']??0);
+        ?(b.laughter?.[u.side]??0):(punchlineUnit.resources?.['好活当赏']??0);
     const punchlinePoints=Math.max(counted*Math.max(0,action.punchlineMultiplier??1),Math.max(0,action.punchlineFloor??0));
     const punchline=1+5*punchlinePoints/(punchlinePoints+240);
     const elationPct=Math.max(-1,p.elation??0),increase=Math.max(-1,mod.elationBoost??0);
@@ -16138,23 +16969,40 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
   b.rules.afterHit(b,u,to,action,triggerKind,{critMode,critRate:p.critRate});
   if(b.hitTargets&&!b.hitTargets.includes(to))b.hitTargets.push(to);
   if(wasBroken&&action.superBreak&&alive(to))b.breaks.superBreak(b,u,to,((role==='adjacent'?action.adjacentToughness:action.toughness)??0)*share,action.superBreak,skill.element);
-  if(!['dot','additional','elation'].includes(damageKind)&&alive(to)&&!to.broken&&(to.toughnessMax??0)>0&&(action.ignoreWeaknessToughness||(to.weaknesses??[]).includes(skill.element)||to.buffs.some(e=>e.weakness===skill.element))){
+  // 欢愉伤害同样按动作 stance 削韧（150120 等技能的 ShowStanceList 已提供主段/弹射段削韧）。
+  if(!['dot','additional'].includes(damageKind)&&alive(to)&&!to.broken&&(to.toughnessMax??0)>0&&(action.ignoreWeaknessToughness||(to.weaknesses??[]).includes(skill.element)||to.buffs.some(e=>e.weakness===skill.element))){
     const reduction=(role==='adjacent'?action.adjacentToughness??action.toughness:action.toughness)??0;
-    to.toughness=Math.max(0,to.toughness-reduction*share*(1+(combatPanel(u).breakEfficiency??0)));
-    record(b,'toughness',u,{target:to.id,value:to.toughness});if(to.toughness<=EPS)breakTarget(b,u,to,skill.element,action);
+    const amount=reduction*share*(1+(combatPanel(u).breakEfficiency??0));
+    // 0 削韧的附加/欢愉伤害不应产生空的 toughness 事件（否则会污染逐段削韧断言）。
+    if(amount>0){
+      to.toughness=Math.max(0,to.toughness-amount);
+      record(b,'toughness',u,{target:to.id,value:to.toughness});if(to.toughness<=EPS)breakTarget(b,u,to,skill.element,action);
+    }
   }
 }
-function useAction(b,u,key,kind='normal',targetId=null){
+function useAction(b,u,key,kind='normal',targetId=null,overrides=null){
   const original=u.actions[key];if(!original)throw new Error(u.name+'缺少动作 '+key);
-  let action=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);
-  if(u.side==='ally'&&(action.spCost??0)>b.sp)throw new Error('战技点不足');
+  // 队列条目可以携带「仅作用于本次行动」的覆盖（例如开拓者终结技让目标立即施放 1 次
+  // 固定计入 20 笑点的欢愉技）。覆盖在角色 prepare 之后合并，因此不改变角色自身的动作合同，
+  // 也不会写入动作表或影响同一角色之后的行动。
+  const prepared=()=>{const a=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);return overrides?{...a,...overrides}:a;};
+  let action=prepared();
+  // 火花【爆点】：可抵扣战技点消耗。只对「引擎已扣款」的部分要求 SP，抵扣部分由角色 before 结算。
+  const substitute=u.side==='ally'&&u.resources?Math.min(action.spCost??0,u.resources['爆点']??0):0;
+  const uncovered=(action.spCost??0)-substitute;
+  if(u.side==='ally'&&uncovered>b.sp)throw new Error('战技点不足');
+  if(substitute>0)action={...action,spSubstituteUsed:substitute};
   if((action.energyCost??0)>u.energy+EPS)throw new Error('能量不足');
   let selected=selectedTargets(b,u,action);if(!selected.length)return;
   const copy=b.rules.copyOwner(b,u,key,kind,action);
-  if(copy){u.coupActive=true;const pending={actor:u.id,key,kind:'coupOriginal'};b.pendingActions.push(pending);useAction(b,u,key,'copy',selected[0].id);flush(b,{abilitiesOnly:true});b.pendingActions=b.pendingActions.filter(q=>q!==pending);action=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);selected=selectedTargets(b,u,action);if(!selected.length){b.rules.consumeCopy(b,copy,u);u.coupActive=false;return;}}
+  if(copy){u.coupActive=true;const pending={actor:u.id,key,kind:'coupOriginal'};b.pendingActions.push(pending);useAction(b,u,key,'copy',selected[0].id,overrides);flush(b,{abilitiesOnly:true});b.pendingActions=b.pendingActions.filter(q=>q!==pending);action=prepared();selected=selectedTargets(b,u,action);if(!selected.length){b.rules.consumeCopy(b,copy,u);u.coupActive=false;return;}}
   const savedAction=b.activeAction,savedHits=b.hitTargets,savedBounceHits=b.hitBounceTargets,savedEnergy=b.hitEnergyTargets,savedAttacked=b.attackedTargets;b.hitTargets=[];b.hitBounceTargets=[];b.hitEnergyTargets=new Set();b.attackedTargets=new Set();
   u.energy=Math.max(0,u.energy-(action.energyCost??0));
-  if(u.side==='ally')b.rules.spend(b,u,action.spCost??0);
+  if(u.side==='ally')b.rules.spend(b,u,uncovered);
+  if(substitute>0){
+    u.resources['爆点']=Math.max(0,(u.resources['爆点']??0)-substitute);
+    record(b,'resource',u,{name:'爆点',value:u.resources['爆点'],reason:'抵扣战技点'});
+  }
   if(action.hpCostRatio){const old=u.hp;u.hp=Math.max(action.hpCostCanKill?0:1,u.hp-combatPanel(u).hp*action.hpCostRatio);if(u.hp<old)b.rules.relics.healthConsumed(b,u);}
   b.activeAction={sequence:b.log.length,actor:u.id,name:action.name??key,key,kind,targets:selected.map(t=>t.id)};
   record(b,'action',u,{name:action.name??key,key,kind,targets:selected.map(t=>t.id),energy:u.energy});
@@ -16206,7 +17054,7 @@ function queuePlannedActions(b,from,key,kind){
 function enqueueUltimates(b,{beforeEnd=false}={}){
   if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy'))return;
   const queued=new Set(b.queue.filter(q=>q.kind==='ultimate').map(q=>q.actor));
-  for(const u of b.units)if(alive(u)&&!frozen(u)&&u.policy?.autoUltimate!==false&&!(beforeEnd&&u.id===b.turnActor&&u.policy?.ultimateTiming==='afterTurn')&&u.actions.ultimate&&!queued.has(u.id)&&(u.actions.ultimate.energyCost??u.energyMax)>0&&u.energy+EPS>=(u.actions.ultimate.energyCost??u.energyMax))b.queue.push({actor:u.id,key:'ultimate',kind:'ultimate'});
+  for(const u of b.units)if(alive(u)&&!frozen(u)&&u.policy?.autoUltimate!==false&&!(beforeEnd&&u.id===b.turnActor&&u.policy?.ultimateTiming==='afterTurn')&&u.actions.ultimate&&!queued.has(u.id)&&!u.buffs.some(e=>e.noUltimate)&&(u.actions.ultimate.energyCost??u.energyMax)>0&&u.energy+EPS>=(u.actions.ultimate.energyCost??u.energyMax))b.queue.push({actor:u.id,key:'ultimate',kind:'ultimate'});
 }
 function finishAhaInstant(b,actor=null){
   const instant=b.ahaInstant;if(!instant||instant.finished)return;
@@ -16216,18 +17064,20 @@ function finishAhaInstant(b,actor=null){
   if(instant.natural){
     const team=elationTeam(b).filter(alive),evanescia=team.find(u=>u.kit?.characterId===1505);
     for(const u of team){
+      // 150304 #3=50：先把本名角色实际能接收的份额按持有上限截断，再参与瞰众乐转化。
+      const accepted=Math.min(counted,Math.max(0,punchCapOf(u)-(u.resources['好活当赏']??0)));
       // 瞰众乐：参演编号小于绯英的队友取得好活当赏时，其中50%转为绯英的好活当赏。
       // E2 再额外增加本次转换量的50%；高于/等于绯英编号的队友不触发。
       const recipientIndex=u.participantId??ELATION_PARTICIPANT_IDS[u.kit?.characterId];
       const evanesciaIndex=evanescia?.participantId??ELATION_PARTICIPANT_IDS[1505];
       const lowerThanEvanescia=!!evanescia&&u!==evanescia&&Number.isFinite(recipientIndex)&&
         Number.isFinite(evanesciaIndex)&&recipientIndex<evanesciaIndex;
-      if(!lowerThanEvanescia){addCertifiedBanger(b,u,counted,'阿哈自然行动');continue;}
+      if(!lowerThanEvanescia){addCertifiedBanger(b,u,accepted,'阿哈自然行动');continue;}
       const point06=evanescia.kit.trace?.['1']?.[4]??0;
-      if(!(point06>0)){addCertifiedBanger(b,u,counted,'阿哈自然行动');continue;}
+      if(!(point06>0)){addCertifiedBanger(b,u,accepted,'阿哈自然行动');continue;}
       const e2Bonus=evanescia.kit.eidolon>=2?(evanescia.kit.ranks?.[2]?.[1]??0):0;
-      const converted=counted*point06*(1+e2Bonus);
-      addCertifiedBanger(b,u,counted-converted,'阿哈自然行动 · 瞰众乐转出');
+      const converted=accepted*point06*(1+e2Bonus);
+      addCertifiedBanger(b,u,accepted-converted,'阿哈自然行动 · 瞰众乐转出');
       addCertifiedBanger(b,evanescia,converted,'瞰众乐 · 参演编号转化','trace:1505101');
     }
   }
@@ -16276,7 +17126,7 @@ function flush(b,{abilitiesOnly=false}={}){
     if(q.kind==='ultimate'&&u.energy+EPS<(u.actions[q.key].energyCost??0))continue;
     // Extra turns/ultimates/follow-ups do not reset the normal action gauge.
     const actionLogStart=b.log.length;
-    useAction(b,u,q.key,q.kind,q.targetId);
+    useAction(b,u,q.key,q.kind,q.targetId,q.overrides??null);
     if(q.planIndex!=null&&b.log.slice(actionLogStart).some(e=>e.type==='action'&&e.actor===u.id&&e.key===q.key))b.planUsed.push(q.planIndex);
     if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId)b.ahaInstant.completed.push(u.id);
     if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId&&b.ahaInstant.ending){

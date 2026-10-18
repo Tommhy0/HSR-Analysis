@@ -33,8 +33,13 @@
 // 2) 共享欢愉伤害公式现由 engine.mjs 的 elationBase 结算：等级基础值、欢愉度与笑点系数，
 //    不受攻击力、元素增伤或一般增伤影响；独立合同测试见 test_codex_elation_formula.mjs。
 //    8009/8010 的角色攻击段与额外触发仍须按角色脚本分别核对。
-// 3) 爻光、砂金与开拓者的固定笑点阿哈额外回合会触发全队欢愉技且不消费共享笑点；
-//    自然阿哈行动条、速度/行动值与参演者真实ID排序尚未接入，严格模式仍阻断。
+// 3) 8009 / 8010 终结技的「立即施放 1 次固定计入 Ultra[4]=20 笑点的欢愉技」是**目标自身**的插入行动
+//    （Skill03_Phase02 把 Rank01_InsertActionSaveMark / InsertElationSkillShow 挂到目标；
+//    Temp_MAvatar_PlayerBoy_40_InsertActionSave 在 OnEnterBattle / OnCustomEvent / OnWaveMonster
+//    中执行 TurnInsertAction(BIKKDNAMGMG)），不是 Elation_StartElationTime 发动的阿哈时刻；
+//    因此它只排入目标 1 条带 punchlineOverride 的 extra 行动，不建立 ahaInstant、不增加 ahaCount、
+//    不消费共享笑点，也不会覆盖正在进行的自然阿哈。真正发动全队阿哈时刻的是爻光 1502 的终结技。
+//    自然阿哈行动条、速度/行动值与参演者真实ID排序仍由引擎全局结算（见 test_codex_aha_action_bar）。
 // 4) 1504 不死途：
 //    · 【饲饵】的转移（MAvatar_Ashveil_00_Skill02_DebuffShift / DebuffRemove 模板 +
 //      `OnListenCharacterLimbo`）已按脚本落地：持有者阵亡 / 场上无饲饵时，最低生命百分比敌人自动成为饲饵。
@@ -371,34 +376,66 @@ function harmony(api){
 // E4 [0.1,2]：施放欢愉技时敌方目标受伤 +10%、2 回合；E6 [1,3]：施放欢愉技时自身暴击伤害 +100%、3 回合。
 const ELATION_RARE='开怀大笑',ELATION_COMMON='忍俊不禁',PUNCH='好活当赏';
 function elation(api){
-  const {live,allies,enemies,rank,trace,buff,resource,energy,sp,advance,cleanseOne,damageTo,combatPanel,record,get}=api;
+  const {live,allies,enemies,rank,trace,buff,resource,energy,sp,advance,damageTo,combatPanel,record,get}=api;
   const punchOf=to=>to?.resources?.[PUNCH]??0;
   const hasPunch=u=>punchOf(u)>0;
+  // Skill03_Phase02 OnStart[0]：DispelStatus(AbilityTargetEntity, BehaviorFlags:["STAT_CTRL"])。
+  // 只解除该目标的**控制类**负面，且要清除全部控制类条目；不碰非控制类负面。
+  // 不能复用共享 cleanseOne：它只移除第一条（找不到控制类时会退化为移除任意负面）。
+  function cleanseControls(b,u,to){
+    const gone=[];
+    to.buffs=to.buffs.filter(e=>{if(!e.control)return true;gone.push(e);return false;});
+    to.dots=(to.dots??[]).filter(e=>{if(!e.control)return true;gone.push(e);return false;});
+    for(const e of gone)record(b,'cleanse',u,{target:to.id,name:e.name});
+    return gone.length;
+  }
   function gainLaughter(b,u,n,reason){
     if(!n)return;
     b.laughter[u.side]=(b.laughter[u.side]??0)+n;
     record(b,'resource',u,{name:'累计获得笑点',value:b.laughter[u.side],reason:reason??'笑点'});
   }
-  // 好活当赏：每次获得的层数独立计时，基础持续 2 回合。
+  // 好活当赏：每次获得的层数独立计时，基础持续 2 回合（额外效果 10000029）。
+  // 接收者自身的延长效果按各自的 4.6 文本生效，与发放者是谁无关：
+  //   1502 point08 鸿运鳞集「爻光获得【好活当赏】时，使其持续时间增加 #2 回合」→ trace[3][1]；
+  //   1505 E6「绯英的【好活当赏】的持续时间增加 #2 回合」→ ranks[6][1]；
+  //   1513 天赋「砂金•戏浪的【好活当赏】的持续时间增加 1 回合」→ 天赋 #6/#7。
+  function punchDurationFor(to,base){
+    const cid=to.kit?.characterId;
+    // 1503 真珠：【好活当赏】持续时间无限（与 engine.mjs 的 certifiedBangerDuration 同口径）。
+    if(cid===1503)return null;
+    // 调用方允许传 null 表示「不限期」，不能被下面的加法折算成有限回合。
+    if(base==null)return null;
+    let bonus=0;
+    if(cid===1502)bonus+=to.kit.trace?.['3']?.[1]??0;
+    if(cid===1505&&(to.kit.eidolon??0)>=6)bonus+=to.kit.ranks?.[6]?.[1]??0;
+    if(cid===1513)bonus+=1;
+    return Math.max(1,base+bonus);
+  }
   function grantPunch(b,u,to,n,duration=2){
     if(!to||!live(to)||!(n>0))return 0;
+    // 与 engine.mjs 的 punchCapOf 同口径：1503 真珠的好活当赏持有上限为 #3=50。
+    const punchCapOf=recipient=>recipient?.kit?.characterId===1503?(recipient.kit.params?.Talent?.[2]??Infinity):Infinity;
     const addBatch=(recipient,amount,source=u)=>{
       if(!(amount>0))return;
+      const cap=punchCapOf(recipient),current=punchOf(recipient),next=Math.min(cap,current+amount),stacks=next-current;
+      if(!(stacks>0))return;
       const seq=(recipient.resources['好活当赏批次序号']??0)+1;recipient.resources['好活当赏批次序号']=seq;
-      recipient.resources[PUNCH]=punchOf(recipient)+amount;
-      buff(b,source,recipient,PUNCH,'marker',0,Math.max(1,duration),
-        {id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks:amount});
-      record(b,'resource',source,{target:recipient.id,name:PUNCH,value:recipient.resources[PUNCH]});
+      recipient.resources[PUNCH]=next;
+      buff(b,source,recipient,PUNCH,'marker',0,punchDurationFor(recipient,duration),
+        {id:'punchline:'+recipient.id+':'+seq,tag:'punchline',stacks});
+      record(b,'resource',source,{target:recipient.id,name:PUNCH,value:next});
     };
     const evanescia=b.units.find(t=>t.side===to.side&&t.kit?.characterId===1505&&live(t));
     const point06=evanescia?.kit?.trace?.['1']?.[4]??0;
     const fromIndex=elationParticipantId(to),evanesciaIndex=elationParticipantId(evanescia);
     if(evanescia&&to!==evanescia&&point06>0&&Number.isFinite(fromIndex)&&Number.isFinite(evanesciaIndex)&&fromIndex<evanesciaIndex){
       const e2=evanescia.kit.eidolon>=2?(evanescia.kit.ranks?.[2]?.[1]??0):0;
-      const converted=Math.min(n,n*point06*(1+e2));
-      addBatch(to,n-converted);
+      // 先按接收者上限截断，再参与瞰众乐转化（与 engine.finishAhaInstant 同口径）。
+      const accepted=Math.min(n,Math.max(0,punchCapOf(to)-punchOf(to)));
+      const converted=Math.min(accepted,accepted*point06*(1+e2));
+      addBatch(to,accepted-converted);
       addBatch(evanescia,converted,evanescia);
-      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:n,converted,participantId:fromIndex});
+      record(b,'mechanic',evanescia,{name:'瞰众乐 · 好活当赏发放时转化',from:to.id,amount:accepted,converted,participantId:fromIndex});
       return punchOf(to);
     }
     addBatch(to,n);
@@ -411,19 +448,20 @@ function elation(api){
     const maxEcho=b.units.filter(t=>t.side===u.side).reduce((n,t)=>Math.max(n,punchOf(t)),0);
     damageTo(b,u,to,{name:o.name,type:'ElationDamage',element:u.element,terms:atk(o.mult),punchlineFloor:maxEcho,toughness:0},1,'primary','elation');
   }
-  // 固定笑点阿哈额外回合由共享助手排入全体欢愉角色；这里不再伪造笑点或好活当赏。
-  function ahaMoment(b,u,counted,label){
-    const actors=allies(b,u).filter(to=>live(to)&&isElationPath(to)&&to.actions?.elation)
-      .sort((a,c)=>(a.participantId??a.order)-(c.participantId??c.order));
-    const id=(b.ahaInstantSequence??0)+1;b.ahaInstantSequence=id;
-    b.ahaInstant={id,fixedPunchline:counted,natural:false,ending:false,participants:actors.map(x=>x.id),completed:[],deferred:[]};
-    b.ahaCount=(b.ahaCount??0)+1;b.ahaCounted=counted;
-    for(const to of actors){
-      to.buffs=to.buffs.filter(e=>!e.control);
-      to.dots=to.dots.filter(e=>!e.control);
-    }
-    b.queue.unshift(...actors.map(to=>({actor:to.id,key:'elation',kind:'aha',ahaInstantId:id})));
-    record(b,'mechanic',u,{name:'阿哈额外回合',counted,label:label??'',participants:actors.map(x=>x.id),consumesSharedPunchline:false});
+  // 终结技「若目标拥有欢愉技…使其立即施放 1 次」是**目标自身**的插入行动，不是阿哈时刻。
+  // 原始脚本 Skill03_Phase02 在 ByHasSkillTag 成功后把 Rank01_InsertActionSaveMark /
+  // InsertElationSkillShow 加在 AbilityTargetEntity（终结技目标）上。modifier
+  // MAvatar_Player_40_Rank01_InsertActionSave 的 OnListenAllowAction 只是 RemoveSelfModifier；
+  // 真正执行 TurnInsertAction（BIKKDNAMGMG）的模板 Temp_MAvatar_PlayerBoy_40_InsertActionSave
+  // 挂在 OnEnterBattle / OnCustomEvent / OnWaveMonster 三个回调上。整个文件没有调用
+  // Elation_StartElationTime（全服只有爻光 1502 的终结技调用它来发动全队阿哈时刻）。
+  // 因此不建立 ahaInstant、不增加 ahaCount，也不清空全队控制；只排入目标 1 次带
+  // punchlineOverride=Ultra[4] 的欢愉技。persistWave 对应脚本里 OnWaveMonster / FailedTaskList
+  // 的「施放前敌方被消灭则对新入场敌方发动」。
+  function insertElation(b,u,to,counted,label){
+    b.queue.unshift({actor:to.id,key:'elation',kind:'extra',persistWave:true,
+      overrides:{punchlineOverride:counted}});
+    record(b,'mechanic',u,{name:'立即施放欢愉技',target:to.id,counted,label:label??'',consumesSharedPunchline:false});
   }
   return {
     entry(b,u){
@@ -440,14 +478,27 @@ function elation(api){
       resource(b,u,'欢愉技施放次数',0);
       resource(b,u,'下次战技额外好活当赏',0);
     },
-    // 欢愉技收尾「由敌方全体均分」：把 #3 的总倍率按当前存活敌人数折算到每个目标。
+    // 欢愉技收尾「由敌方全体均分」。原始脚本 ElationSkill_Phase02 的顺序是：
+    //   1) LoopExecuteTaskList（#1=8 次、每次 #2=20% 随机单体弹射）
+    //   2) DamageByAttackProperty（AllEnemy.GetAliveOnly，#3=60%，EqualSplitInTargets=true）→ 最后均分。
+    // 引擎固定先结算 hitShares 再结算 bounceGroups，所以这里把收尾均分移到 after 结算，
+    // 让弹射按脚本先执行；均分分母取「收尾结算时」的存活敌人数（EqualSplitInTargets 口径）。
     prepare(b,u,key,kind,a){
       if(key!=='elation'||kind==='copy')return a;
-      const n=enemies(b,u).filter(live).length||1;
-      return {...a,terms:(a.terms??[]).map(t=>({...t,multiplier:t.multiplier/n}))};
+      return {...a,terms:[],elationSplit:(a.terms??[])[0]?.multiplier??0};
     },
     before(b,u,actor,key,kind){
       if(actor!==u||kind==='copy')return;
+      // 原始脚本 OnStart[3]：行迹 point08 的 +2 在战技主伤害（OnStart[4]）之前发放，
+      // 所以放在 before 而不是 after；它先计入【好活当赏】，并参与 OnStart[5] 额外欢愉伤害的
+      // 触发判定与「全队最高」取值。BPSkill[1]=20 仍按 OnStart[7] 留在 after。
+      if(key==='skill'){
+        if(trace(u,3)&&u.resources['下次战技额外好活当赏']){
+          grantPunch(b,u,u,trace(u,3)[0]);
+          resource(b,u,'下次战技额外好活当赏',0);
+        }
+        return;
+      }
       if(key!=='elation')return;
       // E4：施放欢愉技时使敌方目标受到的伤害提高 ranks[4][0]=10%、ranks[4][1]=2 回合。
       if(rank(u,4))for(const to of enemies(b,u))
@@ -458,36 +509,49 @@ function elation(api){
       record(b,'mechanic',u,{name:'欢愉技（倍率取自 ROSTER_DATA）'});
     },
     after(b,u,actor,key,kind,a,selected,hitTargets){
-      void a;void hitTargets;
+      void hitTargets;
       const P=u.kit.params;
       // 行迹 point08「阿哈咬它」：我方目标施放欢愉技后，开拓者下一次战技额外获得 trace[3][0] 点好活当赏。
       if(actor?.side===u.side&&key==='elation'&&kind!=='copy')resource(b,u,'下次战技额外好活当赏',1);
       if(actor!==u||kind==='copy')return;
+      // 欢愉技收尾：弹射结束后的 #3 均分（见 prepare 注释）。damageTo 仍在 activeAction 之内，
+      // 固定笑点 / 共享笑点的取值口径与弹射一致。
+      if(key==='elation'){
+        const mult=a?.elationSplit??0;
+        if(mult>0){
+          const pool=enemies(b,u),n=pool.length||1;
+          for(const to of pool)
+            damageTo(b,u,to,{...a,name:a.name??'欢愉技',type:'ElationDamage',element:u.element,terms:atk(mult/n),toughness:0},1,'primary','elation');
+        }
+      }
       if(key==='basic'||key==='skill'||key==='elation'){
         // 天赋：施放攻击后固定恢复 Talent[0]=10 点能量并获得 Talent[1]=3 个笑点。
         energy(b,u,P.Talent[0],true);
         gainLaughter(b,u,P.Talent[1],'英雄一笑，生死难料');
       }
       if(key==='skill'){
-        // 战技的额外欢愉伤害判定在「本次获得好活当赏」之前（原始脚本 OnStart[4] 早于 OnStart[6]）。
+        // OnStart[4]~[5]：持有【好活当赏】时，战技对敌方全体额外造成 Talent[2] 欢愉伤害，
+        // 该伤害读取全队最高的 ElationEchoPoint（Passive.OnBeforeHitAll → Skill02_ElationDamage）。
         if(hasPunch(u))for(const to of enemies(b,u))hitElation(b,u,to,{name:'英雄一笑，生死难料 · 欢愉伤害',mult:P.Talent[2]});
-        let add=P.BPSkill[1];
-        if(trace(u,3)&&u.resources['下次战技额外好活当赏']){add+=trace(u,3)[0];resource(b,u,'下次战技额外好活当赏',0);}
-        grantPunch(b,u,u,add);
+        // OnStart[7]：BPSkill[1]=20 点在伤害之后发放。
+        grantPunch(b,u,u,P.BPSkill[1]);
         // E1：施放战技后，下一次终结技使我方目标获得的好活当赏 +ranks[1][0]，最多 ranks[1][1] 层。
         if(rank(u,1))resource(b,u,'E1层数',Math.min(rank(u,1,1),(u.resources['E1层数']??0)+1));
       }
       if(key==='ultimate'){
         const to=selected[0]??get(b,u.policy?.allyTargetId);
         if(to&&live(to)){
-          cleanseOne(b,u,to);
+          cleanseControls(b,u,to);
           buff(b,u,to,'放心飞，开拓永相随！','critDmg',P.Ultra[0],P.Ultra[1],{id:u.id+':elation-ult:'+to.id});
           if(rank(u,2))buff(b,u,to,'名场面酝酿中……','elation',rank(u,2,0),rank(u,2,1),{id:u.id+':elation-e2:'+to.id});
           if(isElationPath(to)&&to.actions?.elation){
             const bonus=rank(u,1)?(u.resources['E1层数']??0)*rank(u,1,0):0;
             grantPunch(b,u,to,P.Ultra[3]+bonus);
-            // 「立即施放 1 次固定计入 Ultra[4]=20 笑点的阿哈额外回合」：全队欢愉角色各施放一次欢愉技。
-            ahaMoment(b,u,P.Ultra[4],'放心飞，开拓永相随！');
+            // 「使其立即施放 1 次固定计入 Ultra[4]=20 笑点的欢愉技」——目标自身插入行动。
+            insertElation(b,u,to,P.Ultra[4],'放心飞，开拓永相随！');
+            // 原始脚本只在 ByHasSkillTag 成功且 E1 生效的分支 RemoveModifier（E1层数清空）。
+            // 目标没有欢愉技时走 ModifyActionDelay 分支，E1 层数保留到下一次终结技。
+            resource(b,u,'E1层数',0);
           } else {
             advance(b,to.id,P.Ultra[2]);
           }
@@ -496,7 +560,6 @@ function elation(api){
         gainLaughter(b,u,P.Ultra[5],'放心飞，开拓永相随！');
         // 行迹 point07「跟你爆了」：施放终结技后为我方恢复 trace[2][1] 个战技点。
         if(trace(u,2))sp(b,u,trace(u,2)[1],'开拓者 · 跟你爆了');
-        resource(b,u,'E1层数',0);
       }
     },
     // 行迹 point07「跟你爆了」：自身暴击率 +trace[2][0]=15%；point06 快哉快哉：攻击力转欢愉度。

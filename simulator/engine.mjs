@@ -159,20 +159,41 @@ function certifiedBangerDuration(u,base=2){
   if(id===1513)extra++;
   return Math.max(1,base+extra);
 }
+const punchCapOf=u=>u?.kit?.characterId===1503?(u.kit.params?.Talent?.[2]??Infinity):Infinity;
 function addCertifiedBanger(b,to,amount,reason='阿哈时刻结算',source='aha:ally'){
   if(!alive(to)||!(amount>0))return;
+  // 150304 天赋：真珠的【好活当赏】持有上限为 #3（4.6 = 50 点）。自然阿哈结算与
+  // 战斗开始的发放也必须走同一上限，超出部分既不进资源也不生成到期批次。
+  const cap=punchCapOf(to),current=to.resources['好活当赏']??0,next=Math.min(cap,current+amount),stacks=next-current;
+  if(!(stacks>0))return;
   const seq=(to.resources['好活当赏批次序号']??0)+1;to.resources['好活当赏批次序号']=seq;
-  const id='punchline:'+to.id+':'+seq,stacks=amount;
-  to.resources['好活当赏']=(to.resources['好活当赏']??0)+stacks;
+  const id='punchline:'+to.id+':'+seq;
+  to.resources['好活当赏']=next;
   to.buffs.push({type:'buff',id,name:'好活当赏',key:'marker',value:0,remaining:certifiedBangerDuration(to),
     tickOwner:to.id,tickAt:'end',appliedTurn:to.turns,source,tag:'punchline',stacks});
-  record(b,'resource',to,{name:'好活当赏',value:to.resources['好活当赏'],reason,added:stacks});
+  record(b,'resource',to,{name:'好活当赏',value:next,reason,added:stacks});
 }
 function startElationBattle(b){
   const team=elationTeam(b);b.aha={id:'aha:ally',name:'阿哈',side:'ally',kind:'aha_actor',order:-1,distance:ACTION_DISTANCE,speed:80,active:team.length>0};
   if(!team.length)return;
   b.laughter.ally+=team.length;
-  for(const u of team)addCertifiedBanger(b,u,20,'战斗开始','battle:start');
+  // 战斗开始的 20 点好活当赏同样经过绯英【瞰众乐】转化：参演编号低于 1505 的队友，
+  // 其获得量的 50%（E2 再 +50%）转给绯英（EVA:3587-3869）。
+  const ev=team.find(u=>u.kit?.characterId===1505);
+  for(const u of team){
+    let converted=0;
+    if(ev&&u!==ev){
+      const p06=ev.kit.trace?.['1']?.[4]??0;
+      const ri=u.participantId??ELATION_PARTICIPANT_IDS[u.kit?.characterId];
+      const ei=ev.participantId??ELATION_PARTICIPANT_IDS[1505];
+      if(p06>0&&Number.isFinite(ri)&&Number.isFinite(ei)&&ri<ei){
+        const e2=ev.kit.eidolon>=2?(ev.kit.ranks?.[2]?.[1]??0):0;
+        converted=Math.min(20,20*p06*(1+e2));
+      }
+    }
+    addCertifiedBanger(b,u,20-converted,converted>0?'战斗开始 · 瞰众乐转出':'战斗开始','battle:start');
+    if(converted>0)addCertifiedBanger(b,ev,converted,'瞰众乐 · 战斗开始转化','battle:start');
+  }
   b.aha.speed=currentAhaSpeed(b);
 }
 export function createBattle(config) {
@@ -302,7 +323,17 @@ function energy(b,u,amount,fixed=false){const old=u.energy,gain=amount*(fixed?1:
 export function scheduleActionEvents(b,ownerId,specs,options){return b.eventActions.schedule(b,ownerId,specs,options);}
 export function cancelActionEvents(b,ownerId,group){return b.eventActions.cancel(b,ownerId,group);}
 export function updateActionEventSpeed(b,ownerId,speed,group){return b.eventActions.updateSpeed(b,ownerId,speed,group);}
-export function advance(b,id,ratio){const owner=b.units.find(x=>x.id===id);if(!owner)throw new Error('未知单位');const u=b.eventActions?.redirect(b,id)??owner;u.distance=Math.max(0,u.distance-ACTION_DISTANCE*finite(ratio,'行动提前'));if(u.distance<=EPS&&ratio>0)u.advanceOrder=b.advanceSequence=(b.advanceSequence??0)+1;record(b,'advance',owner,{ratio,distance:u.distance,...(u!==owner?{eventId:u.id}:{} )});}
+export function advance(b,id,ratio){
+  const owner=b.units.find(x=>x.id===id);if(!owner)throw new Error('未知单位');
+  // 通用白名单标记：持有该标记的单位（或其忆灵）不能使**其他友方**获得行动提前。
+  // 例：知更鸟•晴歌【特邀嘉宾】151203。标记由角色模块写入 buff，引擎不识别具体角色。
+  const from=b.activeAction?b.units.find(x=>x.id===b.activeAction.actor):null;
+  const fromOwner=from?.memospriteOwner?b.units.find(x=>x.id===from.memospriteOwner):from;
+  if(from&&from.id!==id&&fromOwner&&owner.side===fromOwner.side&&fromOwner.buffs?.some(e=>e.blockAllyAdvance)){
+    record(b,'mechanic',fromOwner,{name:'阻止友方行动提前',target:id,ratio});
+    return;
+  }
+  const u=b.eventActions?.redirect(b,id)??owner;u.distance=Math.max(0,u.distance-ACTION_DISTANCE*finite(ratio,'行动提前'));if(u.distance<=EPS&&ratio>0)u.advanceOrder=b.advanceSequence=(b.advanceSequence??0)+1;record(b,'advance',owner,{ratio,distance:u.distance,...(u!==owner?{eventId:u.id}:{} )});}
 export function delay(b,id,ratio){const u=b.units.find(x=>x.id===id);if(!u)throw new Error('未知单位');u.distance+=ACTION_DISTANCE*finite(ratio,'行动延后');record(b,'delay',u,{ratio,distance:u.distance});}
 export function receiveDamage(b,from,to,amount,kind,detail={}){
   finite(amount,'伤害');
@@ -423,10 +454,13 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
     const inAha=b.ahaInstant&&b.activeAction?.kind==='aha';
     const fixedAha=inAha&&!b.ahaInstant.natural;
     const source=action.punchlineSource??(inAha?'punchline':'certifiedBanger');
-    const counted=inAha
+    // 角色专属的固定计入（如砂金•戏浪热意阈值触发的【举杯】固定 20 点）可显式覆盖。
+    // `punchlineFrom`：伤害归属者与笑点基数来源不同的情况（爻光大吉大利固定读爻光的 ElationEchoPoint）。
+    const punchlineUnit=action.punchlineFrom?b.units.find(t=>t.id===action.punchlineFrom)??u:u;
+    const counted=action.punchlineOverride!=null?Math.max(0,action.punchlineOverride):inAha
       ?fixedAha?(b.ahaInstant.fixedPunchline??0):(b.laughter?.[u.side]??0)
       :source==='laughter'||source==='punchline'
-        ?(b.laughter?.[u.side]??0):(u.resources?.['好活当赏']??0);
+        ?(b.laughter?.[u.side]??0):(punchlineUnit.resources?.['好活当赏']??0);
     const punchlinePoints=Math.max(counted*Math.max(0,action.punchlineMultiplier??1),Math.max(0,action.punchlineFloor??0));
     const punchline=1+5*punchlinePoints/(punchlinePoints+240);
     const elationPct=Math.max(-1,p.elation??0),increase=Math.max(-1,mod.elationBoost??0);
@@ -448,23 +482,40 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
   b.rules.afterHit(b,u,to,action,triggerKind,{critMode,critRate:p.critRate});
   if(b.hitTargets&&!b.hitTargets.includes(to))b.hitTargets.push(to);
   if(wasBroken&&action.superBreak&&alive(to))b.breaks.superBreak(b,u,to,((role==='adjacent'?action.adjacentToughness:action.toughness)??0)*share,action.superBreak,skill.element);
-  if(!['dot','additional','elation'].includes(damageKind)&&alive(to)&&!to.broken&&(to.toughnessMax??0)>0&&(action.ignoreWeaknessToughness||(to.weaknesses??[]).includes(skill.element)||to.buffs.some(e=>e.weakness===skill.element))){
+  // 欢愉伤害同样按动作 stance 削韧（150120 等技能的 ShowStanceList 已提供主段/弹射段削韧）。
+  if(!['dot','additional'].includes(damageKind)&&alive(to)&&!to.broken&&(to.toughnessMax??0)>0&&(action.ignoreWeaknessToughness||(to.weaknesses??[]).includes(skill.element)||to.buffs.some(e=>e.weakness===skill.element))){
     const reduction=(role==='adjacent'?action.adjacentToughness??action.toughness:action.toughness)??0;
-    to.toughness=Math.max(0,to.toughness-reduction*share*(1+(combatPanel(u).breakEfficiency??0)));
-    record(b,'toughness',u,{target:to.id,value:to.toughness});if(to.toughness<=EPS)breakTarget(b,u,to,skill.element,action);
+    const amount=reduction*share*(1+(combatPanel(u).breakEfficiency??0));
+    // 0 削韧的附加/欢愉伤害不应产生空的 toughness 事件（否则会污染逐段削韧断言）。
+    if(amount>0){
+      to.toughness=Math.max(0,to.toughness-amount);
+      record(b,'toughness',u,{target:to.id,value:to.toughness});if(to.toughness<=EPS)breakTarget(b,u,to,skill.element,action);
+    }
   }
 }
-function useAction(b,u,key,kind='normal',targetId=null){
+function useAction(b,u,key,kind='normal',targetId=null,overrides=null){
   const original=u.actions[key];if(!original)throw new Error(u.name+'缺少动作 '+key);
-  let action=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);
-  if(u.side==='ally'&&(action.spCost??0)>b.sp)throw new Error('战技点不足');
+  // 队列条目可以携带「仅作用于本次行动」的覆盖（例如开拓者终结技让目标立即施放 1 次
+  // 固定计入 20 笑点的欢愉技）。覆盖在角色 prepare 之后合并，因此不改变角色自身的动作合同，
+  // 也不会写入动作表或影响同一角色之后的行动。
+  const prepared=()=>{const a=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);return overrides?{...a,...overrides}:a;};
+  let action=prepared();
+  // 火花【爆点】：可抵扣战技点消耗。只对「引擎已扣款」的部分要求 SP，抵扣部分由角色 before 结算。
+  const substitute=u.side==='ally'&&u.resources?Math.min(action.spCost??0,u.resources['爆点']??0):0;
+  const uncovered=(action.spCost??0)-substitute;
+  if(u.side==='ally'&&uncovered>b.sp)throw new Error('战技点不足');
+  if(substitute>0)action={...action,spSubstituteUsed:substitute};
   if((action.energyCost??0)>u.energy+EPS)throw new Error('能量不足');
   let selected=selectedTargets(b,u,action);if(!selected.length)return;
   const copy=b.rules.copyOwner(b,u,key,kind,action);
-  if(copy){u.coupActive=true;const pending={actor:u.id,key,kind:'coupOriginal'};b.pendingActions.push(pending);useAction(b,u,key,'copy',selected[0].id);flush(b,{abilitiesOnly:true});b.pendingActions=b.pendingActions.filter(q=>q!==pending);action=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);selected=selectedTargets(b,u,action);if(!selected.length){b.rules.consumeCopy(b,copy,u);u.coupActive=false;return;}}
+  if(copy){u.coupActive=true;const pending={actor:u.id,key,kind:'coupOriginal'};b.pendingActions.push(pending);useAction(b,u,key,'copy',selected[0].id,overrides);flush(b,{abilitiesOnly:true});b.pendingActions=b.pendingActions.filter(q=>q!==pending);action=prepared();selected=selectedTargets(b,u,action);if(!selected.length){b.rules.consumeCopy(b,copy,u);u.coupActive=false;return;}}
   const savedAction=b.activeAction,savedHits=b.hitTargets,savedBounceHits=b.hitBounceTargets,savedEnergy=b.hitEnergyTargets,savedAttacked=b.attackedTargets;b.hitTargets=[];b.hitBounceTargets=[];b.hitEnergyTargets=new Set();b.attackedTargets=new Set();
   u.energy=Math.max(0,u.energy-(action.energyCost??0));
-  if(u.side==='ally')b.rules.spend(b,u,action.spCost??0);
+  if(u.side==='ally')b.rules.spend(b,u,uncovered);
+  if(substitute>0){
+    u.resources['爆点']=Math.max(0,(u.resources['爆点']??0)-substitute);
+    record(b,'resource',u,{name:'爆点',value:u.resources['爆点'],reason:'抵扣战技点'});
+  }
   if(action.hpCostRatio){const old=u.hp;u.hp=Math.max(action.hpCostCanKill?0:1,u.hp-combatPanel(u).hp*action.hpCostRatio);if(u.hp<old)b.rules.relics.healthConsumed(b,u);}
   b.activeAction={sequence:b.log.length,actor:u.id,name:action.name??key,key,kind,targets:selected.map(t=>t.id)};
   record(b,'action',u,{name:action.name??key,key,kind,targets:selected.map(t=>t.id),energy:u.energy});
@@ -516,7 +567,7 @@ function queuePlannedActions(b,from,key,kind){
 function enqueueUltimates(b,{beforeEnd=false}={}){
   if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy'))return;
   const queued=new Set(b.queue.filter(q=>q.kind==='ultimate').map(q=>q.actor));
-  for(const u of b.units)if(alive(u)&&!frozen(u)&&u.policy?.autoUltimate!==false&&!(beforeEnd&&u.id===b.turnActor&&u.policy?.ultimateTiming==='afterTurn')&&u.actions.ultimate&&!queued.has(u.id)&&(u.actions.ultimate.energyCost??u.energyMax)>0&&u.energy+EPS>=(u.actions.ultimate.energyCost??u.energyMax))b.queue.push({actor:u.id,key:'ultimate',kind:'ultimate'});
+  for(const u of b.units)if(alive(u)&&!frozen(u)&&u.policy?.autoUltimate!==false&&!(beforeEnd&&u.id===b.turnActor&&u.policy?.ultimateTiming==='afterTurn')&&u.actions.ultimate&&!queued.has(u.id)&&!u.buffs.some(e=>e.noUltimate)&&(u.actions.ultimate.energyCost??u.energyMax)>0&&u.energy+EPS>=(u.actions.ultimate.energyCost??u.energyMax))b.queue.push({actor:u.id,key:'ultimate',kind:'ultimate'});
 }
 function finishAhaInstant(b,actor=null){
   const instant=b.ahaInstant;if(!instant||instant.finished)return;
@@ -526,18 +577,20 @@ function finishAhaInstant(b,actor=null){
   if(instant.natural){
     const team=elationTeam(b).filter(alive),evanescia=team.find(u=>u.kit?.characterId===1505);
     for(const u of team){
+      // 150304 #3=50：先把本名角色实际能接收的份额按持有上限截断，再参与瞰众乐转化。
+      const accepted=Math.min(counted,Math.max(0,punchCapOf(u)-(u.resources['好活当赏']??0)));
       // 瞰众乐：参演编号小于绯英的队友取得好活当赏时，其中50%转为绯英的好活当赏。
       // E2 再额外增加本次转换量的50%；高于/等于绯英编号的队友不触发。
       const recipientIndex=u.participantId??ELATION_PARTICIPANT_IDS[u.kit?.characterId];
       const evanesciaIndex=evanescia?.participantId??ELATION_PARTICIPANT_IDS[1505];
       const lowerThanEvanescia=!!evanescia&&u!==evanescia&&Number.isFinite(recipientIndex)&&
         Number.isFinite(evanesciaIndex)&&recipientIndex<evanesciaIndex;
-      if(!lowerThanEvanescia){addCertifiedBanger(b,u,counted,'阿哈自然行动');continue;}
+      if(!lowerThanEvanescia){addCertifiedBanger(b,u,accepted,'阿哈自然行动');continue;}
       const point06=evanescia.kit.trace?.['1']?.[4]??0;
-      if(!(point06>0)){addCertifiedBanger(b,u,counted,'阿哈自然行动');continue;}
+      if(!(point06>0)){addCertifiedBanger(b,u,accepted,'阿哈自然行动');continue;}
       const e2Bonus=evanescia.kit.eidolon>=2?(evanescia.kit.ranks?.[2]?.[1]??0):0;
-      const converted=counted*point06*(1+e2Bonus);
-      addCertifiedBanger(b,u,counted-converted,'阿哈自然行动 · 瞰众乐转出');
+      const converted=accepted*point06*(1+e2Bonus);
+      addCertifiedBanger(b,u,accepted-converted,'阿哈自然行动 · 瞰众乐转出');
       addCertifiedBanger(b,evanescia,converted,'瞰众乐 · 参演编号转化','trace:1505101');
     }
   }
@@ -586,7 +639,7 @@ function flush(b,{abilitiesOnly=false}={}){
     if(q.kind==='ultimate'&&u.energy+EPS<(u.actions[q.key].energyCost??0))continue;
     // Extra turns/ultimates/follow-ups do not reset the normal action gauge.
     const actionLogStart=b.log.length;
-    useAction(b,u,q.key,q.kind,q.targetId);
+    useAction(b,u,q.key,q.kind,q.targetId,q.overrides??null);
     if(q.planIndex!=null&&b.log.slice(actionLogStart).some(e=>e.type==='action'&&e.actor===u.id&&e.key===q.key))b.planUsed.push(q.planIndex);
     if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId)b.ahaInstant.completed.push(u.id);
     if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId&&b.ahaInstant.ending){

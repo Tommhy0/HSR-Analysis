@@ -60,12 +60,15 @@ function ultimateFor(cyrene,target,others=[]){
   assert.ok(night.buffs.some(x=>x.tag?.startsWith('cyreneEvernightPoem:')&&x.value===.252),
     'Evernight poem damage must attach to Long Night, not the owner character');
   assert.ok(t.resources['忆质']>=1,'each post-poem ultimate must grant its extra Remembrance point');
-  const baseCd=combatPanel(t).critDmg*t.kit.params.BPSkill[0];
+  // Ability Skill02_Phase02: LoseHPByRatio precedes Skill02_Buff, so the 141304 CRIT DMG
+  // triggered by the skill's own HP cost is already part of the 24% conversion basis.
+  const basisCd=combatPanel(t).critDmg+t.kit.params.Talent[1];
+  const baseCd=basisCd*t.kit.params.BPSkill[0];
   force(b,t,'skill');
   const skillBuff=night.buffs.find(x=>x.id===t.id+':skill-cd');
   assert.ok(skillBuff,'Long Night poem must still use Evernight’s normal skill buff path');
-  assert.ok(Math.abs(skillBuff.value-(baseCd+.168))<1e-6,
-    'the 4.6 poem adds its exact 16.8 percentage points to the skill crit-damage buff');
+  assert.ok(Math.abs(skillBuff.value-(baseCd+basisCd*.168))<1e-6,
+    'the 4.6 poem raises the skill CRIT DMG effect by 16.8% of Evernight’s CRIT DMG');
 }
 
 for (const form of [8007,8008]) {
@@ -115,7 +118,8 @@ for (const form of [8007,8008]) {
   assert.ok(withNight.dmgBoost>0,'Evernight E1 applies to allied memosprites while Long Night is present');
   night.hp=0;night.active=false;
   const withoutNight=b.rules.modifiers(b,source,target,action,'direct');
-  assert.equal(withoutNight.dmgBoost??0,0,'Evernight E1’s memosprite damage multiplier ends when Long Night leaves the field');
+  // 1413 E1 的原文是「长夜月在场时」——限制的是长夜月本体，不是忆灵「长夜」。
+  assert.equal(withoutNight.dmgBoost??0,.5,'Evernight E1 stays active for allied memosprites as long as Evernight herself is on the field');
 }
 
 {
@@ -147,8 +151,8 @@ for (const form of [8007,8008]) {
   assert.equal(t.resources['新蕊'],0,'the queued summon consumes Newbud after reaching its cap');
   const dragon=b.units.find(x=>x.memospriteOwner===t.id&&x.active!==false&&x.hp>0);
   assert.ok(dragon,'a held overflow should summon when Newbud reaches the upgraded cap');
-  assert.ok(Math.abs((t.resources['死龙晦翼增伤']??0)-.672)<1e-6,
-    'at 100% overflow and at most two enemies, Wingblast damage bonus must be 67.2%');
+  assert.ok(Math.abs((t.resources['死龙晦翼增伤']??0)-1.008)<1e-6,
+    'at 100% overflow and at most two enemies, Wingblast damage bonus must be 100.8% (0.336%+0.672%)');
   assert.ok(c.resources['献诗目标']?.includes(t.id));
 }
 

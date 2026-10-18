@@ -19,6 +19,9 @@ for(const u of battle.units)u.distance=100000;
 dragon.distance=0;
 const hpBefore=dragon.hp;
 assert.equal(stepBattle(battle),true,'dragon breath must resolve through stepBattle');
+const repeats=dragon.actions.basic.repeatCount;
 assert.equal(castorice.resources['炽意'],0,'one charge is spent per breath until depleted');
-assert.ok(Math.abs(dragon.hp-(hpBefore-dragon.panel.hp*0.25))<1e-6,'with two charges the third breath, and only the third, pays 25% dragon HP');
+// 重复次数由当前生命决定（本场景 4 段）；前 2 段被 E2 炽意抵扣，剩余每段支付 25% 生命上限。
+assert.ok(Math.abs(dragon.hp-(hpBefore-dragon.panel.hp*0.25*Math.max(0,repeats-2)))<1e-6,
+  `with two charges, the remaining ${Math.max(0,repeats-2)} breath(s) each pay 25% dragon HP`);
 console.log('PASS Castorice E2 applies on the technique summon, advances her, arms the refund, and spends charges one breath at a time');

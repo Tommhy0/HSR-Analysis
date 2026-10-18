@@ -68,7 +68,11 @@ const SERVANT={
   1141524:{name:'献予「岁月」之诗',p:[.252,1,.168]},                                                  // 长夜月：迷梦增伤、技能/终结额外忆质、技能暴伤加成+16.8%
   1141520:{name:'献予「诡计」之诗',p:[.504,.28,.168]},                  // 赛飞儿：自身伤害+50.4%，标记目标防御-28%，其他敌人-16.8%
   1141514:{name:'献予「浪漫」之诗',p:[70,1.008,.504]},                         // 阿格莱雅/衣匠：回能、增伤与无视防御
+  1141515:{name:'献予「门径」之诗',p:[1,.168,3]},                            // 缇宝：无视防御 16.8%，追加攻击额外附加伤害
+  1141518:{name:'献予「理性」之诗',p:[3,.56,.84,1]},                          // 那刻夏：战技次数/战技增伤/智识攻击/战技点
+  1141519:{name:'献予「天空」之诗',p:[1.008,33.6]},                          // 风堇：治疗转化 +100.8%，回能 33.6
   1141522:{name:'献予「海洋」之诗',p:[1.68,.84,1.12,60]},                 // 海瑟音：伤害+168%；普攻/战技引爆 DoT 84%/112%，首次攻击回能60
+  1141523:{name:'献予「律法」之诗',p:[.42,1]},                               // 刻律德菈：军功持有者暴伤 +42%，奇袭结束充能 +1
   1141503:{name:'等待，在所有的过去',p:[.336,0]},                                                        // 1415 生命上限 +33.6%
   1141505:{name:'「你好，世界♪」',p:[]},                                                                 // 1415 被召唤解除控制
   1141526:{name:'献予「真我」之诗',p:[.84,3]},                                                           // 1415 额外弹射 / 3 点故事
@@ -325,11 +329,25 @@ const factories={
         energyGain:0,spCost:0,spGain:0,toughness:SERVANT[1140702].stance[1],repeatCount:1}});
     const dragonTerm=(u,mult)=>[{scaling:'hp',multiplier:0,flatAdd:combatPanel(u).hp*mult}];
     const breathMult=(n,sv)=>n<=0?sv[1]:n===1?sv[2]:sv[3];
-    function spawnDragon(b,u,{full=false,advanceIt=true}={}){
+    function spawnDragon(b,u,{full=false,advanceIt=true,resetBreath=true}={}){
       const cap=Math.max(1,maxOf(b,u));
+      // spawnServant 按固定 id 复用同一个忆灵对象；先判断这是不是上一条死龙消失后的重新召唤。
+      const prev=b.units.find(t=>t.id===u.id+':dragon');
+      const newLife=!prev||prev.active===false||prev.hp<=1e-8;
       const s=spawnServant(b,u,{key:'dragon',name:'死龙•玻吕刻斯',element:'Quantum',aggro:100,advance:advanceIt,
         hpOf:()=>cap,speedOf:()=>P(u).Ultra[0],actions:servantActions},api);
+      if(newLife){
+        // 上一条死龙的每次生命状态不能带进新血条：
+        // 「晦翼已结算」残留会让 dismissDragon 对新死龙的死亡/到期直接早退，晦翼永不结算；
+        // 「西风的驻足」只持续至原回合结束，带过血条会让新死龙从旧层数起步。
+        // 有持续时间的增益同样属于上一回合，一并清除；整场生效的增益保留。
+        delete s.resources['晦翼已结算'];
+        s.buffs=s.buffs.filter(e=>e.tag!=='castoriceWestWind'&&e.remaining==null);
+        s.dots=[];
+      }
       s.resources['剩余回合']=P(u).Ultra[1];
+      // 1140702：焰息倍率的提高效果只在死龙消失前保留，重新召唤时回到 0.336。
+      if(resetBreath)s.resources['焰息阶数']=0;
       s.hp=full?cap:Math.max(1,Math.floor(cap/2));
       if(advanceIt){s.distance=0;s.advanceOrder=(b.advanceSequence=(b.advanceSequence??0)+1);}
       // 震彻寂壤的怒啸：被召唤时我方全体增伤 10%/3 回合。
@@ -339,16 +357,19 @@ const factories={
     function dragonSummonedE2(b,u){
       if(!rank(u,2))return;
       // Rank02 is applied by both Skill03 and the Technique's SkillMaze CreateServant path.
-      resource(b,u,'炽意',rank(u,2,0));
+      // E2：「炽意」最多持有 2 层；重复召唤按上限叠加。
+      resource(b,u,'炽意',Math.min(rank(u,2,1),(u.resources['炽意']??0)+rank(u,2,0)));
       advance(b,u.id,1);
       resource(b,u,'E2新蕊返还',rank(u,2,2));
     }
     function wingBlast(b,u,s){
-      const q=SV(1140706),p=combatPanel(u),pool=enemies(b,u);
+      const q=SV(1140706),p=combatPanel(u);
       const n=q[1]+(u.resources['死龙E6晦翼弹射']??0);
       resource(b,u,'死龙E6晦翼弹射',0);
       const overflow=u.resources['死龙晦翼增伤']??0;
-      for(let i=0;i<n&&pool.length;i++){
+      // 每一段重新取存活敌人，弹射中途击杀不会继续选中已死目标。
+      for(let i=0;i<n;i++){
+        const pool=enemies(b,u);if(!pool.length)break;
         const to=pool[Math.floor(b.random()*pool.length)];
         damageTo(b,s,to,{name:SERVANT[1140706].name,type:'Additional',element:'Quantum',
           terms:[{scaling:'hp',multiplier:0,flatAdd:p.hp*q[0]*(1+overflow)}],toughness:SERVANT[1140706].stance[0]},1,'primary','additional');
@@ -356,11 +377,14 @@ const factories={
       for(const to of allies(b,u))heal(b,u,to,p.hp*q[2]+q[3]);
       record(b,'mechanic',u,{name:'灼掠幽墟的晦翼',target:s.id});
     }
-    function dismissDragon(b,u){
-      const s=mem(b,u);if(!s)return;
+    // 1140706「死龙消失时」：被敌方击倒、被 1140703 的 500% 反噬耗尽、或 3 回合到期都算消失。
+    // 旧实现只查 `mem()`（要求 hp>0），死龙被伤害打死时不会触发晦翼。
+    function dismissDragon(b,u,dying){
+      const s=dying??mem(b,u);if(!s||s.resources['晦翼已结算'])return;
+      s.resources['晦翼已结算']=1;
       wingBlast(b,u,s);
       for(const to of b.units)to.buffs=to.buffs.filter(e=>!String(e.id).startsWith(u.id+':resdown:'));
-      dismissServant(b,u,s,api);
+      if(s.active!==false)dismissServant(b,u,s,api);
     }
     function field(b,u){
       // 遗世冥域：敌方全体全属性抗性降低 20%（走共享 allResDown，逐元素登记 7 条）。
@@ -413,8 +437,10 @@ const factories={
     return {
       start(b,u){resource(b,u,'新蕊',0);resource(b,u,'炽意',0);},
       entry(b,u){
+        // SkillMazeInLevel 先 CreateServant，再由 StageAbility_Maze 的 OnEnterBattle 扣 40%。
+        spawnDragon(b,u,{full:false});dragonSummonedE2(b,u);
         consumeAllies(b,u,P(u).Maze[0]);
-        spawnDragon(b,u,{full:false});dragonSummonedE2(b,u);field(b,u);
+        field(b,u);
       },
       // 我方任意单位损失生命值 → 获得等量【新蕊】（死龙在场时转化为死龙生命）。
       afterDamage(b,u,from,to,kind){
@@ -430,7 +456,15 @@ const factories={
         // Original OnListenHPChange: allied target, negative HP delta, and explicitly
         // exclude Castorice's own CasterServant. The servant's redirected HP payment
         // must not be returned to itself as Newbud healing.
-        if(target.side!==u.side||target===mem(b,u)||!(amount>0)||!['damage','consume'].includes(reason))return;
+        if(target.side!==u.side||!(amount>0)||!['damage','consume'].includes(reason))return;
+        // 死龙自身的生命降低触发 140704，但不能再转成【新蕊】/回血（否则支付会返还给自己）。
+        if(target===mem(b,u)){
+          if(reason==='consume')wound(b,u);
+          return;
+        }
+        // 天赋 140704「我方损失生命值」也覆盖生命消耗（战技 30%/40% 与行迹 5% 消耗）；
+        // 伤害路径由 afterDamage 触发，这里只补消耗，避免同一事件叠两层。
+        if(reason==='consume')wound(b,u);
         gainNewbud(b,u,amount);
       },
       // 1140703: allied HP cannot be reduced below 1; the overkill remainder is charged to the dragon at 500%.
@@ -456,8 +490,9 @@ const factories={
         if(key==='summonDragon'&&kind!=='copy'){
           const baseCap=maxOf(b,u),over=Math.max(0,(u.resources['新蕊']??0)-baseCap);
           const poem=SV(1141517),enemyLimit=poem[5];
-          const perPercent=enemies(b,u).length<=enemyLimit?poem[4]:poem[1];
-          const overflowBonus=Math.min(1,(over/baseCap)*100*perPercent);
+          // 原文 #2 是基础档，#5 是「额外提高」；≤2 敌人时应叠加为 0.00336+0.00672=0.01008。
+          const perPercent=enemies(b,u).length<=enemyLimit?poem[1]+poem[4]:poem[1];
+          const overflowBonus=(over/baseCap)*100*perPercent;
           const s=spawnDragon(b,u,{full:true});s.hp=s.panel.hp;
           if(u.resources['新蕊溢出倍率'])resource(b,u,'死龙晦翼增伤',overflowBonus);
           field(b,u);resource(b,u,'新蕊',0);
@@ -499,14 +534,25 @@ const factories={
         // E6 permits the dragon to reduce toughness without matching an enemy weakness.
         action.ignoreWeaknessToughness=rank(u,6)>0;
         const q=SV(1140702),e2=rank(u,2)&&(u.resources['炽意']??0)>0;
+        // 1140702：「重复发动时，伤害倍率依次提高至 0.392/0.476，达到后不再提高，
+        // 伤害倍率提高效果在死龙消失前不会降低」——阶数跨动作保留，重新召唤时清零。
+        const tier=Math.min(2,s.resources['焰息阶数']??0);
         // 1140702 checks the current HP before this activation. Crossing 25% with the
         // previous breath does not fire the talent until the next breath is activated.
+        const hpBefore=s.hp;
         if(s.hp<=s.panel.hp*q[4]){
           s.hp=1;action.repeatCount=repeat+1;wingBlast(b,u,s);
         }else if(e2)resource(b,u,'炽意',(u.resources['炽意']??0)-1);
         else s.hp=Math.max(0,s.hp-s.panel.hp*q[0]);
-        action.terms=dragonTerm(u,breathMult(repeat,q));
-        if(trace(u,3))wound(b,u);
+        // 死龙的生命降低同样触发「我方生命降低」监听（140704/141304 等）。
+        if(s.hp<hpBefore&&b.rules?.hpChanged)b.rules.hpChanged(b,s,'consume',hpBefore-s.hp,u);
+        action.terms=dragonTerm(u,breathMult(tier,q));
+        resource(b,s,'焰息阶数',Math.min(2,tier+1));
+        // 行迹 1407103「西风的驻足」：每次焰息使伤害 +30%，最多 6 层，持续至本回合结束。
+        if(trace(u,3)){
+          const n=Math.min(trace(u,3)[1],(tagOf(s,'castoriceWestWind')?.stacks??0)+1);
+          buff(b,u,s,'西风的驻足','dmgBoost',trace(u,3)[0]*n,null,{id:u.id+':west-wind',tag:'castoriceWestWind',stacks:n});
+        }
         void kind;
       },
       weaknessBreak(b,u,actor,target,action,element){
@@ -532,17 +578,29 @@ const factories={
       // 死龙回合结束：Ultra[1]=3 回合后消失。
       turnEnd(b,u,actor){
         if(!actor||actor.memospriteOwner!==u.id)return;
+        // 行迹 1407103「持续至本回合结束」：回合结束时清除西风的驻足叠层。
+        actor.buffs=actor.buffs.filter(e=>e.tag!=='castoriceWestWind');
         const left=(actor.resources['剩余回合']??P(u).Ultra[1])-1;
         actor.resources['剩余回合']=left;
         if(left<=0)dismissDragon(b,u);
       },
-      death(b,u,from,to){if(to===u||to.memospriteOwner===u.id)dismissDragon(b,u);void from;},
+      death(b,u,from,to){
+        if(to===u)dismissDragon(b,u);
+        else if(to?.memospriteOwner===u.id)dismissDragon(b,u,to);
+        void from;
+      },
       modifiers(b,u,actor,to,a,kind){
         const out={};if(to.side===u.side)return out;
         const fromDragon=actor&&actor.memospriteOwner===u.id;
         if(rank(u,6)&&(actor===u||fromDragon))out.resPen=(out.resPen??0)+rank(u,6,0);
+        // 140703：若遐蝶持有天赋的造成伤害提高效果，使该效果扩散至死龙。
+        if(fromDragon){
+          const woundBuff=tagOf(u,'castoriceWound');
+          if(woundBuff?.value)out.dmgBoost=(out.dmgBoost??0)+woundBuff.value;
+        }
         // E1：目标生命 ≤50%/80% 时，骸爪 / 爪痕 / 焰息 / 晦翼伤害为原伤害的 1.4 / 1.2 倍。
-        if(rank(u,1)&&(fromDragon||a?.name===u.actions.enhancedSkill?.name||a?.name===u.actions.skill?.name)){
+        // E1 只列【骸爪】【爪痕】【焰息】【晦翼】（死龙动作）与强化战技，不含普通战技 140702。
+        if(rank(u,1)&&(fromDragon||a?.name===u.actions.enhancedSkill?.name)){
           const r=to.hp/combatPanel(to).hp;
           if(r<=rank(u,1,1))out.dmgBoost=(out.dmgBoost??0)+rank(u,1,3)-1;
           else if(r<=rank(u,1,0))out.dmgBoost=(out.dmgBoost??0)+rank(u,1,2)-1;
@@ -588,11 +646,13 @@ const factories={
       return s;
     }
     // 累计治疗：扫描战斗日志里风堇造成的治疗（小伊卡的治疗也以风堇为施法者结算）。
+    // 1141519 献予「天空」之诗：持有层数时，计入小伊卡忆灵技的治疗数值额外 +100.8%。
     function scanHeal(b,u){
       const from=u.resources['治疗扫描']??0;if(b.log.length<=from)return;
       let add=0;for(const e of b.log.slice(from))if(e.type==='heal'&&e.actor===u.id)add+=e.amount;
       resource(b,u,'治疗扫描',b.log.length);
-      if(add>0)resource(b,u,'累计治疗',(u.resources['累计治疗']??0)+add);
+      const skyBoost=u.buffs.some(e=>String(e.tag??'').startsWith('cyreneSkyPoem:'))?SV(1141519)[0]:0;
+      if(add>0)resource(b,u,'累计治疗',(u.resources['累计治疗']??0)+add*(1+skyBoost));
     }
     const healMul=(u,base)=>base*(1+(trace(u,3)&&combatPanel(u).speed>trace(u,3)[0]?Math.min(trace(u,3)[4],combatPanel(u).speed-trace(u,3)[0])*trace(u,3)[3]:0));
     function riseTalent(b,u){
@@ -655,6 +715,10 @@ const factories={
           riseTalent(b,u);
           // 雨过天晴：风堇施放技能后小伊卡立即获得 1 个额外回合并自动施放【乌云乌云快走开！】。
           if(inSunny(u))icaAction(b,u);
+          // 1141519：先按本次治疗结算（含天空诗篇加成），施放战技/终结技后消耗 1 层。
+          scanHeal(b,u);
+          const sky=u.buffs.find(e=>String(e.tag??'').startsWith('cyreneSkyPoem:'));
+          if(sky){const left=(sky.stacks??1)-1;if(left<=0)u.buffs=u.buffs.filter(e=>e!==sky);else sky.stacks=left;}
         }
         if(rank(u,1)&&['basic','skill','ultimate'].includes(key))heal(b,u,u,healMul(u,combatPanel(u).hp*rank(u,1,1)));
         void a;void selected;void hitTargets;void kind;
@@ -712,7 +776,7 @@ const factories={
     function spawnNight(b,u,advanceIt){
       const s=spawnServant(b,u,{key:'night',name:'长夜',element:'Ice',aggro:125,advance:advanceIt,
         hpOf:base=>base.hp*P(u).Talent[4],speedOf:()=>P(u).Talent[3],actions:servantActions},api);
-      buff(b,u,s,'孤独，浮游，漆黑','dmgBoost',SV(1141303)[0],null,{id:u.id+':night-dmg'});
+      // 1141303 的 +70% 由 modifiers 统一给本体与长夜；这里不再额外挂 buff，避免重复计算。
       for(const poemBuff of u.buffs.filter(e=>String(e.tag??'').startsWith('cyreneEvernightPoem:')))
         buff(b,u,s,'献予「岁月」之诗 · 迷梦伤害','dmgBoost',.252,null,{id:poemBuff.id+':night',tag:poemBuff.tag});
       if(advanceIt){s.distance=0;s.advanceOrder=(b.advanceSequence=(b.advanceSequence??0)+1);}
@@ -723,20 +787,25 @@ const factories={
       if(rank(u,2))n+=rank(u,2,0);
       resource(b,u,'忆质',chaos(u)+n);
       if(chaos(u)>=THRESH(u)){
-        u.buffs=u.buffs.filter(e=>e.control!=='freeze');
+        // 141304：忆质 ≥16 时解除并免疫控制类负面状态（眩晕/冻结/禁锢等全部控制）。
+        u.buffs=u.buffs.filter(e=>!e.control);
+        u.dots=u.dots.filter(e=>!e.control);
         const s=mem(b,u);
         if(s&&!u.resources['立即行动已用']){resource(b,u,'立即行动已用',1);s.distance=0;s.advanceOrder=(b.advanceSequence=(b.advanceSequence??0)+1);record(b,'advance',u,{name:'长夜立即行动',target:s.id,ratio:1});}
       }
     }
     function skillBuff(b,u){
       const c=combatPanel(u).critDmg,p=P(u),pct=p.BPSkill[0];
+      // 1141524：「战技的暴击伤害提高效果额外提高，提高数值等同于长夜月暴击伤害的 16.8%」。
+      // 因此额外量是 c×0.168，而不是固定 +0.168 个百分点。
       const poem=u.buffs.some(e=>String(e.tag??'').startsWith('cyreneEvernightPoem:'))?SV(1141524)[2]:0;
-      for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'白昼悄然离去 · 忆灵暴伤','critDmg',c*pct+poem,p.BPSkill[1],{id:u.id+':skill-cd'});
+      for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'白昼悄然离去 · 忆灵暴伤','critDmg',c*pct+c*poem,p.BPSkill[1],{id:u.id+':skill-cd',tickOwner:u.id,tickAt:'start'});
       // 行迹 point08：队伍中「记忆」命途数量 1/2/3/4+ 时忆灵暴伤额外 +5/15/50/65%。
       if(trace(u,3)){
-        const n=allies(b,u).filter(t=>t!==u&&(t.path==='记忆'||t.path==='Remembrance')).length;
+        // 原始脚本统计全部「记忆」命途友方，包含长夜月自己。
+        const n=allies(b,u).filter(t=>(t.path==='记忆'||t.path==='Remembrance')).length;
         const v=trace(u,3)[Math.max(0,Math.min(3,n-1))];
-        if(n>0)for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'天亮了，雨落了','critDmg',v,p.BPSkill[1],{id:u.id+':trace8-cd'});
+        if(n>0)for(const to of allies(b,u))if(to.memospriteOwner)buff(b,u,to,'天亮了，雨落了','critDmg',v,p.BPSkill[1],{id:u.id+':trace8-cd',tickOwner:u.id,tickAt:'start'});
       }
     }
     function dreamDamage(b,u){
@@ -753,7 +822,7 @@ const factories={
       if(darkCharges>0)resource(b,u,'至暗充能',darkCharges-1);
       resource(b,u,'忆质',rank(u,6)?Math.floor(n*rank(u,6,0)):0);
       if(trace(u,1))sp(b,u,1,'长夜月 · 迷梦返还战技点');
-      buff(b,u,u,'与你，再见，无期','speedPct',SV(1141306)[0]+Math.min(SV(1141306)[2],n)*SV(1141306)[1],null,{id:u.id+':night-haste',tickAt:'start'});
+      buff(b,u,u,'与你，再见，无期','speedPct',SV(1141306)[0]+Math.min(SV(1141306)[2],n)*SV(1141306)[1],null,{id:u.id+':night-haste',tag:'night-haste',tickAt:'start'});
       dismissServant(b,u,s,api);
       resource(b,u,'立即行动已用',0);
     }
@@ -764,16 +833,24 @@ const factories={
         if(trace(u,2)){energy(b,u,trace(u,2)[1],true);gainMemory(b,u,trace(u,2)[2]);}
       },
       entryAlways:true, // 本体忆灵开场常驻，与秘技无关；运行时不能将其误当作秘技入场钩子。
-      entry(b,u){spawnNight(b,u,false);},
+      entry(b,u){
+        spawnNight(b,u,false);
+        // 秘技 141307：只有携带秘技时，OnEnterBattle 才对全部我方忆灵施加 Skill02_Buff 并 +1 忆质。
+        if(u.kit.technique){skillBuff(b,u);gainMemory(b,u,1);}
+      },
       before(b,u,actor,key,kind,a,selected){
         if(actor!==u)return;
         const p=P(u);
         if(key==='skill'&&kind!=='copy'){
+          // 141302：消耗长夜月当前 10% 生命值召唤忆灵「长夜」。
+          // Ability Skill02_Phase02 的首个任务是 LoseHPByRatio，之后才加入战技的暴伤共享；
+          // 因此该次消耗触发的 141304 暴伤加成已计入 24% 的换算基数。
+          loseHp(b,u,u,p.BPSkill[5],api);
           const s=mem(b,u);
           if(s)heal(b,u,s,combatPanel(s).hp*p.BPSkill[3]);else spawnNight(b,u,true);
           skillBuff(b,u);
           gainMemory(b,u,p.BPSkill[2]+(dark(u)?p.BPSkill[4]:0));
-          // 行迹 point06：施放技能时消耗自身当前生命 5%，双方暴伤 +15%/2 回合。
+          // 行迹 point06：施放战技时消耗自身当前生命 5%，双方暴伤 +15%/2 回合。
           if(trace(u,1)){
             loseHp(b,u,u,trace(u,1)[1],api);
             buff(b,u,u,'天黑黑，月寂寂','critDmg',trace(u,1)[2],trace(u,1)[3],{id:u.id+':trace6-cd'});
@@ -844,13 +921,37 @@ const factories={
         }
         void from;void kind;
       },
-      death(b,u,from,to){if(to===u||to.memospriteOwner===u.id){const s=memAny(b,u);if(s)dismissServant(b,u,s,api);}void from;},
+      death(b,u,from,to){
+        if(to===u||to.memospriteOwner===u.id){
+          // 1141306：非迷梦路径的消失只给基础 10% 加速；迷梦路径已在 dreamDamage 中按忆质追加。
+          if(to.memospriteOwner===u.id)
+            buff(b,u,u,'与你，再见，无期','speedPct',SV(1141306)[0],null,{id:u.id+':night-haste',tag:'night-haste',tickAt:'start'});
+          const s=memAny(b,u);if(s)dismissServant(b,u,s,api);
+        }
+        void from;
+      },
+      // 141304「长夜月或忆灵每次生命降低时」：技能/行迹的生命消耗同样触发（伤害由 afterDamage 处理）。
+      // 原始 MAvatar_Evernight_00_HPChange 的 OnHPChange 仅排除治疗，未见按动作去重；
+      // 「每个目标每次受到攻击最多触发1次」的限制属于受击分支，故消耗路径每次生命降低都触发。
+      hpChanged(b,u,target,reason,amount){
+        if(reason!=='consume'||!(amount>0)||target.side!==u.side)return;
+        if(target!==u&&target.memospriteOwner!==u.id)return;
+        const T=P(u).Talent;
+        buff(b,u,u,'今夜与我同行','critDmg',T[1],T[2],{id:u.id+':talent-cd'});
+        const s=mem(b,u);if(s)buff(b,u,s,'今夜与我同行','critDmg',T[1],T[2],{id:u.id+':talent-cd'});
+        gainMemory(b,u,T[0]);
+      },
       // Rank04_Buff: allied servants +25%; CasterServant receives an additional +25%.
       panel(b,u,target,out){
+        // 行迹 point06：长夜月与长夜暴击率 +35%。
+        // 长夜的战斗面板以本体面板为基，只在本体处加一次，避免忆灵继承后重复 +35%。
+        const T6=trace(u,1);
+        if(T6&&target===u)out.critRate=(out.critRate??0)+T6[0];
         // E2 permanently grants CRIT DMG to the owner and her own memosprite.
         if(rank(u,2)&& (target===u||target.memospriteOwner===u.id))out.critDmg=(out.critDmg??0)+rank(u,2,2);
         // Ultra 141303 grants control immunity to both Long Night and Evernight while Dark Mystery is active.
-        if(target===u&&dark(u))out.controlRes=1;
+        // 141304：忆质≥16 时同样解除并免疫控制类负面状态。
+        if(target===u&&(dark(u)||chaos(u)>=THRESH(u)))out.controlRes=1;
         // 1141303：长夜本体免疫控制类负面状态（控制抵抗 100%）。
         if(target.memospriteOwner===u.id)out.controlRes=1;
         if(!rank(u,4)||target.side!==u.side||!target.memospriteOwner)return;
@@ -862,7 +963,8 @@ const factories={
         if(s&&(actor===u||actor===s))out.dmgBoost=(out.dmgBoost??0)+SV(1141303)[0];
         if(dark(u)&&(actor===u||actor===s))out.dmgBoost=(out.dmgBoost??0)+P(u).Ultra[2];
         if(dark(u))out.vuln=(out.vuln??0)+P(u).Ultra[3];
-        if(s&&rank(u,1)&&actor?.memospriteOwner===u.id){
+        // 1413 E1 原文「长夜月在场时……我方忆灵造成的伤害」：覆盖所有我方忆灵，不只长夜。
+        if(rank(u,1)&&actor?.memospriteOwner&&actor.side===u.side){
           const n=enemies(b,u).length;
           out.dmgBoost=(out.dmgBoost??0)+(n>=4?rank(u,1,0):n===3?rank(u,1,1):n===2?rank(u,1,2):rank(u,1,3))-1;
         }
@@ -885,7 +987,7 @@ const factories={
   // E1[6,12] 追忆 + 弹射 +12；E2[12,0,.06,.24] 开场 +12 追忆、真实伤害倍率最多 +24%；
   //   E4[.06,24] 每次舞曲后弹射倍率 +6%（最多 24 层）；E6[1,.2,.24] 首次终结全体提前 100% 等。
   1415:function(api){
-    const {rank,trace,buff,resource,energy,damageTo,combatPanel,record,advance,heal,allies,enemies,useAction,trueDamage,get}=api;
+    const {rank,trace,buff,resource,energy,damageTo,combatPanel,record,advance,heal,allies,enemies,useAction,trueDamage,get,sp}=api;
     const P=u=>u.kit.params;
     const mem=(b,u)=>memOf(b,u), ripple=u=>has(u,'cyreneRipple'), field=u=>api.live(u)&&has(u,'cyreneField');
     function syncServantSpecialSP(b,u){
@@ -972,7 +1074,8 @@ const factories={
       const trueSelf=!!u.resources['真我之诗待结算'];resource(b,u,'真我之诗待结算',0);
       resource(b,u,'本次真我诗篇舞曲',trueSelf?1:0);
       if(trueSelf&&rank(u,1))gainMemo(b,u,rank(u,1,0));
-      const storedBounces=u.resources['额外弹射']??0;resource(b,u,'额外弹射',0);
+      // 4.6 文本没有“消耗/重置”字样：不同队友来源的累计弹射对之后每次舞曲都生效。
+      const storedBounces=u.resources['额外弹射']??0;
       const extraBounces=(trueSelf&&rank(u,1)?rank(u,1,1):0)+storedBounces;
       // Rank 4 params are [per-stack ratio, stack cap]; the bonus from earlier dances
       // applies to this true-self poem bounce, then this dance adds the next stack.
@@ -986,6 +1089,11 @@ const factories={
           terms:[{scaling:'hp',multiplier:q[0]*(1+e4)}],toughness:SERVANT[1141501].stance[0]},1,'primary','additional');
       }
       s.resources['舞曲次数']=(s.resources['舞曲次数']??0)+1;
+      // 1141519 献予「天空」之诗：德谬歌施放忆灵技时，持有诗篇的风堇获得 2 层。
+      for(const to of allies(b,u)){
+        const sky=to.buffs.find(e=>String(e.tag??'')==='cyreneSkyPoem:'+u.id);
+        if(sky)sky.stacks=(sky.stacks??0)+2;
+      }
     }
     const HEIRS=new Set([1402,1403,1404,1405,1406,1407,1408,1409,1410,1412,1413,1414,1415,8007,8008]);
     function castPoem(b,u,s,target){
@@ -1037,6 +1145,39 @@ const factories={
       } else if(id===1408){
         // 献予「负世」之诗：获得6点火种，并标记永续燃烧分支。
         energy(b,target,6,true);resource(b,target,'永续的燃烧',1);
+      } else if(id===1403){
+        // 1141515 献予「门径」之诗：缇宝造成的伤害无视敌方 16.8% 防御（整场生效）。
+        // 追加攻击触发结界附加伤害时额外 1 次：由缇宝模块检测 cyreneGatePoem 标记后 +1 段。
+        buff(b,u,target,'献予「门径」之诗 · 无视防御','defIgnore',SV(1141515)[1],null,
+          {id:u.id+':poem-gate-def:'+target.id,tag:'cyreneGatePoem:'+u.id});
+      } else if(id===1409){
+        // 1141519 献予「天空」之诗：为风堇恢复 33.6 点能量并获得 2 层。
+        // 层数由风堇模块读取：治疗计入小伊卡的数值额外 +100.8%，施放战技/终结技消耗 1 层。
+        const p=SV(1141519),tag='cyreneSkyPoem:'+u.id;
+        energy(b,target,p[1],true);
+        const cur=target.buffs.find(e=>e.tag===tag)?.stacks??0;
+        buff(b,u,target,'献予「天空」之诗 · 层数','marker',0,null,
+          {id:u.id+':poem-sky:'+target.id,tag,stacks:cur+2});
+      } else if(id===1412){
+        // 1141523 献予「律法」之诗：「持有【军功】的角色暴击伤害提高 42%」是持有者状态光环，
+        // 而【军功】持有者会随 1412 的战技/终结技变化（kit-runtime.merit 重新指定目标）。
+        // 因此把诗篇数值记在 1412 身上，merit 在目标变化时把光环迁移到当前持有者；
+        // 诗篇施放时若尚无人持有【军功】，也会在首次指定持有者时补上。
+        resource(b,target,'Cyrene律法诗篇:'+u.id,SV(1141523)[0]);
+        const holder=get(b,target.resources['军功目标']);
+        if(holder)buff(b,u,holder,'献予「律法」之诗 · 暴击伤害','critDmg',SV(1141523)[0],null,
+          {id:u.id+':poem-law-cd:'+holder.id,tag:'cyreneLawPoem:'+u.id});
+        // 「奇袭结束后充能 +1」由 kit-runtime.consumeCopy 检测 Cyrene律法诗篇 资源后结算。
+      } else if(id===1405){
+        // 1141518 献予「理性」之诗：恢复 1 个战技点并使那刻夏立即行动；
+        // 那刻夏下一次普攻/战技时获得【真知】（智识命途攻击力 +84%、战技伤害 +56%），
+        // 持续至下一个那刻夏回合开始；「战技伤害次数 +3」由 1405 的 prepare 消费该次数。
+        const p=SV(1141518);
+        sp(b,target,p[3],'献予「理性」之诗');
+        advance(b,target.id,1);
+        resource(b,target,'Cyrene理性诗篇来源',u.id);
+        resource(b,target,'Cyrene理性诗篇待真知',1);
+        resource(b,target,'Cyrene理性诗篇次数',p[0]);
       } else if(id===8007||id===8008){
         // 献予「创世」之诗：整场生效。攻击力按德谬歌生命上限换算为固定攻击，
         // 暴击率按施放时德谬歌面板暴击率换算；同一增益同时作用于记忆开拓者和迷迷。
@@ -1048,7 +1189,23 @@ const factories={
           buff(b,u,to,'献予「创世」之诗 · 暴击','critRate',crit,null,{id:u.id+':creation-crit:'+to.id,tag:'cyreneCreationPoem:'+u.id});
         }
       }
-      record(b,'mechanic',u,{name:'德谬歌施放诗篇',target:target.id,poem:id===1413?'岁月':id===1406?'诡计':id===1410?'海洋':id===1407?'生死':id===1408?'负世':id===8007||id===8008?'创世':HEIRS.has(id)?'专属诗篇':'一切生命'});
+      record(b,'mechanic',u,{name:'德谬歌施放诗篇',target:target.id,poem:id===1413?'岁月':id===1406?'诡计':id===1410?'海洋':id===1407?'生死':id===1408?'负世':id===1403?'门径':id===1405?'理性':id===1409?'天空':id===1412?'律法':id===8007||id===8008?'创世':HEIRS.has(id)?'专属诗篇':'一切生命'});
+    }
+    // 1141518【真知】：只作用于「智识」命途角色；攻击力与战技伤害两条增益同源，
+    // 在下一个那刻夏回合开始时一并移除。
+    function grantTruth(b,u,owner){
+      const p=SV(1141518),tag='cyreneTruth:'+u.id;
+      for(const to of allies(b,u)){
+        if(!['智识','Erudition'].includes(to.path))continue;
+        buff(b,u,to,'真知 · 攻击','atkPct',p[2],null,{id:u.id+':truth-atk:'+to.id,tag});
+        buff(b,u,to,'真知 · 战技伤害','dmgBoost',p[1],null,{id:u.id+':truth-skill:'+to.id,tag,abilityType:'BPSkill'});
+      }
+      record(b,'mechanic',u,{name:'献予「理性」之诗 · 真知',target:owner.id});
+      resource(b,owner,'Cyrene理性诗篇真知已获',owner.turns??0);
+    }
+    function clearTruth(b,u){
+      const tag='cyreneTruth:'+u.id;
+      for(const to of b.units)to.buffs=to.buffs.filter(e=>e.tag!==tag);
     }
     return {
       start(b,u){
@@ -1083,6 +1240,13 @@ const factories={
       },
       before(b,u,actor,key,kind,a,selected){
         consumeFuture(b,u,actor,kind);
+        // 1141518：那刻夏下一次普攻/战技时获得【真知】。buff 在本次动作结算前挂上，
+        // 因此本次战技也享受 56% 战技伤害加成。
+        if(actor?.characterId===1405&&kind!=='copy'&&kind!=='technique'&&['basic','skill'].includes(key)&&
+           actor.resources?.['Cyrene理性诗篇来源']===u.id&&actor.resources?.['Cyrene理性诗篇待真知']){
+          resource(b,actor,'Cyrene理性诗篇待真知',0);
+          grantTruth(b,u,actor);
+        }
         if(actor!==u)return;
         const p=P(u);
         if(key==='skill'&&kind!=='copy'){
@@ -1150,7 +1314,7 @@ const factories={
             resource(b,u,'本次真我诗篇舞曲',0);
             const count=(u.resources['真我之诗触发次数']??0)+1;resource(b,u,'真我之诗触发次数',count);
             if(rank(u,6)&&count===1)for(const to of enemies(b,u))buff(b,u,to,'记忆，化作涟漪片片 · 防御降低','defShred',rank(u,6,1),null,{id:u.id+':cyrene-e6-def:'+to.id,debuff:true});
-            if(rank(u,6)&&count===2)for(const to of allies(b,u))advance(b,to.id,rank(u,6,2));
+            if(rank(u,6)&&count>=2)for(const to of allies(b,u))advance(b,to.id,rank(u,6,2));
           }
         }
         if(actor===u&&(key==='basic'||key==='enhancedBasic')){
@@ -1180,9 +1344,25 @@ const factories={
         resource(b,u,'创世诗篇待弹射',0);
         useAction(b,s,'basic','extra');
       },
+      // 1141518「持续至下一个那刻夏回合开始时」：只在【真知】已经获得后的下一个
+      // 那刻夏回合开始清除；仅持有待结算标记（尚未施放普攻/战技）时不清。
+      turnStart(b,u,actor){
+        if(actor?.characterId!==1405||actor.resources?.['Cyrene理性诗篇来源']!==u.id)return;
+        const granted=actor.resources?.['Cyrene理性诗篇真知已获'];
+        if(granted==null||(actor.turns??0)<=granted)return;
+        clearTruth(b,u);
+        resource(b,actor,'Cyrene理性诗篇真知已获',null);
+        resource(b,actor,'Cyrene理性诗篇待真知',0);
+        resource(b,actor,'Cyrene理性诗篇来源',null);
+      },
       summonTurn(){},
       death(b,u,from,to){
-        if(to===u||to.memospriteOwner===u.id){const s=memAny(b,u);if(s)dismissServant(b,u,s,api);}
+        if(to===u||to.memospriteOwner===u.id){
+          const s=memAny(b,u);if(s)dismissServant(b,u,s,api);
+          // E6 首次真我诗篇的 -20% 防御只在德谬歌在场时生效；德谬歌/昔涟离场即清除。
+          for(const e of b.units)if(e.side!==u.side)
+            e.buffs=e.buffs.filter(x=>!String(x.id??'').startsWith(u.id+':cyrene-e6-def:'));
+        }
         void from;
       },
       modifiers(b,u,actor,to,a,kind){
@@ -1203,7 +1383,8 @@ const factories={
       resource(b,s,'故事',(s.resources['故事']??0)+n);
       const need=SV(1141526)[1];
       if(s.resources['故事']>=need){
-        resource(b,s,'故事',0);gainMemo(b,u,3);
+        // 1141526 原文只写消耗全部【故事】获得额外回合并施放舞曲，没有追忆增益。
+        resource(b,s,'故事',0);
         useAction(b,s,'basic','extra');
       }
       void get;
@@ -1244,21 +1425,23 @@ const factories={
       const s=mem(b,u);if(!s||!api.live(s))return;
       buff(b,u,s,'知更鸟•晴歌 E4 · 速度','speedPct',rank(u,4,1)+scent(u)*rank(u,4,2),null,{id:u.id+':e4-speed'});
     }
-    function gainScent(b,u,n){
+    function gainScent(b,u,n,source){
       const before=scent(u);
       resource(b,u,'气氛值',Math.min(scentCap(u),before+n));
       refreshBandSpeed(b,u);
-      // 行迹 point06：使我方目标获得气氛值时按攻击力/暴伤分支给增益。
+      // 行迹 point06：使知更鸟获得气氛值的**该目标**按攻击力/暴伤分支获得增益；
+      // 不能固定取队伍里第一个非知更鸟角色（3~4 人队伍会加错人）。
       if(trace(u,1)&&before<scentCap(u)){
-        const to=allies(b,u).find(t=>t!==u)??u,val=scent(u);
+        const to=source&&source.side===u.side?source:(allies(b,u).find(t=>t!==u)??u),val=scent(u);
         const p=combatPanel(u);
         if(combatPanel(to).atk>p.atk)buff(b,u,to,'偏离和弦 · 攻击','atk',p.hp*(trace(u,1)[0]+val*trace(u,1)[1]),trace(u,1)[4],{id:u.id+':trace6-atk'});
         else buff(b,u,to,'偏离和弦 · 暴伤','critDmg',trace(u,1)[2]+val*trace(u,1)[3],trace(u,1)[4],{id:u.id+':trace6-cd'});
       }
       // 行迹 point07：任意目标回合内第一次获得气氛值时若持有【律动】，消耗 1 层并固定回 3 能。
       const rhythm=tagOf(u,'robinRhythm');
-      if(rhythm&&rhythm.stacks>0&&u.resources['本回合已消耗律动']!==b.turns){
-        resource(b,u,'本回合已消耗律动',b.turns);
+      // 原始 PointB2_TurnFlag 只在**我方回合开始**时清除；不能用 b.turns（敌方回合也会推进）。
+      if(rhythm&&rhythm.stacks>0&&u.resources['本回合已消耗律动']!==(u.resources['盟友回合计数']??0)){
+        resource(b,u,'本回合已消耗律动',u.resources['盟友回合计数']??0);
         buff(b,u,u,'即兴蓝调 · 律动','marker',0,null,{id:u.id+':rhythm',tag:'robinRhythm',stacks:rhythm.stacks-1});
         energy(b,u,trace(u,2)[1],true);
       }
@@ -1276,14 +1459,21 @@ const factories={
       const s=spawnBand(b,u);
       buff(b,u,u,'Fever','marker',0,null,{tag:'fever'});
       s.cannotAct=false;
+      // 1151203 Fever 进入时 ResetActionDelay：乐手从满行动条开始。
+      s.distance=10000;s.advanceOrder=0;
       refreshBandSpeed(b,u);
-      u.buffs=u.buffs.filter(e=>e.control!=='freeze');s.buffs=s.buffs.filter(e=>e.control!=='freeze');
+      // 151204 desc：全员登台时解除知更鸟与「晴空乐手」陷入的**所有**控制类负面状态
+      //（旧实现只清冻结，眩晕/禁锢/纠缠等仍会残留）。
+      const cleanseControl=t=>{t.buffs=t.buffs.filter(e=>!e.control);t.dots=t.dots.filter(e=>!e.control);};
+      cleanseControl(u);cleanseControl(s);
       let cd=b.summons.find(x=>x.id===u.id+':fever');
       if(!cd){cd={id:u.id+':fever',name:'【Fever】倒计时',owner:u.id,bondmate:u.id,kind:'countdown',
         speed:SV(1151203)[8],distance:10000,active:true,order:b.units.length+b.summons.length};b.summons.push(cd);}
+      // 退出 Fever 后倒计时只是失活；再次进入 Fever 时必须重新启用并回到满行动条。
+      else{cd.active=true;cd.speed=SV(1151203)[8];cd.distance=10000;}
       if(rank(u,6))u.energyMax=(u.resources['基础能量上限']??ROSTER_DATA[1512].energyMax)*2;
       if(rank(u,6)&&!u.resources['fever回能已用']){resource(b,u,'fever回能已用',1);energy(b,u,rank(u,6,1),true);}
-      if(rank(u,4))gainScent(b,u,rank(u,4,0));
+      if(rank(u,4))gainScent(b,u,rank(u,4,0),u);
       record(b,'mechanic',u,{name:'进入【Fever】'});
     }
     function exitFever(b,u){
@@ -1309,14 +1499,16 @@ const factories={
       entry(b,u){
         const maze=ROSTER_DATA[1512].skills['151207']?.params?.['1']?.param_list??[6,.3,.2];
         advance(b,u.id,maze[2]);
-        gainScent(b,u,maze[0]);
+        gainScent(b,u,maze[0],u);
         for(const to of allies(b,u))buff(b,u,to,'我们自成旋律','dmgBoost',maze[1],2,{id:u.id+':maze-dmg'});
       },
       after(b,u,actor,key,kind,a,selected,hitTargets){
         const scentBeforeAction=scent(u);
         // E1：忆灵技追加伤害按当前记录值和当前气氛值结算，然后仅清除记录值的50%。
         // 先由忆灵自身的基础全体攻击结算，再把真实伤害打到当前生命值最高的存活敌人。
-        if(rank(u,1)&&actor?.memospriteOwner===u.id&&key==='basic'&&kind==='extra'){
+        // 忆灵的真实回合由引擎以 kind='normal' 执行（engine.mjs 的召唤物行动路径），
+        // 旧条件只接受 kind='extra'，导致 E1 在正常战斗中永远不触发。
+        if(rank(u,1)&&actor?.memospriteOwner===u.id&&key==='basic'&&kind!=='copy'&&kind!=='technique'){
           const stored=u.resources['晴空乐手记录伤害']??0;
           const target=enemies(b,u).reduce((best,to)=>!best||to.hp>best.hp?to:best,null);
           if(stored>0&&target){
@@ -1327,23 +1519,31 @@ const factories={
           }
         }
         if(actor===u&&key==='skill'&&kind!=='copy'){
+          // 151202：Success 分支（首次召唤）只 CreateServant；Failed 分支（已在场）才治疗并 +6 气氛。
+          const had=!!memAny(b,u);
           const s=spawnBand(b,u);
-          heal(b,u,s,combatPanel(s).hp*P(u).BPSkill[0]);
-          if(servants(u)===0)resource(b,u,'乐手人数',1);
-          gainScent(b,u,P(u).BPSkill[1]);
+          if(had){
+            heal(b,u,s,combatPanel(s).hp*P(u).BPSkill[0]);
+            gainScent(b,u,P(u).BPSkill[1],u);
+          }else if(servants(u)===0)resource(b,u,'乐手人数',1);
         }
         if(actor===u&&key==='ultimate'&&kind!=='copy'){
           const to=api.get(b,u.policy?.allyTargetId)??allies(b,u).find(t=>t!==u);
           if(to){
             advance(b,to.id,P(u).Ultra[0]);
             energy(b,to,(to.energyMax??0)*P(u).Ultra[2],true);
-            buff(b,u,to,'特邀嘉宾','marker',0,P(u).Ultra[1],{id:u.id+':guest',tag:'robinGuest',tickAt:'start'});
+            // 151203：持有者及其召唤物攻击额外 +2 气氛，且无法使其他友方获得行动提前。
+            // `blockAllyAdvance` 是引擎通用白名单标记（engine.advance）。
+            buff(b,u,to,'特邀嘉宾','marker',0,P(u).Ultra[1],{id:u.id+':guest',tag:'robinGuest',tickAt:'start',blockAllyAdvance:true});
           }
         }
         // 我方目标施放攻击 → +1 气氛值；【特邀嘉宾】攻击额外 +2。
         if(hitTargets.length&&actor&&actor.side===u.side&&!['dot','additional'].includes(kind)){
-          gainScent(b,u,1);
-          if(actor.buffs?.some(e=>e.tag==='robinGuest'))gainScent(b,u,P(u).Ultra[1]);
+          gainScent(b,u,1,actor);
+          // 【特邀嘉宾】：持有者**及其召唤物**攻击时额外 +2 气氛值（151203 desc）。
+          const guestOwner=actor.buffs?.some(e=>e.tag==='robinGuest')
+            ||(actor.memospriteOwner&&b.units.find(t=>t.id===actor.memospriteOwner)?.buffs.some(e=>e.tag==='robinGuest'));
+          if(guestOwner)gainScent(b,u,P(u).Ultra[1],actor);
         }
         // 每个提供者自己的回合首次治疗/施加护盾 → +1 气氛值（扫描日志）。
         // 原始 Passive_HyperCharge 的 TurnFlag 挂在 ModifierOwnerEntity，且只在该单位
@@ -1354,8 +1554,21 @@ const factories={
           for(const e of b.log.slice(from))if(e.type==='heal'||e.type==='shield'){
             const provider=b.units.find(t=>t.id===e.actor);if(!provider||provider.side!==u.side)continue;
             const key='治疗护盾气氛回合:'+provider.id,turn=provider.turns??0;
-            if((u.resources[key]??-1)===turn)continue;
-            resource(b,u,key,turn);gainScent(b,u,1);
+            if((u.resources[key]??-1)!==turn){
+              resource(b,u,key,turn);gainScent(b,u,1,provider);
+            }
+            // 行迹 point07：知更鸟或晴空乐手受到**队友**治疗/护盾时 +12 层【律动】，上限 12。
+            const rhythmTrace=trace(u,2);
+            if(rhythmTrace){
+              const target=b.units.find(t=>t.id===e.target);
+              const robinOrBand=target===u||target?.memospriteOwner===u.id;
+              const fromMate=provider!==u&&provider.memospriteOwner!==u.id;
+              if(robinOrBand&&fromMate){
+                const cur=tagOf(u,'robinRhythm')?.stacks??0,next=Math.min(rhythmTrace[2],cur+rhythmTrace[0]);
+                buff(b,u,u,'即兴蓝调 · 律动','marker',0,null,{id:u.id+':rhythm',tag:'robinRhythm',stacks:next});
+                record(b,'mechanic',u,{name:'即兴蓝调 · 律动',stacks:next,source:provider.id,target:e.target});
+              }
+            }
           }
           resource(b,u,'事件扫描',b.log.length);
         }
@@ -1363,7 +1576,7 @@ const factories={
         // 在该角色下一次正常回合开始后才允许再次触发。只在本次技能确实令气氛值增加时发放。
         if(rank(u,2)&&key==='skill'&&actor?.side===u.side&&scent(u)>scentBeforeAction){
           const key='E2技能气氛回合:'+actor.id,turn=actor.turns??0;
-          if((u.resources[key]??-1)!==turn){resource(b,u,key,turn);gainScent(b,u,rank(u,2,1));}
+          if((u.resources[key]??-1)!==turn){resource(b,u,key,turn);gainScent(b,u,rank(u,2,1),actor);}
         }
         void a;void selected;
       },
@@ -1374,8 +1587,24 @@ const factories={
         if(event?.type==='damage'&&event.damage>0)
           resource(b,u,'晴空乐手记录伤害',(u.resources['晴空乐手记录伤害']??0)+event.damage*rank(u,1,2));
       },
+      // 行迹 point08：知更鸟本人也 +50% 暴击率（乐手的同名增益在 spawnBand 施加，避免叠加）。
+      // 151204 desc：【Fever】期间知更鸟与晴空乐手免疫控制类负面状态。
+      panel(b,u,to,out){
+        const own=to===u,band=to?.memospriteOwner===u.id;
+        if(!own&&!band)return;
+        if(own&&trace(u,3))out.critRate=(out.critRate??0)+trace(u,3)[0];
+        if(fever(u))out.controlRes=1;
+      },
+      // 151204 desc：【Fever】状态结束前知更鸟不会进入自己的回合。
+      // 引擎在 onTurnStart 之后检查 skipTurns，因此这里置 1 即可跳过本次自身回合。
       // 晴空乐手回合开始时施放忆灵技（Fever 期间才会出现在行动序列上）。
       turnStart(b,u,actor){
+        if(actor?.side===u.side)resource(b,u,'盟友回合计数',(u.resources['盟友回合计数']??0)+1);
+        if(actor===u&&fever(u)){
+          u.skipTurns=Math.max(1,u.skipTurns??0);
+          record(b,'mechanic',u,{name:'Fever · 跳过自身回合'});
+          return;
+        }
         if(actor&&actor.memospriteOwner===u.id){
           const q=SV(1151201);
           actor.actions.basic.terms=[{scaling:'hp',multiplier:q[1]*(rank(u,6)?1+rank(u,6,0):1)}];
@@ -1401,6 +1630,9 @@ const factories={
         const out={};if(to.side===u.side)return out;
         // Fever 结界：我方目标造成伤害无视敌方 (15%+气氛值×0.5%) 防御；乐手数量使敌方受到伤害提高。
         if(fever(u))out.defIgnore=(out.defIgnore??0)+P(u).Talent[7]+scent(u)*P(u).Talent[8];
+        // 1151203：Fever 期间知更鸟与晴空乐手造成的伤害提高（84% + 气氛值×2.8%）。
+        if(fever(u)&&(actor===u||actor?.memospriteOwner===u.id))
+          out.dmgBoost=(out.dmgBoost??0)+SV(1151203)[0]+scent(u)*SV(1151203)[1];
         const n=servants(u);if(n>0)out.vuln=(out.vuln??0)+(n>=3?SV(1151203)[4]:n===2?SV(1151203)[3]:SV(1151203)[2]);
         if(rank(u,2))out.resPen=(out.resPen??0)+rank(u,2,2);
         void a;void kind;return out;
@@ -1427,8 +1659,9 @@ const actions={
   // 遐蝶：普攻 2 段（Skill01_Phase02=[.2,.8]）；战技 1 主 + 1 相邻；强化战技 2 段全体；终结为召唤动作。
   1407:(p,d)=>({
     basic:basic(p,d,{terms:hp(p.Normal[0]),hitShares:[.2,.8],toughness:30,energyGain:0}),
+    // 140702 bpNeed=-1：普通战技不消耗战技点。
     skill:skill(p,d,{target:'blast',terms:[...hp(p.BPSkill[1]),{...hp(p.BPSkill[2])[0],target:'adjacent'}],
-      hitShares:[1],toughness:60,adjacentToughness:30,energyGain:0}),
+      hitShares:[1],toughness:60,adjacentToughness:30,energyGain:0,spCost:0}),
     enhancedSkill:{name:'骸爪，冥龙之环拥',type:'BPSkill',element:'Quantum',target:'all',
       terms:[...hp(p.BPSkill[1]),...hp(p.BPSkill[2])],hitShares:[.5,.5],energyGain:0,spCost:0,spGain:0,toughness:60},
     summonDragon:{name:'亡喉怒哮，苏生之颂铃',type:'Ultra',element:'Quantum',target:'self',terms:[],energyGain:0,spCost:0,spGain:0},

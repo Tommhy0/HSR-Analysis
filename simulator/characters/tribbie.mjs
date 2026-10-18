@@ -20,7 +20,9 @@ export function tribbie(api){const {allies,enemies,live,rank,trace,buff,stacks,e
       if(actor.side!==u.side||!hits.length||!field(u))return;
       const pool=hits.filter(live);if(!pool.length)return;
       const native=b.log.slice(b.activeAction?.sequence??b.log.length).filter(e=>e.type==='damage'&&e.actor===actor.id&&!['true','dot','break_dot'].includes(e.kind)).reduce((n,e)=>n+e.damage,0);
-      const mult=u.kit.params.Ultra[2]*(rank(u,2)?rank(u,2):1),count=hits.length*(1+(u.kit.eidolon>=2?u.kit.ranks[2][1]:0));
+      // 1141515 献予「门径」之诗：追加攻击触发结界附加伤害时额外 1 次附加伤害。
+      const gateBonus=kind==='followup'&&u.buffs.some(e=>String(e.tag??'').startsWith('cyreneGatePoem:'))?1:0;
+      const mult=u.kit.params.Ultra[2]*(rank(u,2)?rank(u,2):1),count=hits.length*(1+(u.kit.eidolon>=2?u.kit.ranks[2][1]:0))+gateBonus;
       // The raw target alias selects the highest-current-HP living marked enemy
       // for each loop iteration. Re-resolve after every damage packet so a kill
       // does not discard the remaining field hits.

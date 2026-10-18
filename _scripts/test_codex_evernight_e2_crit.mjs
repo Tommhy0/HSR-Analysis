@@ -16,7 +16,10 @@ for(const eidolon of [0,2]){
   b.rules.before(b,owner,'skill','normal',owner.actions.skill,[owner],[]);
   const transferred=night.buffs.find(x=>x.id===owner.id+':skill-cd');assert.ok(transferred);
   const ratio=ROSTER_DATA[1413].skills['141302'].params['10'].param_list[0];
-  assert.ok(Math.abs(transferred.value-ownerBeforeSkill*ratio)<1e-8,
-    '战技分享给忆灵的暴伤必须只按战技原始倍率计算');
+  // 4.6 Ability Avatar_Evernight_00_Skill02_Phase02 的首个任务是 LoseHPByRatio，之后才加入
+  // Skill02_Buff；该次消耗触发的 141304 暴伤加成因此已计入 24% 的换算基数。
+  const talentCrit=owner.kit.params.Talent[1];
+  assert.ok(Math.abs(transferred.value-(ownerBeforeSkill+talentCrit)*ratio)<1e-8,
+    '战技分享给忆灵的暴伤必须按战技原始倍率计算，并包含本次生命消耗触发的天赋暴伤');
 }
 console.log('PASS Evernight E2 owner/servant +40% CRIT DMG and source-defined skill transfer ratio');

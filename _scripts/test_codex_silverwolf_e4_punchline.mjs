@@ -12,6 +12,9 @@ for(const eidolon of [0,4]){
   const foe=dummy('foe','enemy');foe.panel={...foe.panel,hp:1e9,speed:1};foe.hp=1e9;
   const b=createBattle({strict:false,maxAV:500,sp:3,maxSP:9,seed:17,critMode:'noncrit',units:[owner,foe]});
   const u=b.units.find(x=>x.characterId===1506);b.laughter.ally=counted;
+  // 150621「崩坏级伤害演示」是【无敌玩家】期间的强化欢愉技；常态欢愉技 150620 只回隐藏分。
+  u.energy=u.energyMax;
+  b.rules.before(b,u,'ultimate','ultimate',u.actions.ultimate,[u]);
   b.queue.push({actor:u.id,key:'elation',kind:'extra'});
   assert.equal(stepBattle(b),true,'queued Elation skill should resolve through stepBattle');
   const hit=b.log.find(e=>e.type==='damage'&&e.actor===u.id&&e.kind==='elation');

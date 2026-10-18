@@ -30,6 +30,7 @@ import {ROSTER_DATA} from '../simulator/roster-data.mjs';
 import {BREAK_BASE} from '../simulator/game-data.mjs';
 import {SET_TABLES} from '../simulator/game-data.mjs';
 import {IDS} from '../simulator/characters/extra/batch15.mjs';
+import {KNOWN_MECHANICS_GAPS} from '../simulator/mechanics-status.mjs';
 import {EXTRA_IDS,EXTRA_FACTORIES,EXTRA_ACTIONS} from '../simulator/characters/extra/index.mjs';
 
 const data=JSON.parse(fs.readFileSync(new URL('../_data_cache/hsr_core.json',import.meta.url))),ctx=createContext(data);
@@ -258,13 +259,21 @@ test('火花：爆点抵扣战技点消耗并触发 E2 暴击伤害叠层（最�
   const [u]=b.units;
   u.resources['爆点']=3;
   b.sp=3;
-  b.rules.before(b,u,'skill','normal',u.actions.skill,[u]);
+  // 隔离技能自身回点与礼包小奖，只观察爆点抵扣是否会额外返还 SP。
+  u.actions.skill.spGain=0;
+  b.random=()=>.9;
+  // 必须走真实引擎动作：爆点抵扣发生在 useAction 的 SP 拆分阶段。
+  const en=b.units.find(x=>x.side==='enemy');
+  for(const x of b.units)x.distance=100000;
+  b.aha.distance=100000;
+  b.queue.push({actor:u.id,key:'skill',kind:'extra',targetId:en.id});
+  stepBattle(b);
   assert.equal(u.resources['爆点'],2,'战技应消耗 1 个爆点');
-  assert.equal(b.sp,4,'消耗的爆点应抵扣战技点');
+  assert.equal(b.sp,3,'爆点抵扣后不应额外返还战技点');
   const e=u.buffs.find(x=>x.id===u.id+':e2-crit');
   near(e.value,u.kit.ranks[2][1]);
   assert.equal(e.remaining,u.kit.ranks[2][2]);
-  for(let i=0;i<10;i++)b.rules.before(b,u,'skill','normal',u.actions.skill,[u]);
+  for(let i=0;i<10;i++)b.rules.before(b,u,'skill','normal',{...u.actions.skill,spCost:1,spSubstituteUsed:1},[u]);
   assert.ok((u.buffs.find(x=>x.id===u.id+':e2-crit')?.stacks??0)<=u.kit.ranks[2][3]);
 });
 
@@ -559,7 +568,9 @@ test('真珠：行迹 point06 用防御力换算欢愉度并转成治疗加成�
   near(combatPanel(u).elation,T[1]+T[3]*5);
   near(combatPanel(u).healingBoost,(T[1]+T[3]*5)*T[5]);
   u.panel.def=999999;
-  near(combatPanel(u).elation,T[1]+(T[4]-T[0])/T[2]*T[3],'超出部分最多计入 #5');
+  // 4.6 文本：「最多计入 #5 点**超出的**防御力」——上限是超出部分 3600 点，不是防御力总量 3600。
+  // 1506101 / 1513101 的「最多计入 #5 点超出的速度」按同一口径实现（Math.min(T[4], excess)）。
+  near(combatPanel(u).elation,T[1]+T[4]/T[2]*T[3],'超出部分最多计入 #5 点');
 });
 
 test('真珠欢愉技：为全队下一次实际攻击挂票，四欢愉队 E4 将 40% 原倍率加倍',()=>{
@@ -735,10 +746,12 @@ test('绯英：能量与好活当赏双向同步（单次上限 100），累计 
   const [u,m,en]=b.units,p=u.kit.params;
   const energyBefore=u.energy;u.energy=energyBefore+p.Talent[2]; // 一次 +240（单次最多计入 #3）
   b.rules.afterDamage(b,u,en,'direct');
-  near(u.resources['好活当赏'],100,'单次好活当赏上限 100');
+  // 单次能量上限 100 转好活；狐狸老师回能 10 点也是获得能量，再转 10 点好活。
+  near(u.resources['好活当赏'],100+p.Talent[3],'单次好活当赏上限 100，另加狐狸回能转出的 10 点');
   near(u.energy,Math.min(u.energyMax,energyBefore+p.Talent[2]+p.Talent[3]),'狐狸老师回能仍受角色能量上限约束');
   assert.ok(b.queue.some(q=>q.actor===u.id&&q.key==='followup'&&q.kind==='followup'));
-  assert.equal(u.resources['狐狸累计'],0,'累计值应被消耗');
+  // 狐狸老师恢复的 #4=10 点能量也属于「获得能量」，应计入下一次累计。
+  assert.equal(u.resources['狐狸累计'],p.Talent[3],'累计值应被消耗，但狐狸回能重新计入');
   // 反向：获得好活当赏 → 获得等值能量
   u.energy=0;u.resources['能量快照']=0;u.resources['好活当赏快照']=u.resources['好活当赏'];
   b.rules.afterDamage(b,m,en,'direct');
@@ -751,12 +764,23 @@ test('绯英：【狐狸老师】追加攻击在动作表里是全体 #1 攻击�
   const [u,en]=b.units,p=u.kit.params,T=u.kit.trace['2'];
   near(u.actions.followup.terms[0].multiplier,p.Talent[0]);
   assert.equal(u.actions.followup.target,'all');
+  // 150504 / Insert_Phase02：狐狸老师的欢愉伤害只在绯英持有【好活当赏】时结算。
+  u.resources['好活当赏']=10;
   const n0=elationHits(b).length;
   b.rules.after(b,u,'followup','followup',u.actions.followup,[en],[en]);
   assert.equal(elationHits(b).length-n0,1);
   near(baseOf(elationHits(b).at(-1)),elationBaseOf(u,p.Talent[1]));
   const v=en.buffs.find(e=>e.id===u.id+':fox-vuln');
   near(v.value,T[0]);assert.equal(v.remaining,T[1]);
+
+  // 反向：没有好活当赏时，狐狸老师不造成欢愉伤害，但行迹易伤仍施加。
+  const b2=createBattle(config([actor(1505)]));b2.random=()=>0;
+  const [u2,en2]=b2.units;
+  u2.resources['好活当赏']=0;
+  const n2=elationHits(b2).length;
+  b2.rules.after(b2,u2,'followup','followup',u2.actions.followup,[en2],[en2]);
+  assert.equal(elationHits(b2).length,n2,'未持有好活当赏时不应造成欢愉伤害');
+  assert.ok(en2.buffs.some(e=>e.id===u2.id+':fox-vuln'),'行迹易伤不受好活当赏条件限制');
 });
 
 test('绯英：E6 欢愉伤害增笑 = #1 + 每 100 点好活当赏 #3（最多计入 1000 点）；E1 抗穿 / E4 无视防御',()=>{
@@ -881,7 +905,7 @@ test('银狼LV.999：【强化普攻 3 次】后退出状态并清空隐藏分�
   }
 });
 
-test('银狼LV.999：【头号补给盲盒】在结界内按消耗的战技点触发，成功后概率按 #4 衰减',()=>{
+test('银狼LV.999：【头号补给盲盒】在结界内按消耗的战技点触发，成功后概率降至当前的 #4',()=>{
   const b=createBattle(config([actor(1506)]));b.random=()=>0;
   const [u,en]=b.units,p=u.kit.params;
   u.energy=u.energyMax;
@@ -891,12 +915,14 @@ test('银狼LV.999：【头号补给盲盒】在结界内按消耗的战技点�
   const n0=elationHits(b).length;
   b.rules.spend(b,u,1); // 实际扣除SP并触发spSpent，不伪造after事件
   assert.ok(elationHits(b).length>n0,'消耗战技点应触发盲盒');
-  near(u.resources['盲盒概率'],1,'成功后下一次概率重置为初始值');
+  // 4.6 desc：初始 100%，**成功触发后**下一次降低至当前概率的 #4=20%。
+  near(u.resources['盲盒概率'],1*p.Ultra[3],'成功后下一次概率应为当前的 20%');
   u.resources['盲盒概率']=.5;b.random=()=>.9;
   const n1=elationHits(b).length;
   b.rules.spend(b,u,1); // 实际扣除SP并触发spSpent，不伪造after事件
   assert.equal(elationHits(b).length,n1,'判定失败不应造成伤害');
-  near(u.resources['盲盒概率'],.5*(1-p.Ultra[3]));
+  // 判定失败不改变固定概率（desc 只规定成功后的衰减）。
+  near(u.resources['盲盒概率'],.5);
 });
 
 test('银狼LV.999：E6 使进入战斗的敌方目标被植入【禁限弱点】（7 元素抗性降低 #1）',()=>{
@@ -936,7 +962,9 @@ test('砂金•戏浪：战技全体 #1 + #2 笑点 + #3 热意；终结技使�
   // 4+8=12 越过 #1=10 → 触发【举杯】；固定计入的 #5 只供本次全队欢愉技计算。
   near(b.laughter.ally,initialPunchline(b)+p.BPSkill[1]+p.Ultra[2]);
   near(u.resources['热意'],p.BPSkill[2]+p.Ultra[1],'触发时保留已累计热意，不消耗阈值');
-  assert.equal(b.ahaCount,1);
+  // 热意阈值触发的是砂金自身插入动作，不是全队阿哈额外回合。
+  assert.ok(b.queue.some(q=>q.key==='elationHeat'),'应排队一次自身插入的【举杯】');
+  assert.ok(!b.ahaCount,'阈值插入不应伪造阿哈时刻');
   const sp=u.buffs.find(e=>e.id===u.id+':aw-ult-speed');
   near(sp.value,p.Ultra[3]);assert.equal(sp.remaining,p.Ultra[4]);
   assert.equal(u.actions.ultimate.target,'all');
@@ -949,11 +977,16 @@ test('砂金•戏浪：【热意】达到 #1=10 立即结算【举杯！敬炽�
   b.activeAction={sequence:5};
   b.rules.afterHit(b,m,en,{spCost:0,type:'Normal'},'direct',{});
   assert.equal(u.resources['热意'],p.Talent[0]+u.kit.trace['3'][3],'跨过10点后应保留累计热意，并叠加行迹 #4');
-  assert.equal(u.resources['AllIn'],1);
-  assert.equal(b.ahaCount,1,'应触发一次阿哈时刻');
-  near(b.laughter.ally,initialPunchline(b)+p.Talent[5],'队友攻击 #6=1 笑点；固定计入 #5 不进入共享笑点池');
+  assert.equal(u.resources['AllIn']??0,0,'插入动作结算前不应提前标记 All in');
+  assert.ok(b.queue.some(q=>q.key==='elationHeat'),'应排队一次自身插入的【举杯】');
+  assert.ok(!b.ahaCount,'阈值插入不是全队阿哈额外回合');
+  near(b.laughter.ally,initialPunchline(b)+p.Talent[5]+u.kit.trace['2'][3],'队友攻击 #6 笑点 + 行迹 point07 #4 笑点；固定计入 #5 不进入共享笑点池');
   assert.equal(u.resources['欢愉技次数'],1);
-  assert.equal(elationHits(b).length,0,'欢愉技倍率不在 ROSTER_DATA，不应伪造伤害');
+  assert.equal(elationHits(b).length,0,'插入动作尚未结算，不应立即产生伤害');
+  for(const x of b.units)x.distance=100000;
+  b.aha.distance=100000; // 避免自然阿哈在插入后立刻消费标记
+  stepBattle(b);
+  assert.equal(u.resources['AllIn'],1,'插入动作结算后应标记 All in');
 });
 
 test('砂金•戏浪 E2：热意累计跨过10/20/30/40/50各触发一次，阈值本身不消耗热意',()=>{
@@ -965,13 +998,13 @@ test('砂金•戏浪 E2：热意累计跨过10/20/30/40/50各触发一次，阈
     b.rules.afterHit(b,m,en,{spCost:0,type:'Normal'},'direct',{});
     const expectedHeat=Math.min(50,Math.min(i,6)*3+Math.max(0,i-6));
     if(crossings.includes(i)){
-      assert.equal(b.ahaCount,crossings.indexOf(i)+1,`每跨过一个累计阈值应触发一次阿哈额外回合 (i=${i}, heat=${u.resources['热意']})`);
+      assert.equal(u.resources['欢愉技次数'],crossings.indexOf(i)+1,`每跨过一个累计阈值应插入一次【举杯】(i=${i}, heat=${u.resources['热意']})`);
       assert.equal(u.resources['热意'],expectedHeat,'触发阈值不得扣除已累计热意');
-      b.queue.length=0;b.ahaInstant=null;
-    }else assert.equal(b.ahaCount??0,crossings.filter(n=>n<i).length,'未跨新阈值时不可重复触发');
+      b.queue.length=0;
+    }else assert.equal(u.resources['欢愉技次数']??0,crossings.filter(n=>n<i).length,'未跨新阈值时不可重复触发');
   }
   assert.equal(u.resources['热意'],50,'E2热意应保留到来源所述的50点上限');
-  assert.equal(b.ahaCount,5,'E2应分别在10/20/30/40/50累计点触发');
+  assert.equal(u.resources['欢愉技次数'],5,'E2应分别在10/20/30/40/50累计点触发');
 });
 
 test('砂金•戏浪：队友施放攻击后给 #7 热意、#6 笑点（带好活当赏 #2 与阿哈速度 #3）与行迹 #4 热意，同一动作只结算一次',()=>{
@@ -980,12 +1013,12 @@ test('砂金•戏浪：队友施放攻击后给 #7 热意、#6 笑点（带好�
   b.activeAction={sequence:21};
   b.rules.afterHit(b,m,en,{spCost:0,type:'Normal'},'direct',{});
   near(u.resources['热意'],p.Talent[6]+T8[3],'天赋 #7=1 热意 + 行迹 point08 #4=2 热意');
-  near(b.laughter.ally,initialPunchline(b)+p.Talent[5]);
+  near(b.laughter.ally,initialPunchline(b)+p.Talent[5]+T[3],'天赋 #6 笑点 + 行迹 point07 #4 笑点');
   near(u.resources['好活当赏'],T[1]);
   near(b.ahaSpeedBonus,T[2]);
   b.rules.afterHit(b,m,en,{spCost:0,type:'Normal'},'direct',{});
   near(u.resources['热意'],p.Talent[6]+T8[3],'同一动作不应重复触发');
-  near(b.laughter.ally,initialPunchline(b)+p.Talent[5]);
+  near(b.laughter.ally,initialPunchline(b)+p.Talent[5]+T[3]);
   near(b.ahaSpeedBonus,T[2],'同一多段动作只应用一次替换型加速');
 });
 
@@ -1007,11 +1040,18 @@ test('砂金•戏浪 Point07：自然阿哈结束时解除速度修正',()=>{
   near(b.ahaSpeedBonus,0,'加速在自然阿哈结束事件移除');
 });
 
-test('砂金•戏浪 Point07：E1固定阿哈结束时解除速度修正',()=>{
-  const b=createBattle(config([actor(1513,{eidolon:1}),mate()]));b.random=()=>0;
-  const [u,m,en]=b.units;u.resources['热意']=9;b.activeAction={sequence:222};
+test('砂金•戏浪 Point07：热意触发不创建阿哈；下一次固定阿哈结束时解除速度修正',()=>{
+  const b=createBattle(config([actor(1513,{eidolon:1}),actor(1502),mate()]));b.random=()=>0;
+  const [u,yg,m,en]=b.units;u.resources['热意']=9;b.activeAction={sequence:222};
   b.rules.afterHit(b,m,en,{spCost:0,type:'Normal'},'direct',{});
-  near(b.ahaSpeedBonus,u.kit.trace['2'][2]);assert.ok(b.queue.some(q=>q.kind==='aha'));
+  // 该编队含爻光，是双欢愉队伍；PointB2 的加速只应在单欢愉队伍生效。
+  near(b.ahaSpeedBonus??0,0,'多欢愉队伍中 PointB2 不提供阿哈加速');
+  b.ahaSpeedBonus=u.kit.trace['2'][2]; // 手动设置，单独验证阿哈结束时的清除
+  assert.ok(!b.ahaCount,'热意阈值插入不应创建阿哈时刻');
+  assert.ok(b.queue.some(q=>q.key==='elationHeat'),'应排队自身插入的【举杯】');
+  // 由爻光终结技创建固定计入笑点的阿哈时刻，验证速度修正在该阿哈结束时移除。
+  b.rules.after(b,yg,'ultimate','ultimate',yg.actions.ultimate,[yg],[]);
+  assert.ok(b.ahaInstant,'爻光终结应创建固定阿哈时刻');
   stepBattle(b);
   near(b.ahaSpeedBonus,0,'固定计入笑点的阿哈结束也触发持续时间移除');
 });
@@ -1159,12 +1199,14 @@ test('绯英瞰众乐：真实阿哈结算按官方参演编号转出队友好�
     assert.ok(end,'真实阿哈回合应完成');
     return {b,before,counted:end.counted};
   };
+  // 150520 #1：欢愉技本身额外获得 5 点【好活当赏】（E0/E2 的欢愉技等级均为 10）。
+  const plainPunchline=ROSTER_DATA[1505].skills['150520'].params['10'].param_list[0];
   for(const [eid,share] of [[0,.5],[2,.75]]){
     const {b,before,counted}=run(eid),after=Object.fromEntries(b.units.filter(u=>u.side==='ally').map(u=>[u.kit.characterId,u.resources['好活当赏']??0]));
     near(after[1502]-before[1502],counted*(1-share),'116号爻光只保留转化后的部分');
     near(after[1501]-before[1501],counted*(1-share),'144号火花只保留转化后的部分');
     near(after[1506]-before[1506],counted,'999号银狼高于绯英，不触发瞰众乐');
-    near(after[1505]-before[1505],counted+2*counted*share+(eid>=1?10:0),'绯英获得自身好活、低编号队友转入部分及E1欢愉技奖励');
+    near(after[1505]-before[1505],counted+2*counted*share+plainPunchline+(eid>=1?10:0),'绯英获得自身好活、低编号队友转入部分、150520 基础好活及E1欢愉技奖励');
     const order=b.log.filter(e=>e.type==='action'&&e.kind==='aha').map(e=>b.units.find(u=>u.id===e.actor)?.kit?.characterId);
     assert.deepEqual(order,[1502,1501,1505,1506],'阿哈参演顺序按固定参演编号而非队伍站位');
   }
@@ -1179,7 +1221,11 @@ test('绯英瞰众乐边界：未解锁行迹不生效，缺少参演编号的�
   const lockedBefore=Object.fromEntries(locked.units.filter(u=>u.side==='ally').map(u=>[u.id,u.resources['好活当赏']??0]));
   assert.equal(stepBattle(locked),true);
   const lockedEnd=locked.log.find(e=>e.type==='mechanic'&&e.name==='阿哈额外回合结束');
-  for(const u of locked.units.filter(u=>u.side==='ally'))near((u.resources['好活当赏']??0)-lockedBefore[u.id],lockedEnd.counted,'行迹未解锁时不发生好活转化');
+  for(const u of locked.units.filter(u=>u.side==='ally')){
+    // 绯英施放自己的欢愉技时仍会按 150520 #1 获得 5 点基础好活，与瞰众乐是否解锁无关。
+    const base=u.kit?.characterId===1505?ROSTER_DATA[1505].skills['150520'].params['10'].param_list[0]:0;
+    near((u.resources['好活当赏']??0)-lockedBefore[u.id],lockedEnd.counted+base,'行迹未解锁时不发生好活转化');
+  }
 
   const unknownUnits=[actor(1505),actor(1502),actor(1501),actor(1506)];
   const unknownId=unknownUnits[1].id;unknownUnits[1].participantId=Number.NaN;
@@ -1191,7 +1237,7 @@ test('绯英瞰众乐边界：未解锁行迹不生效，缺少参演编号的�
   assert.equal(stepBattle(unknown),true);
   const unknownEnd=unknown.log.find(e=>e.type==='mechanic'&&e.name==='阿哈额外回合结束');
   near((unknownActor.resources['好活当赏']??0)-20,unknownEnd.counted,'没有参演编号时完整获得资源，不用队伍站位冒充编号');
-  near((evanescia.resources['好活当赏']??0)-ownBefore,unknownEnd.counted*1.5,'只有已知低编号的爻光和火花触发 E0 转化');
+  near((evanescia.resources['好活当赏']??0)-ownBefore,unknownEnd.counted*1.5+ROSTER_DATA[1505].skills['150520'].params['10'].param_list[0],'只有已知低编号的爻光和火花触发 E0 转化，另加 150520 基础好活');
 });
 
 test('绯英终结技：欢愉伤害至少按能量上限计入好活当赏，并取真实随机弹射目标',()=>{
@@ -1286,8 +1332,52 @@ test('欢愉额外动作已取得后跨波保留；绯英累计能量越过240�
   const b=createBattle(config([actor(1505)])),u=b.units.find(x=>x.kit?.characterId===1505),en=b.units.find(x=>x.side==='enemy');
   u.resources['狐狸累计']=100;u.resources['能量快照']=0;u.energy=200;
   b.rules.afterDamage(b,u,en,'direct');
-  assert.equal(u.resources['狐狸累计'],60,'已越过的240点门槛应扣除并保留60点余量');
+  // 300 越过 240 → 余 60；狐狸老师回 10 能再计入，余 70。
+  assert.equal(u.resources['狐狸累计'],60+u.kit.params.Talent[3],'已越过的240点门槛应扣除并保留余量，狐狸回能重新计入');
   assert.equal(b.queue.filter(q=>q.actor===u.id&&q.key==='followup').length,1,'越过一个门槛应只排一个狐狸老师');
+});
+
+test('绯英：战斗开始的 20 好活也按瞰众乐转化给低参演编号队友',()=>{
+  // 本文件的 createBattle 会剥离 battle:start 批次以隔离角色回调；这里必须用原始入口。
+  const b=rawCreateBattle(partialMechanicsFixture(config([actor(1505),actor(1502),actor(1501)])));
+  const ev=b.units.find(x=>x.kit?.characterId===1505),yg=b.units.find(x=>x.kit?.characterId===1502),sx=b.units.find(x=>x.kit?.characterId===1501);
+  // 1502(116) / 1501(144) 都低于 1505(146)，E0 各转 50%；绯英自身 20 + 10 + 10。
+  near(ev.resources['好活当赏'],40,'绯英应获得自身 20 + 两名低编号队友各 10');
+  near(yg.resources['好活当赏'],10,'爻光只保留转化后的 10 点');
+  near(sx.resources['好活当赏'],10,'火花只保留转化后的 10 点');
+});
+
+test('砂金：队友无伤战技/欢愉技也触发天赋热意与笑点',()=>{
+  for(const key of ['skill','elation']){
+    const b=createBattle(config([actor(1513),mate()]));
+    const [u,m]=b.units;
+    const heat0=u.resources['热意']??0,laugh0=b.laughter.ally??0;
+    b.activeAction={sequence:777};
+    b.rules.after(b,m,key,'normal',{name:'probe',type:key==='elation'?'ElationDamage':'BPSkill',target:'single',terms:[],toughness:0},[],[]);
+    // 天赋热意始终结算；行迹 point08 的额外热意只在普攻/战技/追击/终结（不含欢愉技）。
+    const traceHeat=key==='skill'?u.kit.trace['3'][3]:0;
+    near(u.resources['热意'],heat0+u.kit.params.Talent[6]+traceHeat,key+' 应给天赋热意');
+    // 单欢愉队伍中行迹 point07 的笑点也生效。
+    near(b.laughter.ally,laugh0+u.kit.params.Talent[5]+u.kit.trace['2'][3],key+' 应给天赋与行迹笑点');
+  }
+});
+
+test('1505/1513 已从严格阻断名单移除，四人严格校验通过',()=>{
+  for(const id of [1505,1513]){
+    assert.equal(KNOWN_MECHANICS_GAPS[id],undefined,id+' 不应再出现在严格阻断名单');
+    const cfg=config([actor(id),mate(),mate({id:'mate2'}),mate({id:'mate3'})]);
+    assert.deepEqual(rawValidateBattle(partialMechanicsFixture(cfg)),[],id+' 四人编队应通过严格校验');
+  }
+});
+
+test('1506 150620 常态欢愉技同样吃到 point07 的 20/40 隐藏分档位',()=>{
+  const b=createBattle(config([actor(1506)]));const [u,en]=b.units;
+  b.laughter.ally=40;u.resources['笑点快照']=40;
+  const before=u.resources['隐藏分']??0;
+  const a=b.rules.prepare(b,u,'elation','extra',u.actions.elation);
+  b.rules.after(b,u,'elation','extra',a,[en],[]);
+  const T=u.kit.trace['2'];
+  near((u.resources['隐藏分']??0)-before,15+T[2]+T[3],'15 基础 + 20 + 20 档位');
 });
 
 console.log(`DeepSeek batch15 checks: ${passed} passed, ${failed} failed.`);if(failed)process.exitCode=1;

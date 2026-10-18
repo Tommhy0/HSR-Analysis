@@ -400,7 +400,8 @@ test('白厄：终结技变身卡厄斯兰那（攻击 +80% / 生命上限 +270%
   assert.equal(b.actionEvents.filter(e=>e.active).length,u.kit.params.Ultra[3],'变身应创建8个独立行动条倒计时');
   for(const [i,e] of b.actionEvents.entries()){
     near(e.speed,(u.baseSpeed??u.panel.speed)*u.kit.params.Ultra[2],'倒计时速度应为白厄基础速度的60%');
-    near(e.distance,10000*(i+1)/u.kit.params.Ultra[3],'初始倒计时均匀分布在0～100%行动条');
+    // 首动 0，其余 7 等分（社区实测：8 次额外回合共享一次行动条）。
+    near(e.distance,u.kit.params.Ultra[3]>1?10000*i/(u.kit.params.Ultra[3]-1):0,'初始倒计时按 0 + 7 等分分布');
   }
   const [first,...rest]=b.actionEvents;for(const event of rest)event.active=false;first.distance=0;
   u.policy.rotation=['skill'];b.sp=3;
@@ -459,7 +460,12 @@ test('白厄：E2 消耗 4 点以上毁伤获得额外回合、物理抗穿 +20%
   u.resources['毁伤']=4;u.distance=10000;
   const n0=b.log.filter(e=>e.kind==='true').length;
   b.rules.before(b,u,'skill','normal',u.actions.enhancedSkill2,[en]);
-  assert.equal(b.actionEvents.find(e=>e.active)?.distance,0,'E2 应提前最早的独立倒计时');
+  // 4.6 原始脚本 Avatar_Phainon_00_Skill22_Phase02 OnStart：ByRankActivated + _prev_energy 达标后
+  // 执行 RPG.GameCore.TurnInsertAction（插入一个行动），不是行动提前；因此 E2 不能再推进倒计时行动条。
+  const queued=b.queue.filter(q=>q.actor===u.id&&q.kind==='extra');
+  assert.equal(queued.length,1,'E2 应插入 1 个额外回合');
+  assert.ok(['basic','skill'].includes(queued[0].key),'插入回合应走卡厄斯兰那的强化动作选择');
+  assert.equal(b.actionEvents.find(e=>e.active)?.distance,0,'E2 不应改变倒计时行动值（首个倒计时距离为 0）');
   assert.ok(b.log.filter(e=>e.kind==='true').length>n0,'E6 应追加真实伤害');
   const total=b.log.filter(e=>e.type==='damage'&&e.actor===u.id&&e.kind==='direct').reduce((s,e)=>s+e.damage,0);
   const td=b.log.filter(e=>e.kind==='true').at(-1);
@@ -467,7 +473,7 @@ test('白厄：E2 消耗 4 点以上毁伤获得额外回合、物理抗穿 +20%
   void m;
 });
 
-test('白厄：灾厄•弑魂焚诏先推进敌方行动，并在敌方回合开始插入分层反击',()=>{
+test('白厄：灾厄•弑魂焚诏使敌方立即行动、按 Guard 回调分层，并在最后一个被标记敌人行动结束后立即反击',()=>{
   const c=config([actor(1408,{eidolon:4}),mate()]);c.units=[c.units[0],c.units[1],enemy({id:'e1'}),enemy({id:'e2'})];
   const b=createBattle(c);const [u,m,e1,e2]=b.units,counter=ROSTER_DATA[1408].skills['140809'].params['10'].param_list;
   u.energy=12;b.rules.after(b,u,'ultimate','ultimate',u.actions.ultimate,[],[]);
@@ -478,14 +484,27 @@ test('白厄：灾厄•弑魂焚诏先推进敌方行动，并在敌方回合�
   const layers=1+u.kit.ranks[4][0];
   assert.equal(u.resources['弑魂之炽'],layers,'基础反击层数应含 E4 加层');
   assert.equal(e1.distance,0);assert.equal(e2.distance,0,'敌方全体应被立即拉到行动点');
-  // 原始 Guard 回调：队友战技后增加一层，友方受敌人攻击再增加一层。
-  b.rules.after(b,m,'skill','normal',{...m.actions.basic,type:'BPSkill'},[],[]);
+  // Skill21_Phase02 OnStart：AddModifier(AllEnemy, M_Phainon_00_Skill21_Mark) → 施放时在场的全部敌人。
+  assert.deepEqual([...(u.counterMarkIds??[])],[e1.id,e2.id],'施放时应把在场全部敌人记为待反击目标');
+  // MAvatar_Phainon_00_Guard 的 OnAfterBeingAttacked 挂在 Guard 持有者（卡厄斯兰那）身上：
+  // 只有本人被敌方攻击才 +1 层；队友受击不叠层。
   b.rules.attacked(b,m,e1);
-  assert.equal(u.resources['弑魂之炽'],layers+2,'队友战技与友方受击都应按原始回调叠层');
+  assert.equal(u.resources['弑魂之炽'],layers,'队友受击不应给卡厄斯兰那叠层');
   for(const unit of b.units)unit.distance=1e6;
-  e1.distance=0;
+  e1.distance=0;e2.distance=0;u.policy.basicOnly=true;   // 让随后的倒计时用强化普攻，保留毁伤断言
   assert.equal(stepBattle(b),true,'提前行动的敌人应实际执行一次战斗行动');
-  const hits=dmgOf(b,u.id,'direct').slice(n0);
+  // OnListenAfterAction：敌人行动结束且本回合没有通过「受击」叠层时 +1（受击路径只加一次）。
+  assert.equal(u.resources['弑魂之炽'],layers+1,'一次敌人行动应恰好叠 1 层');
+  assert.equal(u.resources['毁伤'],2,'应获得等同于敌人数的毁伤');
+  assert.equal(dmgOf(b,u.id,'direct').length,n0,'仍有被标记的敌人未行动，不应提前结算反击');
+  // 4.6 文本「上述敌方目标行动完毕后，立即发动反击」：最后一个被标记的敌人行动结束即由
+  // TAvatar_Phainon_00_HitBackCheck → TurnInsertAbility(Skill21_Insert_Phase01) 结算，
+  // 不等待卡厄斯兰那倒计时。
+  const from=b.log.length;
+  assert.equal(stepBattle(b),true,'第二名被标记的敌人应实际执行行动');
+  assert.ok(!b.log.slice(from).some(e=>e.type==='action_event_start'),'反击不得等待卡厄斯兰那倒计时');
+  const hits=b.log.slice(from).filter(e=>e.type==='damage'&&e.actor===u.id);
+  assert.equal(hits.length,2+counter[2],'反击全体 + 4 次额外随机单体，且在敌方行动结算后立即发生');
   const expectedLayers=layers+2;
   const base=baseOf(hits[0]),aoe=hits.filter(e=>Math.abs(baseOf(e)-base)<1e-6);
   const bounce=hits.filter(e=>Math.abs(baseOf(e)-base*counter[3]/counter[0])<1e-6);
@@ -493,13 +512,17 @@ test('白厄：灾厄•弑魂焚诏先推进敌方行动，并在敌方回合�
   assert.equal(bounce.length,counter[2],'四次随机弹射应使用相同层数倍率');
   near(baseOf(bounce[0]),baseOf(aoe[0])*counter[3]/counter[0],1e-6,'弹射段应与群攻段使用相同层数倍率');
   const counterEvent=b.log.find(e=>e.type==='mechanic'&&e.name==='灾厄•弑魂焚诏 · 反击');
-  assert.equal(counterEvent.layers,expectedLayers,'队友战技和此前友方受击的层数应保留到反击');
-  const counterDamageIndex=b.log.findIndex(e=>e.type==='damage'&&e.actor===u.id&&e.target==='e1'&&e.index>n0);
-  const enemyActionIndex=b.log.findIndex(e=>e.type==='action'&&e.actor===e1.id);
-  assert.ok(counterDamageIndex>=0&&counterDamageIndex<enemyActionIndex,'OnListenTurnBegin 插入反击必须先于敌人原行动');
-  assert.equal(hits.length,2+counter[2],'反击全体 + 4 次额外随机单体');
-  assert.equal(u.resources['毁伤'],2,'应获得等同于敌人数的毁伤');
+  assert.equal(counterEvent.layers,expectedLayers,'两次敌人行动叠出的层数应保留到反击');
   assert.equal(u.resources['弑魂之炽'],0,'反击结算后应清空弑魂之炽');
+  // 反击之后倒计时照常执行自己的行动，且不会重复结算反击。
+  const fromEvent=b.log.length;
+  assert.equal(stepBattle(b),true,'下一个卡厄斯兰那额外回合应开始');
+  const eventStart=b.log.findIndex((e,i)=>i>=fromEvent&&e.type==='action_event_start'&&e.actor===u.id);
+  const actionIndex=b.log.findIndex((e,i)=>i>=fromEvent&&e.type==='action'&&e.actor===u.id);
+  assert.ok(eventStart>=0&&actionIndex>eventStart,'倒计时事件应实际执行行动');
+  assert.equal(b.log.filter(e=>e.type==='mechanic'&&e.name==='灾厄•弑魂焚诏 · 反击').length,1,'反击只应结算一次');
+  // 该额外回合按 basicOnly 走强化普攻 140808，结束后再获得 #3=2 点【毁伤】（天赋段）。
+  assert.equal(u.resources['毁伤'],2+ROSTER_DATA[1408].skills['140808'].params['6'].param_list[2]);
   void e1;void e2;void m;
 });
 

@@ -422,6 +422,8 @@ test('8009/8010：战技获得 BPSkill[1] 点好活当赏；已持有好活当�
   // 行迹 point08：我方目标施放欢愉技后，下一次战技额外获得 trace[3][0]=2 点好活当赏。
   const before=u.resources['好活当赏'];
   b.rules.after(b,u,'elation','followup',u.actions.elation,[],[]);
+  // +2 由 before（OnStart[3]）发放，BPSkill[1]=20 由 after（OnStart[7]）发放。
+  b.rules.before(b,u,'skill','normal',u.actions.skill,[en]);
   b.rules.after(b,u,'skill','normal',u.actions.skill,[en],[en]);
   assert.equal(u.resources['好活当赏'],before+p.BPSkill[1]+u.kit.trace[3][0]);
   void m;
@@ -452,20 +454,34 @@ test('8009/8010：Point08 只响应我方施放的欢愉技，不响应敌方欢
   }
 });
 
-test('8009/8010：终结技使目标暴伤 +Ultra[0]、Ultra[1] 回合并解除控制；固定笑点阿哈额外回合不消费共享笑点',()=>{
+test('8009/8010：终结技使目标暴伤 +Ultra[0]、Ultra[1] 回合并解除控制；固定计入笑点不是阿哈额外回合',()=>{
   const b=createBattle(config([actor(8009)]));b.random=()=>0;
   const [u,en]=b.units,p=u.kit.params;
+  // 两个控制类负面 + 一个非控制类负面：脚本是 DispelStatus(STAT_CTRL)，两条控制都必须消失，
+  // 非控制类负面必须保留（旧实现复用 cleanseOne 只会解第一条）。
   u.buffs.push({id:'ctrl',name:'冻结',key:'speed',value:-.1,remaining:2,tickOwner:u.id,tickAt:'end',debuff:true,control:'freeze'});
-  const sp0=b.sp;
+  u.buffs.push({id:'ctrl2',name:'禁锢',key:'speed',value:-.1,remaining:2,tickOwner:u.id,tickAt:'end',debuff:true,control:'imprison'});
+  u.buffs.push({id:'debuff',name:'灼烧',key:'speed',value:-.1,remaining:2,tickOwner:u.id,tickAt:'end',debuff:true});
+  const sp0=b.sp,aha0=b.ahaCount??0;
   b.rules.after(b,u,'ultimate','ultimate',u.actions.ultimate,[u],[u]);
   const cd=u.buffs.find(e=>e.id===u.id+':elation-ult:'+u.id);
   assert.ok(cd);near(cd.value,p.Ultra[0]);assert.equal(cd.remaining,p.Ultra[1]);
   assert.ok(!u.buffs.some(e=>e.id==='ctrl'),'应解除控制类负面');
-  // 固定计入笑点只供本次全队欢愉技结算；不写入共享笑点或全队好活当赏。
+  assert.ok(!u.buffs.some(e=>e.id==='ctrl2'),'应解除全部控制类负面，而不是只解第一条');
+  assert.ok(u.buffs.some(e=>e.id==='debuff'),'非控制类负面不得被解除');
+  assert.equal(b.log.filter(e=>e.type==='cleanse'&&e.target===u.id).length,2,'每条控制类负面各记录一次解除');
+  // 原始脚本 Skill03_Phase02 的 ByHasSkillTag → Rank01_InsertActionSave → TurnInsertAction
+  // （BIKKDNAMGMG）只让**目标**插入 1 次欢愉技；没有调用 Elation_StartElationTime，
+  // 所以不得建立 ahaInstant / ahaCount，也不得排入全队参演队列。
   assert.equal(b.laughter.ally,initialPunchline(b)+p.Ultra[5]);
-  assert.equal(b.ahaCounted,p.Ultra[4]);
+  assert.equal(b.ahaInstant??null,null,'固定计入笑点的插入不是阿哈时刻');
+  assert.equal(b.ahaCount??0,aha0,'固定计入笑点的插入不得增加 ahaCount');
   assert.equal(u.resources['好活当赏'],p.Ultra[3]);
-  assert.deepEqual(b.queue.filter(q=>q.kind==='aha').map(q=>q.actor),[u.id],'开拓者自己也参加阿哈额外回合');
+  const inserts=b.queue.filter(q=>q.actor===u.id&&q.key==='elation');
+  assert.equal(inserts.length,1,'只应排入目标自身 1 次欢愉技');
+  assert.equal(inserts[0].kind,'extra');
+  assert.equal(inserts[0].persistWave,true,'「施放前敌方被消灭则对新入场敌方发动」');
+  assert.equal(inserts[0].overrides.punchlineOverride,p.Ultra[4],'固定计入 Ultra[4]=20 笑点');
   near(b.sp,sp0+u.kit.trace[2][1],'行迹 point07 应恢复 1 个战技点');
   // 无欢愉技的目标改为行动提前 Ultra[2]。
   const b2=createBattle(config([actor(8010),mate()]));b2.random=()=>0;
@@ -474,29 +490,39 @@ test('8009/8010：终结技使目标暴伤 +Ultra[0]、Ultra[1] 回合并解除�
   b2.rules.after(b2,u2,'ultimate','ultimate',u2.actions.ultimate,[m2],[m2]);
   assert.ok(b2.log.some(e=>e.type==='advance'&&e.actor===m2.id&&Math.abs(e.ratio-u2.kit.params.Ultra[2])<1e-9));
   assert.equal(m2.resources['好活当赏'],undefined);
+  assert.equal(b2.queue.filter(q=>q.key==='elation').length,0,'无欢愉技的目标不得插入欢愉技');
 });
 
-test('8009/8010：固定笑点阿哈额外回合逐一触发所有存活欢愉队友，保留实际共享笑点',()=>{
+test('8009/8010：终结技只让指定目标插入 1 次固定 20 笑点的欢愉技，不触发全队阿哈',()=>{
   const b=createBattle(config([actor(8009),actor(1501),actor(1502)]));
   const [tb,sparxie,yaoguang]=b.units;
+  const aha0=b.ahaCount??0;
   b.rules.after(b,tb,'ultimate','ultimate',tb.actions.ultimate,[sparxie],[sparxie]);
-  assert.deepEqual(b.queue.filter(q=>q.kind==='aha').map(q=>q.actor),[yaoguang.id,tb.id,sparxie.id],
-    '固定阿哈回合按 4.6 参演编号排序：爻光(116)、开拓者(120)、火花(144)');
-  assert.equal(b.laughter.ally,initialPunchline(b)+tb.kit.params.Ultra[5]);
+  assert.equal(b.queue.filter(q=>q.kind==='aha').length,0,'不应建立全队阿哈队列');
+  assert.deepEqual(b.queue.filter(q=>q.key==='elation').map(q=>q.actor),[sparxie.id],
+    '只有终结技指定的目标插入欢愉技');
   assert.equal(sparxie.resources['好活当赏'],tb.kit.params.Ultra[3],
-    '开拓者指定的欢愉目标仍获得 Ultra[3] 好活当赏，固定笑点不额外广播给队友');
+    '开拓者指定的欢愉目标仍获得 Ultra[3] 好活当赏');
+  assert.equal(yaoguang.resources['好活当赏'],undefined,'其他欢愉队友不获得本条好活当赏');
   b.config.maxAV=0;
   stepBattle(b);
-  for(const u of [tb,sparxie,yaoguang])
-    assert.equal(b.log.filter(e=>e.type==='action'&&e.actor===u.id&&e.key==='elation'&&e.kind==='aha').length,1,
-      u.name+' must perform exactly one Elation Skill during the fixed Aha turn');
-  assert.equal(b.ahaInstant,null,'fixed Aha context must close after the final participant');
-  assert.equal(b.laughter.ally,initialPunchline(b)+tb.kit.params.Ultra[5]+tb.kit.params.Talent[1],
-    'fixed Punchline must not enter or consume the shared pool; ordinary Trailblazer laughter still remains');
-  const tbHit=b.log.find(e=>e.type==='damage'&&e.actor===tb.id&&e.attackType==='ElationDamage');
-  assert.ok(tbHit,'Trailblazer Aha skill should produce ElationDamage through the engine');
-  near(baseOf(tbHit),elationBaseOf(tb,tb.actions.elation.terms[0].multiplier,tb.kit.params.Ultra[4]),
-    'Aha Extra Turn damage must use its fixed Punchline value');
+  assert.equal(b.log.filter(e=>e.type==='action'&&e.actor===sparxie.id&&e.key==='elation'&&e.kind==='extra').length,1,
+    '目标必须实际插入施放 1 次欢愉技');
+  for(const u of [tb,yaoguang])
+    assert.equal(b.log.filter(e=>e.type==='action'&&e.actor===u.id&&e.key==='elation').length,0,
+      u.name+' 不得因开拓者终结技施放欢愉技');
+  assert.equal(b.ahaInstant??null,null,'固定计入笑点的插入不是阿哈时刻');
+  assert.equal(b.ahaCount??0,aha0,'固定计入笑点的插入不得增加 ahaCount');
+  assert.equal(b.laughter.ally,initialPunchline(b)+tb.kit.params.Ultra[5],
+    '目标施放欢愉技不产生开拓者天赋笑点；共享笑点未被消费');
+  // 150120 的欢愉技是 1 段 #2=50% 本体 + #1=25%×20 次弹射；本体按固定 20 笑点结算。
+  const hits=b.log.filter(e=>e.type==='damage'&&e.actor===sparxie.id&&e.attackType==='ElationDamage');
+  assert.ok(hits.length>=1,'目标应产生 ElationDamage');
+  const main=hits[0];
+  near(baseOf(main),elationBaseOf(sparxie,sparxie.actions.elation.terms[0].multiplier,tb.kit.params.Ultra[4]),
+    '插入的欢愉技必须使用固定计入的 20 笑点，而不是目标自身的好活当赏(10)');
+  assert.ok(baseOf(main)>elationBaseOf(sparxie,sparxie.actions.elation.terms[0].multiplier,sparxie.resources['好活当赏']),
+    '固定 20 笑点应高于目标自身的 10 点好活当赏');
 });
 
 test('绯英瞰众乐：开拓者将好活发给队友时按参演编号实时转化，E2与解锁边界正确',()=>{

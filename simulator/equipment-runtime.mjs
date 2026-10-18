@@ -1,5 +1,5 @@
 // Additional cones share the same battle events as character modules.
-export function equipmentRuntime(api){const {allies,live,buff,stacks,energy,sp,resource,combatPanel,record}=api;
+export function equipmentRuntime(api){const {allies,live,buff,stacks,energy,sp,resource,combatPanel,record,advance}=api;
   const oracle=(b,u,d)=>{const p=u.gear.cone.p;buff(b,u,u,'谕示','marker',0,d,{tag:'flowerOracle'});for(const t of allies(b,u))buff(b,u,t,'谕示 · 全队暴伤','critDmg',p[3],d,{tickOwner:u.id,requiresTag:{unit:u.id,tag:'flowerOracle'},removeOnSourceDeath:true});};
   const cogs=(b,u)=>{if(u.gear?.cone?.id===20012&&u.resources['轮契触发回合']!==u.turns){resource(b,u,'轮契触发回合',u.turns);energy(b,u,u.gear.cone.p[0]);}};
   const mirror=(b,u)=>{const p=u.gear?.cone?.p;if(!p)return;
@@ -13,11 +13,19 @@ export function equipmentRuntime(api){const {allies,live,buff,stacks,energy,sp,r
     for(const to of allies(b,u))buff(b,u,to,'华彩 · 增伤','dmgBoost',p[2],p[4],{id:'cone:23026:dmgBoost',tickOwner:u.id});
     record(b,'mechanic',u,{name:'夜色流光溢彩 · 华彩',duration:p[4]});};
   return {
-    start(b){for(const u of b.units.filter(live)){const id=u.gear?.cone?.id,p=u.gear?.cone?.p;if(!p)continue;if(id===23003||id===21000)buff(b,u,u,u.gear.cone.name+' · 回能','energyRegen',p[0]);if(id===21000)buff(b,u,u,'一场术后对话 · 终结治疗','healingBoost',p[1],null,{abilityType:'Ultra'});if(id===23038){buff(b,u,u,'如果时间是一朵花 · 暴伤','critDmg',p[0]);energy(b,u,p[4]);oracle(b,u,p[5]);}if(id===23019)buff(b,u,u,'镜中故我 · 击破特攻','breakEffect',p[0]);}},
+    start(b){for(const u of b.units.filter(live)){const id=u.gear?.cone?.id,p=u.gear?.cone?.p;if(!p)continue;if(id===23003||id===21000)buff(b,u,u,u.gear.cone.name+' · 回能','energyRegen',p[0]);if(id===21000)buff(b,u,u,'一场术后对话 · 终结治疗','healingBoost',p[1],null,{abilityType:'Ultra'});if(id===23038){buff(b,u,u,'如果时间是一朵花 · 暴伤','critDmg',p[0]);energy(b,u,p[4]);oracle(b,u,p[5]);}if(id===23019)buff(b,u,u,'镜中故我 · 击破特攻','breakEffect',p[0]);
+      // 23063「你将起身歌唱」：生命上限 +30%，入场行动提前 30% 并获得【新声】2 回合；
+      // 持有【新声】时我方全体速度 +20%。参数 [生命%, 提前, 速度%, 持续回合]。
+      if(id===23063){buff(b,u,u,u.gear.cone.name+' · 生命上限','hpPct',p[0],null,{id:'cone:23063:hp'});
+        buff(b,u,u,'新声','marker',0,p[3],{id:'cone:23063:voice',tag:'cone23063Voice'});
+        for(const to of allies(b,u))buff(b,u,to,'新声 · 速度','speedPct',p[2],p[3],{id:'cone:23063:speed:'+to.id,tickOwner:u.id,requiresTag:{unit:u.id,tag:'cone23063Voice'},removeOnSourceDeath:true});
+        advance(b,u.id,p[1]);}}},
     // 每个波次开始时：镜中故我使我方全体立即恢复能量，同类技能无法重复生效。
     waveStart(b){const wearers=b.units.filter(u=>live(u)&&u.gear?.cone?.id===23019);if(!wearers.length)return;const p=wearers[0].gear.cone.p;for(const to of b.units.filter(t=>live(t)&&t.side===wearers[0].side))energy(b,to,p[4]);},
     before(b,actor,key,kind){if(kind!=='normal')return;for(const u of b.units.filter(u=>live(u)&&u.side===actor.side&&u!==actor&&u.resources?.['下位增伤待生效'])){const p=u.resources['下位增伤待生效'];resource(b,u,'下位增伤待生效',null);buff(b,u,actor,p.name,'dmgBoost',p.value,p.duration);}},
     after(b,u,key,kind,a,selected,hits){const id=u.gear?.cone?.id,p=u.gear?.cone?.p;
+      // 23063：装备者施放终结技后，为我方恢复 1 个战技点（固定 1 点，参数表无此项）。
+      if(id===23063&&key==='ultimate'&&kind!=='copy')sp(b,u,1,'你将起身歌唱');
       // 夜色流光溢彩：我方角色每次攻击时装备者获得 1 层【歌咏】（攻击者不限定为装备者）。
       if(hits.length)for(const t of b.units.filter(t=>live(t)&&t.side===u.side&&t.gear?.cone?.id===23026)){const q=t.gear.cone.p,st=stacks(b,t,t,'歌咏','energyRegen',q[0],q[1],null,{id:'cone:23026:regen'});resource(b,t,'歌咏层数',st.stacks);}
       if(!p)return;
