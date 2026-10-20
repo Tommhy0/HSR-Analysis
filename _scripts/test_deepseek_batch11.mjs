@@ -308,12 +308,14 @@ test('风堇：累计治疗数值→小伊卡忆灵技造成 0.28×累计治疗 
   self.resources['累计治疗']=1000;self.resources['治疗扫描']=b.log.length;
   const n0=dmgOf(b,ica.id).length,logBefore=b.log.length;
   b.rules.after(b,self,'skill','normal',self.actions.skill,[self],[]);
-  const heals=b.log.slice(logBefore).filter(e=>e.type==='heal').reduce((n,e)=>n+e.amount,0);
+  const firstDamage=b.log.findIndex((e,i)=>i>=logBefore&&e.type==='damage'&&e.actor===ica.id);
+  const heals=b.log.slice(logBefore,firstDamage).filter(e=>e.type==='heal').reduce((n,e)=>n+e.amount,0);
+  const afterHeals=b.log.slice(firstDamage).filter(e=>e.type==='heal').reduce((n,e)=>n+e.amount,0);
   const cum=1000+heals;
   const hits=dmgOf(b,ica.id).slice(n0);
   assert.equal(hits.length,1,'小伊卡在雨过天晴下应在风堇施放技能后自动施放 1 次忆灵技');
   near(baseOf(hits[0]),cum*svp(1409,1140901)[0]);
-  near(self.resources['累计治疗'],cum*(1-self.kit.ranks[6][0]));
+  near(self.resources['累计治疗'],cum*(1-self.kit.ranks[6][0])+afterHeals);
   assert.equal(hits[0].element,'Wind');
 });
 

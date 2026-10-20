@@ -50,7 +50,7 @@ const elationBaseOf=(u,mult,punch=u.resources['好活当赏']??0)=>BREAK_BASE[u.
 const dmgOf=(b,id,kind)=>b.log.filter(e=>e.type==='damage'&&e.actor===id&&(kind?e.kind===kind:true));
 const plist=(id,skillId,level)=>ROSTER_DATA[id].skills[String(skillId)].params[String(level)].param_list;
 const elationHits=(b,id)=>b.log.filter(e=>e.type==='damage'&&e.kind==='elation'&&(id==null||e.actor===id));
-let passed=0,failed=0;const test=(name,fn)=>{try{fn();passed++;console.log('PASS '+name);}catch(e){failed++;console.error('FAIL '+name+'\n'+e.stack);}};
+let passed=0,failed=0,skipped=0;const test=(name,fn)=>{try{if(fn()==='SKIP_OPTIONAL_FIXTURE'){skipped++;console.log('SKIP '+name+'：缺少可选 strict_research 夹具');return;}passed++;console.log('PASS '+name);}catch(e){failed++;console.error('FAIL '+name+'\n'+e.stack);}};
 
 // ───────────────────────── 合同 / 加载 ─────────────────────────
 test('batch15 注册 6 名欢愉角色，工厂与动作表齐备',()=>{
@@ -77,6 +77,7 @@ test('batch15 6 名角色 E0～E6 动作合同可编译、每个角色都有带�
 
 test('1503 真珠的来源缺口：Avatar_Pearl_00_Ability.json 在固定提交不存在（blocked_source）',()=>{
   const dir=new URL('../_data_cache/strict_research/',import.meta.url);
+  if(!fs.existsSync(new URL('AvatarConfig.json',dir))){return 'SKIP_OPTIONAL_FIXTURE';}
   const cfg=JSON.parse(fs.readFileSync(new URL('AvatarConfig.json',dir),'utf8'));
   const pearl=cfg.filter(r=>String(r.JsonPath).includes('Avatar_Pearl_'));
   assert.equal(pearl.length,1,'AvatarConfig 应登记 Pearl 的 Config 路径');
@@ -1380,4 +1381,4 @@ test('1506 150620 常态欢愉技同样吃到 point07 的 20/40 隐藏分档位'
   near((u.resources['隐藏分']??0)-before,15+T[2]+T[3],'15 基础 + 20 + 20 档位');
 });
 
-console.log(`DeepSeek batch15 checks: ${passed} passed, ${failed} failed.`);if(failed)process.exitCode=1;
+console.log(`DeepSeek batch15 checks: ${passed} passed, ${failed} failed, ${skipped} skipped.`);if(failed)process.exitCode=1;

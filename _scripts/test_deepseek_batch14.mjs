@@ -138,7 +138,8 @@ test('翡翠：战技指定我方单体为【收债人】（速度 +30、3 回�
   assert.ok(buff,'未施加收债人');near(buff.value,p.BPSkill[0]);assert.equal(buff.remaining,p.BPSkill[3]);
   assert.equal(b.rules.shouldUseSkill(b,u),false,'存在收债人时不应再次施放战技');
   b.rules.onTurnStart(b,u);
-  assert.equal(ar.buffs.find(x=>x.tag==='jadeDebtor').remaining,p.BPSkill[3]-1,'翡翠回合开始应递减收债人回合');
+  assert.equal(ar.buffs.find(x=>x.tag==='jadeDebtor').remaining,p.BPSkill[3],'角色钩子不得重复递减引擎计时');
+  assert.equal(buff.tickOwner,u.id);assert.equal(buff.tickAt,'start');
 });
 
 test('翡翠：【收债人】攻击时对每个命中目标造成 30% 攻击力量子附加伤害并消耗其 2% 生命上限',()=>{

@@ -147,7 +147,7 @@ const factories={
       resource(b,u,'当品',v);
     };
     const debtorId=u=>u.resources['收债人'];
-    const debtorOf=(b,u)=>{const t=get(b,debtorId(u));return t&&live(t)?t:null;};
+    const debtorOf=(b,u)=>{const t=get(b,debtorId(u));return t&&live(t)&&t.buffs.some(e=>e.tag==='jadeDebtor'&&e.source===u.id)?t:null;};
     return {
       start(b,u){
         resource(b,u,'充能',0);setDang(b,u,0);
@@ -168,13 +168,7 @@ const factories={
       },
       // 翡翠每回合开始时【收债人】持续回合数 -1；行迹「逆回购」：收债人回合开始时额外 +3 层【当品】。
       turnStart(b,u,actor){
-        if(actor===u){
-          const t=debtorOf(b,u);
-          if(t){
-            const e=t.buffs.find(x=>x.tag==='jadeDebtor');
-            if(e&&e.remaining!=null&&--e.remaining<=0){t.buffs=t.buffs.filter(x=>x!==e);resource(b,u,'收债人',null);}
-          }
-        }else if(actor&&debtorId(u)===actor.id&&trace(u,1))setDang(b,u,dangOf(u)+trace(u,1)[0]);
+        if(actor&&actor!==u&&debtorOf(b,u)?.id===actor.id&&trace(u,1))setDang(b,u,dangOf(u)+trace(u,1)[0]);
       },
       // 场上存在【收债人】时翡翠无法施放战技。
       shouldUseSkill(b,u){return !debtorOf(b,u);},
@@ -185,7 +179,7 @@ const factories={
           const to=selected[0];
           if(to){
             resource(b,u,'收债人',to.id);
-            buff(b,u,to,'收债人','speed',p.BPSkill[0],p.BPSkill[3],{id:u.id+':debtor',tag:'jadeDebtor'});
+            buff(b,u,to,'收债人','speed',p.BPSkill[0],p.BPSkill[3],{id:u.id+':debtor',tag:'jadeDebtor',tickOwner:u.id,tickAt:'start'});
             if(rank(u,6)&&!u.buffs.some(x=>x.tag==='jadeDebtor'))buff(b,u,u,'收债人','marker',0,null,{id:u.id+':debtor-self',tag:'jadeDebtor'});
           }
         }
@@ -460,7 +454,7 @@ const factories={
         // 天赋：普攻 / 战技命中【质性揭露】目标后额外施放 1 次战技（仅普通施放触发）。
         if(kind==='normal'&&['basic','skill'].includes(key)){
           const main=selected[0];
-          const target=main&&live(main)&&hasReveal(u,main)?main:enemies(b,u).find(t=>hasReveal(u,t));
+          const target=hitTargets.find(t=>live(t)&&hasReveal(u,t));
           if(target)enqueue(b,u,'skill','followup',target.id);
         }
       },
@@ -793,8 +787,8 @@ const factories={
         const p0=P(u);
         // 天赋「宝石魔术」：我方目标消耗或恢复战技点时，使其暴击伤害提高 Talent[2] 持续 Talent[1] 回合，
         // 且每消耗或恢复 1 点战技点使远坂凛获得 1 点【宝石能量】（对任意我方角色生效，先于自身分支）。
-        if(actor.side===u.side&&kind!=='technique'&&(a.spCost??0)>0){
-          resource(b,u,'宝石能量',gemOf(u)+a.spCost);
+        if(actor.side===u.side&&kind!=='technique'&&((a.spCost??0)>0||(a.spGain??0)>0)){
+          resource(b,u,'宝石能量',gemOf(u)+(a.spCost??0));
           if(rank(u,4))stacks(b,u,actor,'宝石魔术 · 暴击伤害','critDmg',p0.Talent[2],rank(u,4),p0.Talent[1],{id:u.id+':gem-cd:'+actor.id});
           else buff(b,u,actor,'宝石魔术 · 暴击伤害','critDmg',p0.Talent[2],p0.Talent[1],{id:u.id+':gem-cd:'+actor.id});
         }

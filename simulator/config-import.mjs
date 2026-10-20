@@ -15,8 +15,8 @@ export function outsideBonuses(ctx,build){
     if(s.count===4&&s.id===124)throw new Error('诗人四件套的速度分档须以引擎输入面板或六件遗器导入，暂不反推局外面板');
   }
   const cone=ctx.lcById.get(build.lightconeId),p=cone?.skillParams?.[build.superimpose]?.param_list;
-  const property={23021:'critDmg',23051:'atkPct',23046:'critRate',23048:'atkPct',21004:'breakEffect',22005:'atkPct',21003:'atkPct',23003:'energyRegen',23038:'critDmg',21000:'energyRegen'}[build.lightconeId];
-  if(build.lightconeId&&!property&&![21018,21011,23034,20012,21021,21025].includes(build.lightconeId))throw new Error('此光锥的局外常驻属性尚未登记；请用六件遗器或注明引擎输入面板');
+  const property={23019:'breakEffect',23063:'hpPct',23021:'critDmg',23051:'atkPct',23046:'critRate',23048:'atkPct',21004:'breakEffect',22005:'atkPct',21003:'atkPct',23003:'energyRegen',23038:'critDmg',21000:'energyRegen'}[build.lightconeId];
+  if(build.lightconeId&&!property&&![21018,21011,23034,20012,21021,21025,23026].includes(build.lightconeId))throw new Error('此光锥的局外常驻属性尚未登记；请用六件遗器或注明引擎输入面板');
   if(property)add(property,p[0],cone.name);
   return {values,notes};
 }

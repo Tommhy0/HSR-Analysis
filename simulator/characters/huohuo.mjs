@@ -22,7 +22,7 @@ export function huohuo(api){const {allies,live,rank,trace,buff,resource,energy,h
     entry(b,u){if(trace(u,1))buff(b,u,u,'禳命','marker',0,trace(u,1)[0],{tag:'huohuoBless',tickOwner:u.id,tickAt:'start'});},
     // 秘技「凶煞•劾压鬼物」：进入战斗后按基础概率降低敌方全体攻击力。
     waveStart(b,u){const m=u.kit.params.Maze;if(!u.kit?.technique)return;
-      for(const to of b.units.filter(t=>live(t)&&t.side!==u.side))buff(b,u,to,'魄散 · 攻击降低','atkPct',-m[1],m[2],{debuff:true,tickOwner:u.id,tickAt:'start'});},
+      for(const to of b.units.filter(t=>live(t)&&t.side!==u.side)){const chance=m[0]*(1+(combatPanel(u).effectHit??0))*(1-(combatPanel(to).effectRes??0));if(chance>=1||b.random()<chance)buff(b,u,to,'魄散 · 攻击降低','atkPct',-m[1],m[2],{debuff:true,tickOwner:u.id,tickAt:'start'});else api.record(b,'resist',to,{name:'魄散 · 攻击降低被抵抗'});}},
     after(b,u,actor,key,kind,a,selected,hits){const p=u.kit.params;
       if(actor===u&&key==='skill'){const to=selected[0];
         for(let i=0;i<p.BPSkill[4];i++)cleanseOne(b,u,to);

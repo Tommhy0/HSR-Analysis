@@ -28,7 +28,7 @@ import {IDS} from '../simulator/characters/extra/batch16.mjs';
 const data=JSON.parse(fs.readFileSync(new URL('../_data_cache/hsr_core.json',import.meta.url))),ctx=createContext(data);
 const core=Object.fromEntries(data.skills.map(s=>[s.id,s]));
 const evidence=JSON.parse(fs.readFileSync(new URL('../data/combat/roster-evidence.json',import.meta.url))).characters;
-const ability=name=>JSON.parse(fs.readFileSync(new URL('../_data_cache/strict_research/'+name,import.meta.url),'utf8'));
+const ability=name=>{const file=new URL('../_data_cache/strict_research/'+name,import.meta.url);if(!fs.existsSync(file))throw Object.assign(new Error('缺少可选原始脚本 '+name),{code:'OPTIONAL_SOURCE_MISSING'});return JSON.parse(fs.readFileSync(file,'utf8'));};
 const near=(a,b,m=1e-6,msg)=>{if(typeof m!=='number'){msg=m;m=1e-6;}assert.ok(Math.abs(a-b)<m,`${a} != ${b}${msg?' ('+msg+')':''}`);};
 const panel=()=>({hp:10000,atk:1000,def:1000,speed:100,critRate:.5,critDmg:1,energyRegen:1,effectHit:0,effectRes:0,breakEffect:0,baseStats:{hp:1000,atk:1000,def:1000},elemDmg:{}});
 const actor=(id,extra={})=>{const a=buildBattleActor(ctx,{...newBattleBuild(),characterId:id,relicAuto:false,panel:panel(),...extra});a.energy=0;a.policy={...a.policy,autoUltimate:false};return a;};
@@ -47,7 +47,7 @@ const walkNodes=(node,fn)=>{if(Array.isArray(node)){for(const v of node)walkNode
 const loopsOf=obj=>{const out=[];walkNodes(obj,o=>{if(typeof o.$type==='string'&&o.$type.includes('Loop'))out.push(o.MaxLoopCount?.FixedValue?.Value??'dynamic');});return out;};
 const splitsOf=obj=>{const out=[];walkNodes(obj,o=>{if(o.$type==='RPG.GameCore.AttackData')out.push(o.HitSplitRatio?.FixedValue?.Value??1);});return out;};
 const abil=(file,name)=>{const d=ability(file);return d.AbilityList.find(a=>a.Name===name);};
-let passed=0,failed=0;const test=(name,fn)=>{try{fn();passed++;console.log('PASS '+name);}catch(e){failed++;console.error('FAIL '+name+'\n'+e.stack);}};
+let passed=0,failed=0,skipped=0;const test=(name,fn)=>{try{fn();passed++;console.log('PASS '+name);}catch(e){if(e.code==='OPTIONAL_SOURCE_MISSING'){skipped++;console.log('SKIP '+name+'：'+e.message);return;}failed++;console.error('FAIL '+name+'\n'+e.stack);}};
 
 test('batch16 6 名角色 E0～E6 动作合同可编译、不能篡改倍率，且至少一个动作带倍率',()=>{
   assert.deepEqual([...IDS].sort((a,b)=>a-b),[1504,8003,8004,8005,8009,8010]);
@@ -882,4 +882,4 @@ test('第16批 不死途在真实战斗中触发追加攻击链与饲饵转移',
   assert.ok(bait,'应记录饲饵的施加 / 转移');
 });
 
-console.log(`DeepSeek batch16 checks: ${passed} passed, ${failed} failed.`);if(failed)process.exitCode=1;
+console.log(`DeepSeek batch16 checks: ${passed} passed, ${failed} failed, ${skipped} skipped.`);if(failed)process.exitCode=1;

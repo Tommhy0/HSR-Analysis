@@ -9,7 +9,7 @@ export function march7(api){const {allies,enemies,live,rank,trace,buff,resource,
     // 秘技「冻人的瞬间」：进入战斗后立即攻击并有概率冻结随机敌方单体。
     entry(b,u){const m=u.kit.params.Maze,pool=enemies(b,u);
       for(const to of pool)damageTo(b,u,to,{name:'冻人的瞬间',type:'Maze',element:'Ice',terms:[{scaling:'atk',multiplier:m[0]}],toughness:60},1,'primary','technique');
-      const to=pool[0];if(to)freeze(b,u,to,m[2],m[0],m[1]);},
+      const to=pool.length?pool[Math.floor(b.random()*pool.length)]:null;if(to)freeze(b,u,to,m[2],m[0],m[1]);},
     // E2：进入战斗时为当前生命值百分比最低的我方目标提供护盾。
     waveStart(b,u){if(!rank(u,2)||u.resources['E2已触发'])return;resource(b,u,'E2已触发',1);
       const pool=allies(b,u);if(!pool.length)return;

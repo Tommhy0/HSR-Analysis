@@ -755,8 +755,8 @@ function phainon(api){
       record(b,'mechanic',u,{name:'命运•此躯即神 · 致命反击',remaining});
       void from;void kind;
     },
-    // 卡厄斯兰那免疫控制类负面状态。
-    attacked(b,u,to){if(to===u&&kh(u))u.buffs=u.buffs.filter(e=>e.control!=='freeze');},
+    // 卡厄斯兰那免疫所有控制类负面状态，判定在施加效果之前完成。
+    panel(b,u,target,out){if(target===u&&kh(u))out.controlRes=1;},
     modifiers(b,u,actor,to,a,kind){
       const out={};if(to.side===u.side)return out;
       const fromSelf=actor===u;

@@ -2,6 +2,7 @@
 import {relicRuntime} from './relic-runtime.mjs';
 import {rosterRuntime} from './characters/runtime.mjs';
 import {equipmentRuntime} from './equipment-runtime.mjs';
+import {resistsStatus} from './status-resistance.mjs';
 const live=u=>u&&u.active!==false&&u.hp>1e-8;
 const allies=(b,u)=>b.units.filter(t=>live(t)&&t.side===u.side);
 const enemies=(b,u)=>b.units.filter(t=>live(t)&&t.side!==u.side);
@@ -18,6 +19,7 @@ export function kitRuntime(api) {
   const {record,energy,advance,damageTo,combatPanel,useAction}=api;
   function remove(b,to,id){to.buffs=to.buffs.filter(e=>e.id!==id);}
   function buff(b,from,to,name,key,value,duration=null,extra={}){
+    if(resistsStatus(b,from,to,extra,{combatPanel,record}))return null;
     const owner=extra.tickOwner?get(b,extra.tickOwner):to,id=extra.id??from.id+':'+name+':'+key;
     // 入场 / 秘技阶段施加、且在持有者回合开始递减的效果：持有者的第 1 个回合不应消耗持续时间，
     // 否则与「N 回合」的说明相比会少 1 回合（例如缇宝秘技的【神启】）。
@@ -85,6 +87,7 @@ export function kitRuntime(api) {
     const res=1-(combatPanel(to).effectRes??0);
     const hit=dotRes>0?b.random()<base*(1-Math.min(1,dotRes)):(chance>=1&&res>=1)||b.random()<base;
     if(!hit){record(b,'resist',to,{name:name+' 被抵抗',element});return null;}
+    if(resistsStatus(b,u,to,{type:'dot',...extra},{combatPanel,record}))return null;
     const {snapshotAtk:wantSnapshotAtk,...dotExtra}=extra;
     const data={type:'dot',id:u.id+':'+name,name,source:u.id,remaining:duration,tickOwner:to.id,tickAt:'end',appliedTurn:to.turns,element,value,terms,stacks,debuff:true,...dotExtra,
       ...(wantSnapshotAtk?{snapshotAtk:combatPanel(u).atk}: {})};
@@ -354,9 +357,9 @@ export function kitRuntime(api) {
       for(const rs of s.gear?.sets??[]){if(rs.id===302&&combatPanel(s).speed>=rs.p2[1]){/* attack aura is applied in panel hook */}
         if(rs.id===312&&s!==u&&a.element===s.element)out.dmgBoost+=rs.p2[1];}
     }
-    const g=cone(u,23051);if(g&&tag(u,'garrison')&&b.summons.some(s=>s.active&&s.bondmate===u.id))out.dmgBoost+=g[2];
+    const g=cone(u,23051);if(g&&tag(u,'garrison')&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))out.dmgBoost+=g[2];
     // Garrison's conditional portion belongs to the wearer of the cone, not the recipient.
-    if(!g&&tag(u,'garrison')){const from=get(b,tag(u,'garrison').source),p=cone(from??{},23051);if(p&&b.summons.some(s=>s.active&&s.bondmate===u.id))out.dmgBoost+=p[2];}
+    if(!g&&tag(u,'garrison')){const from=get(b,tag(u,'garrison').source),p=cone(from??{},23051);if(p&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))out.dmgBoost+=p[2];}
     for(const s of u.gear?.sets??[]){if(s.id===108&&s.count>=4)out.defIgnore+=s.p4[0]+((to.weaknesses??[]).includes('Quantum')||to.buffs.some(e=>e.weakness==='Quantum')?s.p4[1]:0);
       if(s.id===306&&combatPanel(u).critRate>=s.p2[1]&&(a.type==='Ultra'||kind==='followup'||a.countAsFollowup))out.dmgBoost+=s.p2[2];
       if(s.id===311){const speed=combatPanel(u).speed;if(speed>=s.p2[1])out.dmgBoost+=speed>=s.p2[2]?s.p2[4]:s.p2[3];}
@@ -389,7 +392,7 @@ export function kitRuntime(api) {
       for(const s of source.gear?.sets??[]){if(s.id===302&&combatPanel(source).speed>=s.p2[1])add(source,s.name+' · 全队攻击','atkPct',s.p2[2]);if(s.id===310&&combatPanel(source).effectRes>=s.p2[1])add(source,s.name+' · 全队暴伤','critDmg',s.p2[2]);if(s.id===312&&source!==u&&source.element===u.element)add(source,s.name+' · 同属性增伤','dmgBoost',s.p2[1]);}
       const hermit=set(source,128);if(hermit?.count>=4&&u.shields.some(sh=>sh.source===source.id&&sh.value>0))add(source,hermit.name+' · 持有来源护盾','critDmg',hermit.p4[1]);
     }
-    const g=tag(u,'garrison'),from=g?get(b,g.source):null,p=from?cone(from,23051):null;if(p&&b.summons.some(s=>s.active&&s.bondmate===u.id))add(from,'卫戍 · 持有召唤物','dmgBoost',p[2],{remaining:g.remaining,tickOwner:u.id});
+    const g=tag(u,'garrison'),from=g?get(b,g.source):null,p=from?cone(from,23051):null;if(p&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))add(from,'卫戍 · 持有召唤物','dmgBoost',p[2],{remaining:g.remaining,tickOwner:u.id});
     const silent=cone(u,21003);if(silent&&enemies(b,u).length<=2)add(u,'唯有沉默 · 暴击率','critRate',silent[1]);
     for(const s of u.gear?.sets??[]){if(s.id===108&&s.count>=4)add(u,s.name+' · 无视防御','defIgnore',s.p4[0],{note:'目标有量子弱点时额外 '+Math.round(s.p4[1]*100)+'%'});
       if(s.id===301&&combatPanel(u).speed>=s.p2[1])add(u,s.name+' · 速度达标','atkPct',s.p2[2]);
@@ -401,7 +404,7 @@ export function kitRuntime(api) {
       if(s.id===319&&combatPanel(u).hp>=s.p2[1])add(u,s.name+' · 生命达标','critDmg',s.p2[2]);
       if(s.id===320&&combatPanel(u).speed>=s.p2[1])add(u,s.name+' · 速度达标','healingBoost',combatPanel(u).speed>=s.p2[2]?s.p2[4]:s.p2[3]);
       if(s.id===309&&combatPanel(u).critRate>=s.p2[1])for(const type of ['Normal','BPSkill'])add(u,s.name+' · '+type,'dmgBoost',s.p2[2],{abilityType:type});
-      if(s.id===318&&b.summons.some(s=>s.active&&s.bondmate===u.id))add(u,s.name+' · 持有召唤物','critDmg',s.p2[1]);
+      if(s.id===318&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))add(u,s.name+' · 持有召唤物','critDmg',s.p2[1]);
       if(s.id===122&&s.count>=4)for(const type of ['BPSkill','Ultra'])add(u,s.name+' · '+type,'dmgBoost',s.p4[0],{abilityType:type});
       if(s.id===102&&s.count>=4)add(u,s.name+' · 普攻增伤','dmgBoost',s.p4[1],{abilityType:'Normal'});
     }

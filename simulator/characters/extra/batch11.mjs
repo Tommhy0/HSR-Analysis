@@ -692,6 +692,7 @@ const factories={
       },
       // 行迹 point08：速度 >200 时自身与小伊卡生命上限 +20%（面板实时计算）。
       panel(b,u,target,out){
+        if(target.side===u.side&&rank(u,1)&&inSunny(u))out.hp+=(target.panel.baseStats?.hp??target.panel.hp)*rank(u,1,0);
         if(target!==u)return;
         if(!trace(u,3)||out.speed==null)return;
         if(out.speed>trace(u,3)[0]&&Number.isFinite(u.panel.baseStats?.hp))out.hp+=(u.panel.baseStats?.hp??0)*trace(u,3)[1];
@@ -700,6 +701,7 @@ const factories={
       },
       after(b,u,actor,key,kind,a,selected,hitTargets){
         scanHeal(b,u);
+        if(rank(u,1)&&inSunny(u)&&actor?.side===u.side&&hitTargets.length)heal(b,u,actor,healMul(u,combatPanel(u).hp*rank(u,1,1)));
         if(actor!==u)return;
         if(key==='skill'||key==='ultimate'){
           const p=P(u),s=spawnIca(b,u);
@@ -710,7 +712,7 @@ const factories={
           if(trace(u,2))for(const to of allies(b,u))for(let i=0;i<trace(u,2)[1];i++)cleanseOne(b,u,to);
           if(key==='ultimate'){
             buff(b,u,u,'雨过天晴','marker',0,p.Ultra[4],{tag:'hyacineSunny',tickAt:'start'});
-            for(const to of allies(b,u))if(!to.memospriteOwner)buff(b,u,to,'雨过天晴 · 生命上限','hpPct',p.Ultra[2]+(rank(u,1)?rank(u,1,0):0),p.Ultra[4],{id:u.id+':sunny-hp'});
+            for(const to of allies(b,u))if(!to.memospriteOwner)buff(b,u,to,'雨过天晴 · 生命上限','hpPct',p.Ultra[2],p.Ultra[4],{id:u.id+':sunny-hp'});
           }
           riseTalent(b,u);
           // 雨过天晴：风堇施放技能后小伊卡立即获得 1 个额外回合并自动施放【乌云乌云快走开！】。
@@ -720,7 +722,7 @@ const factories={
           const sky=u.buffs.find(e=>String(e.tag??'').startsWith('cyreneSkyPoem:'));
           if(sky){const left=(sky.stacks??1)-1;if(left<=0)u.buffs=u.buffs.filter(e=>e!==sky);else sky.stacks=left;}
         }
-        if(rank(u,1)&&['basic','skill','ultimate'].includes(key))heal(b,u,u,healMul(u,combatPanel(u).hp*rank(u,1,1)));
+        // E1 healing is dispatched above for every allied attacker in Sunny state.
         void a;void selected;void hitTargets;void kind;
       },
       // 除小伊卡外我方目标生命值降低 → 小伊卡消耗自身 4% 生命上限治疗该目标。
@@ -745,7 +747,7 @@ const factories={
       },
       modifiers(b,u,actor,to,a,kind){
         const out={};if(to.side===u.side)return out;
-        if(rank(u,6)&&(actor===u||actor?.memospriteOwner===u.id))out.resPen=(out.resPen??0)+rank(u,6,1);
+        if(rank(u,6)&&mem(b,u)&&actor?.side===u.side)out.resPen=(out.resPen??0)+rank(u,6,1);
         void a;void kind;return out;
       },
       display(b,u){return [{type:'buff',id:u.id+':cum',source:u.id,name:'累计治疗数值',key:'marker',value:u.resources['累计治疗']??0,remaining:null,derived:true,tickOwner:u.id}];},
@@ -1520,7 +1522,7 @@ const factories={
         }
         if(actor===u&&key==='skill'&&kind!=='copy'){
           // 151202：Success 分支（首次召唤）只 CreateServant；Failed 分支（已在场）才治疗并 +6 气氛。
-          const had=!!memAny(b,u);
+          const had=!!memOf(b,u);
           const s=spawnBand(b,u);
           if(had){
             heal(b,u,s,combatPanel(s).hp*P(u).BPSkill[0]);

@@ -173,7 +173,9 @@ export function validatePanel(panel) {
   if (!Number.isFinite(panel.critRate) || panel.critRate < 0 || panel.critRate > 1) {
     errs.push({ field: 'critRate', level: 'unknown', msg: '暴击率要在 0~1 之间' });
   }
-  if (!(panel.critDmg >= 0)) errs.push({ field: 'critDmg', level: 'unknown', msg: '暴击伤害不能为负' });
+  if (!Number.isFinite(panel.critDmg) || !(panel.critDmg >= 0)) errs.push({ field: 'critDmg', level: 'unknown', msg: '暴击伤害不能为负' });
+  for(const k of ['breakEffect','effectHit','effectRes','energyRegen','healingBoost'])if(panel[k]!=null&&(!Number.isFinite(panel[k])||panel[k]<0||k==='effectRes'&&panel[k]>1))errs.push({field:k,level:'unknown',msg:k+' 超出有效范围'});
+  for(const [key,v] of Object.entries(panel.elemDmg??{}))if(v!=null&&(!Number.isFinite(v)||v<0))errs.push({field:'elemDmg.'+key,level:'unknown',msg:key+'属性增伤须为非负有限数'});
   return errs;
 }
 

@@ -39,7 +39,7 @@ export function luocha(api){const {allies,enemies,live,rank,trace,buff,resource,
       healSkill(b,u,to);},
     waveStart(b,u){if(rank(u,4)&&field(u))for(const to of enemies(b,u))buff(b,u,to,'荆冠审判 · 虚弱','dmgBoost',-rank(u,4),u.kit.params.Talent[2],{tickOwner:u.id,tickAt:'start',debuff:true});},
     // E1：结界生效时我方全体攻击力提高。
-    panel(b,u,to,out){if(to.side===u.side&&rank(u,1)&&field(u))out.atk+=(out.baseStats?.atk??0)*rank(u,1);},
+    panel(b,u,to,out){if(to===u&&trace(u,3))out.controlRes=1-(1-(out.controlRes??0))*(1-trace(u,3)[0]);if(to.side===u.side&&rank(u,1)&&field(u))out.atk+=(out.baseStats?.atk??0)*rank(u,1);},
     display(b,u,to){const out=[];if(to===u){out.push({type:'buff',id:u.id+':bloom',source:u.id,name:'白花之刻',key:'marker',value:u.resources['白花之刻']??0,derived:true});
         if(field(u))out.push({type:'buff',id:u.id+':field',source:u.id,name:'生息的轮转 · 结界',key:'marker',value:1,remaining:field(u).remaining,tickOwner:u.id,derived:true});}
       if(to.side!==u.side&&rank(u,4)&&field(u))out.push({type:'buff',id:u.id+':weak',source:u.id,name:'荆冠审判 · 虚弱',key:'dmgBoost',value:-rank(u,4),derived:true,debuff:true});

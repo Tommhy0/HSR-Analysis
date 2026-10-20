@@ -32,7 +32,7 @@ export function canon(text) {
 
 /** 中文技能类型 → 库里 type 的英文枚举。`abilityDmg` 是按这个查表的。 */
 const ABILITY_CN = {
-  普攻: 'Normal', 战技: 'BPSkill', 终结技: 'Ultra', 天赋: 'Talent', 秘技: 'Maze',
+  助战技: 'Assist', 追加攻击: 'FollowUp', 反击: 'Counter', 忆灵技: 'Memosprite', 普攻: 'Normal', 战技: 'BPSkill', 终结技: 'Ultra', 天赋: 'Talent', 秘技: 'Maze',
 };
 
 /**
@@ -43,16 +43,16 @@ const ABILITY_CN = {
  * 而不是让它混进目录、勾了不动。
  */
 const ABILITY_WORDS = [
-  [/普攻/, 'Normal'], [/战技/, 'BPSkill'], [/终结技/, 'Ultra'], [/天赋/, 'Talent'],
+  [/助战技/, 'Assist'], [/普攻/, 'Normal'], [/(?<!助)战技/, 'BPSkill'], [/终结技/, 'Ultra'], [/天赋/, 'Talent'],
   [/秘技/, 'Maze'], [/欢愉技/, 'ElationDamage'],
   [/追加攻击/, 'FollowUp'], [/反击/, 'Counter'], [/忆灵技/, 'Memosprite'],
 ];
 
 /** 本计算器算不出这类技能（不是技能 type，是机制）。 */
-export const UNCOMPUTABLE_ABILITY = new Set(['FollowUp', 'Counter', 'Memosprite']);
+export const UNCOMPUTABLE_ABILITY = new Set(['FollowUp', 'Counter', 'Memosprite', 'Assist']);
 
 export const ABILITY_KIND_CN = {
-  Normal: '普攻', BPSkill: '战技', Ultra: '终结技', Talent: '天赋', Maze: '秘技',
+  Assist: '助战技', Normal: '普攻', BPSkill: '战技', Ultra: '终结技', Talent: '天赋', Maze: '秘技',
   ElationDamage: '欢愉技', FollowUp: '追加攻击', Counter: '反击', Memosprite: '忆灵技',
 };
 
@@ -103,6 +103,7 @@ export const ATTR_RULES = [
 
   // ---- 敌方负面：必须排在最前，否则会被后面的「伤害提高」抢先咬住 ----
   { re: /受到的火属性伤害提高/, key: 'vuln', scope: { element: 'Fire' }, subj: 'enemy' },
+  { re: /(?:受到|承受)的?(?:追加攻击|反击|忆灵技|助战技)伤害提高/, key: 'vuln', subj: 'enemy' },
   { re: /(受到|承受)的?伤害提高/, key: 'vuln', subj: 'enemy' },
   { re: /(受到|承受)的?伤害降低/, key: 'dmgReduction', subj: 'enemy' },
   { re: /速度降低/, key: 'speedPct', subj: 'enemy' },
@@ -123,8 +124,8 @@ export const ATTR_RULES = [
   //   里的「天赋」说的是**那个效果来源于天赋**，不是在给天赋伤害加百分比。
   //   没有前瞻它会被提成 `abilityDmg/Talent`，而正确读法是 `dmgBoost`
   //   —— 它是把一条已有的增伤再放大，跟伤害挂在哪个键位上无关。
-  { re: /(普攻|战技|终结技|天赋|秘技)造成的伤害提高(?!效果)/, key: 'abilityDmg', subj: 'ally' },
-  { re: /(普攻|战技|终结技|天赋|秘技)伤害提高(?!效果)/, key: 'abilityDmg', subj: 'ally' },
+  { re: /(普攻|助战技|追加攻击|反击|忆灵技|战技|终结技|天赋|秘技)造成的伤害提高(?!效果)/, key: 'abilityDmg', subj: 'ally' },
+  { re: /(普攻|助战技|追加攻击|反击|忆灵技|战技|终结技|天赋|秘技)伤害提高(?!效果)/, key: 'abilityDmg', subj: 'ally' },
 
   // ---- 我方增益 ----
   { re: /抗性穿透提高/, key: 'resPen', subj: 'ally' },
@@ -297,7 +298,8 @@ export function extractCondition(text) {
   const when = /(施放|使用)(普攻|战技|终结技)时/.exec(text);
   if (when) c.trigger = `on_${when[2]}`;
   if (/弱点击破后/.test(text)) c.trigger = 'after_weakness_break';
-  if (/每层/.test(text)) c.stacks = true;
+  if (/每层|每点|每有1点|每1点/.test(text)) c.stacks = true;
+  if (/下一次战技|下次施放战技/.test(text)) c.trigger='on_战技';
   return Object.keys(c).length ? c : null;
 }
 
@@ -383,6 +385,10 @@ export function matchAttr(rawText, { ownerName = null } = {}) {
       // 兜底：捕获组认得出但 ABILITY_WORDS 里没列的类型（不该发生，发生了也不能丢）
       if (!types.length && mm[1] && ABILITY_CN[mm[1]]) types.push(ABILITY_CN[mm[1]]);
       if (types.length) scope.abilityTypes = types;
+    }
+    if(['critDmg','critRate','vuln','dmgBoost'].includes(r.key)){
+      const kinds=ABILITY_WORDS.filter(([re])=>re.test(text)&&/追加攻击|反击|忆灵技|助战技/.test(re.source)).map(([,kind])=>kind);
+      if(kinds.length)scope.abilityTypes=kinds;
     }
     // ★ 倍率改动：得记住它作用于**哪个技能** ★
     //   丹恒的「终结技造成的伤害倍率提高」只能加在终结技上；

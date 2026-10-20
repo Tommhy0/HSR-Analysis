@@ -342,6 +342,9 @@ export function resolveParam(ctx, ref) {
       return arr?.[ref.index - 1] ?? null;
     }
 
+    case 'abyss_season': {
+      return ctx.seasonByKey.get(`${ref.mode}:${ref.seasonId}`)?.buffParams?.[ref.index - 1] ?? null;
+    }
     case 'abyss_buff': {
       const key = `${ref.mode}:${ref.seasonId}:${ref.floorId}`;
       const list = ctx.abyssBuffByKey.get(key) ?? [];

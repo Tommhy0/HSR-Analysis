@@ -179,7 +179,7 @@ export function computeHit(input) {
   }
   const multPerStack = [];
   for (const b of agg?._contributions ?? []) {
-    if (b.perStack) multPerStack.push({ from: b.from, owner: b.owner });
+    if (b.perStack) multPerStack.push({ from: b.from, owner: b.owner, stacks: b.stacks??1 });
   }
 
   let base = 0;
@@ -335,7 +335,7 @@ export function computeHit(input) {
     _assumptions: [
       ...(excludedTerms.length ? [`未计入 ${excludedTerms.length} 项：相邻目标、后续伤害或未启用的条件伤害（详见技能卡）`] : []),
       ...(ability.multiplierBasis==='per-term' ? ['按每个伤害项的总倍率 / 重复次数独立结算；动画分段不会再次乘总倍率'] : hits !== 1 ? [`每次命中倍率 × ${hits} 次`] : []),
-      ...(multPerStack.length ? [`「每层/每点」类倍率改动按 1 层计（${multPerStack.length} 条）`] : []),
+      ...(multPerStack.length ? [`「每层/每点」类增益按所选层数计：${multPerStack.map(b=>b.from+' ×'+b.stacks+'层').join('；')}`] : []),
     ],
   };
 }

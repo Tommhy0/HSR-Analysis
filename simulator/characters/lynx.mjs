@@ -14,15 +14,17 @@ export function lynx(api){const {allies,live,rank,trace,buff,stacks,resource,ene
     // 秘技「巧克力能量棒」：下一次战斗开始时为我方全体附加天赋的持续治疗效果。
     entry(b,u){for(const to of allies(b,u))regenFor(b,u,to);},
     // 求生反应：按玲可生命上限提高目标生命上限；毁灭 / 存护命途大幅提高仇恨；E4 攻击转换；E6 额外生命上限与效果抵抗。
-    panel(b,u,to,out){if(to.side!==u.side)return;const p=u.kit.params,s=survival(to);if(s){const hp=u.panel.hp;
+    panel(b,u,to,out){if(to===u&&trace(u,2))out.controlRes=1-(1-(out.controlRes??0))*(1-trace(u,2)[0]);if(to.side!==u.side)return;const p=u.kit.params,s=survival(to);if(s){const hp=u.panel.hp;
         out.hp+=(hp*p.BPSkill[0]+p.BPSkill[1])+(rank(u,6)?hp*u.kit.ranks[6][0]:0);
         const path=to.kit?.path??to.path;
         if(['毁灭','存护'].includes(path))out.aggroRatio=(out.aggroRatio??1)*3;
-        if(rank(u,4))out.atk+=hp*u.kit.ranks[4][0];
+
         if(rank(u,6))out.effectRes=(out.effectRes??0)+u.kit.ranks[6][1];}},
     after(b,u,actor,key,kind,a,selected,hits){const p=u.kit.params;if(actor!==u)return;
       if(key==='skill'){const to=selected[0];
         buff(b,u,to,'求生反应','marker',0,p.BPSkill[2],{tag:'lynxSurvival',tickOwner:u.id,removeOnSourceDeath:true});
+        if(rank(u,4))buff(b,u,to,'玲可 E4 · 攻击力','atk',combatPanel(u).hp*u.kit.ranks[4][0],u.kit.ranks[4][1],{id:u.id+':e4:'+to.id});
+        if(rank(u,2))buff(b,u,to,'玲可 E2 · 抵抗负面效果','marker',0,p.BPSkill[2],{id:u.id+':e2:'+to.id,tag:'debuffWard',stacks:rank(u,2),requiresTag:{unit:to.id,tag:'lynxSurvival'}});
         healOne(b,u,to,combatPanel(u).hp*p.BPSkill[3]+p.BPSkill[4]);
         regenFor(b,u,to);}
       if(key==='ultimate'){for(let i=0;i<p.Ultra[0];i++)for(const to of allies(b,u))cleanseOne(b,u,to);
