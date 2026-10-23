@@ -121,7 +121,7 @@ const actions={
     skill:skill(p,d,{terms:atk(p.BPSkill[0]),toughness:st(8006,800602,0),hitShares:[1],
       energyGain:ROSTER_DATA[8006].skills['800602'].spBase??0,
       bounceCount:HMC_BOUNCE_BASE+(eidolon>=6?d.ranks[6][0]:0),
-      bounceTerms:atk(p.BPSkill[0]),bounceToughness:st(8006,800602,2)}),
+      bounceTerms:atk(p.BPSkill[0]),bounceToughness:st(8006,800602,0)*.5}),
     ultimate:ultimate(p,d,{target:'allies',terms:[],toughness:0,hitShares:[1]}),
   }),
 };
@@ -253,7 +253,7 @@ const factories={
           if(done&&u.turns>=(u.resources['E2冷却']??0)){
             resource(b,u,'E2冷却',u.turns+(u.kit.ranks[2][1]??0));
             if(!b.queue.some(q=>q.actor===u.id&&q.kind==='extra'))
-              b.queue.push({actor:u.id,key:'basic',kind:'extra'});
+              b.queue.push({actor:u.id,key:u.policy?.basicOnly?'basic':'skill',kind:'extra'});
           }
         }
         checkCleanse(b,u);
@@ -266,7 +266,7 @@ const factories={
         const out={},p=u.kit.params,enh=a?.name===u.actions.enhancedBasic.name||a?.name===u.actions.enhancedSkill.name;
         if(rank(u,1)&&a?.name===u.actions.enhancedSkill.name)out.defIgnore=rank(u,1);
         // Ultra_BreakDamageAddRatio：强化攻击期间「受到萨姆造成的击破伤害」+Ultra[0]。
-        if(enh&&u.buffs.some(e=>e.id===BEFF_ID(u))&&['break','break_dot','superbreak'].includes(kind))
+        if(enh&&u.buffs.some(e=>e.id===BEFF_ID(u))&&['break','break_dot','break_additional','superbreak'].includes(kind))
           out.vuln=u.kit.params.Ultra[0];
         // E6：完全燃烧状态下火属性抗性穿透 +ranks[6][0]。
         if(inBurn(u)&&rank(u,6))out.resPen=rank(u,6,0);
@@ -676,7 +676,7 @@ const factories={
       // 【伴舞】超击破：我方持有者攻击处于弱点击破状态的目标后，按本次削韧触发 1 次超击破。
       afterHit(b,u,actor,to,a,kind){
         if(!actor||actor.side!==u.side||!to||to.side===u.side)return;
-        if(['dot','additional','break','break_dot','superbreak','true'].includes(kind))return;
+        if(['dot','additional','break','break_dot','break_additional','superbreak','true'].includes(kind))return;
         if(!to.broken||to.hp<=0)return;
         if(!hasDance(actor))return;
         const shares=a.hitShares??[1],seg=(a.segment??1)-1;
@@ -685,14 +685,14 @@ const factories={
         const base=primary?(a.toughness??0):(a.adjacentToughness??a.toughness??0);
         if(!(base>0))return;
         const share=seg<shares.length?shares[seg]:1;
-        b.breaks.superBreak(b,actor,to,base*share,1,actor.element);
+        b.breaks.superBreak(b,actor,to,base*share,1,actor.element,{source:u.id});
       },
       modifiers(b,u,actor,to,a,kind){
         void to;void a;
         if(kind!=='superbreak'||!actor||actor.side!==u.side)return {};
-        if(!hasDance(actor))return {};
+        if(!hasDance(actor)||a?.superBreakSource!==u.id)return {};
         // 行迹「卫我起舞」：按场上敌方数量提高伴舞触发的超击破伤害。
-        return {dmgBoost:danceBonus(b,u)};
+        return {superBreakDmgBoost:danceBonus(b,u)};
       },
     };
   },

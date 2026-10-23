@@ -834,11 +834,24 @@ function battleHarness(){return `
 import fs from 'node:fs';
 const nodes=new Map();function node(id){if(!nodes.has(id))nodes.set(id,{id,innerHTML:'',value:'',textContent:'',style:{},dataset:{},querySelectorAll:()=>[],querySelector:()=>node('_selector'),setAttribute:()=>{},contains:()=>false});return nodes.get(id);}
 globalThis.document={getElementById:node,addEventListener:()=>{},documentElement:node('root')};globalThis.window=globalThis;globalThis.addEventListener=()=>{};globalThis.location={hash:''};
+const saved=new Map();globalThis.localStorage={getItem:key=>saved.get(key)??null,setItem:(key,value)=>saved.set(key,value)};
 globalThis.__HSR_DATA__=JSON.parse(fs.readFileSync(${JSON.stringify(path.join(ROOT,'_data_cache','hsr_core.json'))},'utf8'));
 await import(${JSON.stringify('file:///'+TMP_BUNDLE.replace(/\\/g,'/'))});window.__HSR_BOOT__();
 const S=window.__HSR_BATTLE__;if(!S||S.state.config.units.filter(u=>u.side==='ally').length!==4)throw new Error('独立战斗入口不是四人队伍');
 node('sim-run').onclick();if(S.state.error)throw new Error(S.state.error);if(!(S.state.result.damage>0))throw new Error('四人输出为空');
 if(!node('battle-runtime').innerHTML.includes('sim-contributions'))throw new Error('缺少各队员贡献统计');
 if(window.__HSR)throw new Error('独立战斗入口意外启动单次伤害计算器');
-console.log('  独立四人战斗：启动 / 四人行动 / 全队伤害 / 独立贡献统计通过');
+// Exercise saved-config validation AND the packaged extra-character runtime.
+// The original four-character preset does not use the extra module registry.
+const {buildBattleActor,newBattleBuild}=await import(${JSON.stringify('file:///'+path.join(ROOT,'simulator','builds.mjs').replace(/\\/g,'/'))});
+const memoryTeam=[1407,1413,1415,1409].map((characterId,i)=>{
+  const u=buildBattleActor(S.ctx,{...newBattleBuild(),characterId,eidolon:2,technique:true,relicAuto:false});
+  u.id='slot-'+(i+1);u.policy={autoUltimate:true,allyTargetId:'slot-1'};return u;
+});
+const config={...S.state.config,strict:false,maxAV:350,units:[...memoryTeam,...S.state.config.units.filter(u=>u.side==='enemy')]};
+localStorage.setItem('hsr-four-member-battle-v1',JSON.stringify(config));node('battle-load').onclick();
+if(!node('battle-storage-note').textContent.includes('已读取'))throw new Error('成品页读取记忆队失败：'+node('battle-storage-note').textContent);
+node('sim-run').onclick();if(S.state.error)throw new Error('成品页记忆队运行失败：'+S.state.error);
+if(!S.state.result?.log.some(e=>e.type==='action'&&e.actor==='slot-1:dragon'))throw new Error('成品页缺少死龙行动：角色运行规则未打入包');
+console.log('  独立四人战斗：启动 / 四人行动 / 贡献统计 / 成品页读取记忆队与死龙执行通过');
 `;}

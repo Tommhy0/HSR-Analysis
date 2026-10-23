@@ -241,6 +241,8 @@ function lingsha(api){const {live,allies,enemies,rank,trace,buff,resource,heal,c
     attack(b,u,{consume:false});
     record(b,'mechanic',u,{name:'遗爇 · 额外追加攻击'});};
   return {
+    shouldUseSkill(b,u){const s=summonOf(b,u);return !s?.active||s.counts<=1||b.sp>=4||
+      allies(b,u).some(t=>t.hp/combatPanel(t).hp<.6||[...t.buffs,...t.dots].some(e=>e.control));},
     start(b,u){resource(b,u,'浮元行动次数',0);},
     // 秘技「流翠散云」：战斗开始时立即召唤浮元（Talent[7] 次），敌方全体醇醉 Maze[0] 回合。
     entry(b,u){const p=u.kit.params;summonNow(b,u,p.Talent[6]);
@@ -287,7 +289,7 @@ function lingsha(api){const {live,allies,enemies,rank,trace,buff,resource,heal,c
       if(s&&s.active&&rank(u,6)&&actor?.side===u.side&&to.side!==u.side)
         out.resPen=(out.resPen??0)+u.kit.ranks[6][0];
       // 醇醉：受到的击破 / 击破持续 / 超击破伤害 +Ultra[3]。
-      if(['break','break_dot','superbreak'].includes(kind)&&to.buffs.some(e=>e.tag==='lsDrunk'))
+      if((a?.breakDamage||['break','break_dot','superbreak'].includes(kind))&&to.buffs.some(e=>e.tag==='lsDrunk'))
         out.vuln=(out.vuln??0)+u.kit.params.Ultra[3];
       void a;return out;
     },

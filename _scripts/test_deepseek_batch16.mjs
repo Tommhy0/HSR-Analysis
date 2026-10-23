@@ -324,8 +324,8 @@ test('8005：【伴舞】持有者攻击已击破目标后按本次削韧 ×Ultr
   assert.equal(hits.length,1,'应触发 1 次超击破');
   assert.equal(hits[0].critMode,'noncrit');
   // 行迹 point06：1 名敌人 → trace[1][4]=60%。
-  const mod=b.rules.modifiers(b,u,en,{type:'SuperBreak',element:'Imaginary'},'superbreak');
-  near(mod.dmgBoost,u.kit.trace[1][4]);
+  const mod=b.rules.modifiers(b,u,en,{type:'SuperBreak',element:'Imaginary',superBreakSource:u.id},'superbreak');
+  near(mod.superBreakDmgBoost,u.kit.trace[1][4]);
   // 未击破目标不触发。
   en.broken=false;
   b.rules.afterHit(b,u,en,{...u.actions.basic,segment:1,hitShares:[1],toughness:30},'direct');

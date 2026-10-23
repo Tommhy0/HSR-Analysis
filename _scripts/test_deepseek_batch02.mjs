@@ -127,7 +127,7 @@ test('残梅绽与恢复顺序：真正尝试恢复时延长击破，之后一�
   assert.ok(e.broken,'残梅绽未延长弱点击破');
   assert.ok(!e.buffs.some(x=>x.tag==='ruanMeiImprint'),'残梅绽未消耗');
   const want=BREAK_BASE[80]*(1+be)*(.5+30/120)*rmU.kit.params.Ultra[4];
-  const imp=b.log.slice(at).find(x=>x.type==='damage'&&x.kind==='break_dot'&&x.actor===rmU.id&&Math.abs(x.formula.find(z=>z.zone==='base').value-want)<1e-6);
+  const imp=b.log.slice(at).find(x=>x.type==='damage'&&x.kind==='break_additional'&&x.actor===rmU.id&&Math.abs(x.formula.find(z=>z.zone==='base').value-want)<1e-6);
   assert.ok(imp,'残梅绽未造成 50% 冰属性击破伤害');
   near(imp.formula.find(z=>z.zone==='base').value,want);
   assert.equal(e.resources['残梅绽锁定'],1,'延长期间不应解除不可重复附加限制');
@@ -170,7 +170,7 @@ test('冻结持续伤害不再冒充弱点击破：解冻回合不会重复触�
   assert.ok(stepUntil(b,()=>b.log.some(x=>x.type==='break')));
   const be=combatPanel(rmU).breakEffect??0;
   const talentBase=BREAK_BASE[80]*(1+be)*(.5+30/120)*rmU.kit.params.Talent[1];
-  const countTalent=()=>b.log.filter(x=>x.type==='damage'&&x.kind==='break_dot'&&x.actor===rmU.id&&Math.abs(x.formula.find(z=>z.zone==='base').value-talentBase)<1e-6).length;
+  const countTalent=()=>b.log.filter(x=>x.type==='damage'&&x.kind==='break_additional'&&x.actor===rmU.id&&Math.abs(x.formula.find(z=>z.zone==='base').value-talentBase)<1e-6).length;
   assert.equal(countTalent(),1,'击破时未触发天赋');
   assert.ok(stepUntil(b,()=>b.log.some(x=>x.type==='skip'&&x.name==='冻结 · 解冻回合')),'未进入解冻回合');
   assert.equal(countTalent(),1,'解冻回合的持续伤害错误触发了天赋');

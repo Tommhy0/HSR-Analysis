@@ -60,7 +60,7 @@ export function prepareTeamImport(ctx,current,input){
     }else if(!build.relicAuto)build.panel=panel;
     const actor=buildBattleActor(ctx,build);actor.id=old.id;
     actor.policy=same?clone(old.policy??{}):clone(actor.policy??{});
-    if(m.policy){checkKeys(m.policy,['allyTargetSlot','autoUltimate','basicOnly','skillLimit','rotation','turnPlan','maintainBond','ultimateTiming'],'行动策略');for(const k of ['autoUltimate','basicOnly','maintainBond'])if(m.policy[k]!==undefined&&typeof m.policy[k]!=='boolean')throw new Error(k+' 须为布尔值');const {allyTargetSlot,...rest}=m.policy;Object.assign(actor.policy,rest);if(allyTargetSlot!==undefined){if(!Number.isInteger(allyTargetSlot)||!allies[allyTargetSlot-1])throw new Error('辅助目标位置无效');actor.policy.allyTargetId=allies[allyTargetSlot-1].id;}}
+    if(m.policy){checkKeys(m.policy,['allyTargetSlot','autoUltimate','basicOnly','skillLimit','rotation','turnPlan','maintainBond','ultimateTiming','poemStrategy'],'行动策略');for(const k of ['autoUltimate','basicOnly','maintainBond'])if(m.policy[k]!==undefined&&typeof m.policy[k]!=='boolean')throw new Error(k+' 须为布尔值');const {allyTargetSlot,...rest}=m.policy;Object.assign(actor.policy,rest);if(allyTargetSlot!==undefined){if(!Number.isInteger(allyTargetSlot)||!allies[allyTargetSlot-1])throw new Error('辅助目标位置无效');actor.policy.allyTargetId=allies[allyTargetSlot-1].id;}}
     if(m.energy!==undefined){if(!Number.isFinite(m.energy)||m.energy<0||m.energy>actor.energyMax)throw new Error('初始能量超出上限');actor.energy=m.energy;}else if(same)actor.energy=Math.min(old.energy??0,actor.energyMax);
     if(same&&old.currentHp!=null)actor.currentHp=Math.min(old.currentHp,actor.panel.hp);
     config.units[config.units.findIndex(u=>u.id===old.id)]=actor;

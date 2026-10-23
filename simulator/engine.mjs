@@ -26,8 +26,83 @@ export function validateBattle(config) {
   if(!units.length||units.length>54)errors.push('需要 1～54 个单位（每波最多五个敌人）');
   const waves=[...new Set(units.filter(u=>u?.side==='enemy').map(u=>u.wave??1))].sort((a,c)=>a-c);
   if(waves.some((w,i)=>!Number.isInteger(w)||w!==i+1||w>10))errors.push('敌方波次须从 1 开始连续编号，最多十波');
-  for(const wave of waves)if(units.filter(u=>u?.side==='enemy'&&(u.wave??1)===wave).length>5)errors.push('每波最多五个敌人');
+  for(const wave of waves)if(units.filter(u=>u?.side==='enemy'&&!u.mechanicReserve&&(u.wave??1)===wave).length>5)errors.push('每波最多五个敌人');
   if(config.waveMode!=null&&!['moc','continuous'].includes(config.waveMode))errors.push('波次行动条规则须为 moc 或 continuous');
+  if(config.endgameSpawnPlan!=null){
+    const plan=config.endgameSpawnPlan;
+    if(!object(plan)||plan.type!=='orderedEnemyWaves'||!Array.isArray(plan.waves)||!plan.waves.length||
+      !Number.isInteger(plan.initialEnemyCount)||plan.initialEnemyCount<1||config.waveMode!=='continuous'){
+      errors.push('动态敌人波次配置无效');
+    }else{
+      const spawnIds=new Set();
+      const configuredIds=new Set(units.map(u=>u?.id).filter(id=>typeof id==='string'));
+      const initialEnemies=units.filter(u=>u?.side==='enemy');
+      if(!plan.waves[0]||!Array.isArray(plan.waves[0].units)||plan.initialEnemyCount>plan.waves[0].units.length||
+        initialEnemies.length!==plan.initialEnemyCount||
+        plan.waves[0].units.slice(0,plan.initialEnemyCount).some((u,i)=>u?.id!==initialEnemies[i]?.id)||
+        plan.initialEnemyCount>plan.waves[0].maxTeammateCount)
+        errors.push('动态敌人首批名单须与初始敌方单位一致');
+      for(const [waveIndex,wave] of plan.waves.entries()){
+        if(!object(wave)||typeof wave.id!=='string'||!wave.id||!Array.isArray(wave.units)||
+          !Number.isInteger(wave.maxTeammateCount)||wave.maxTeammateCount<1||wave.maxTeammateCount>5||
+          wave.units.length===0||wave.units.some(u=>!object(u)||u.side!=='enemy'||typeof u.id!=='string'||!u.id)){
+          errors.push('动态敌人第 '+(waveIndex+1)+' 波名单无效');continue;
+        }
+        if(waveIndex>0&&wave.units.length>100)errors.push('动态敌人单波名单不能超过 100 个单位');
+        for(let unitIndex=0;unitIndex<wave.units.length;unitIndex++){
+          const u=wave.units[unitIndex];
+          if(spawnIds.has(u.id))errors.push('动态敌人单位 ID 必须唯一：'+u.id);
+          spawnIds.add(u.id);
+          const isInitial=waveIndex===0&&unitIndex<plan.initialEnemyCount&&initialEnemies[unitIndex]?.id===u.id;
+          if(configuredIds.has(u.id)&&!isInitial)errors.push('动态敌人单位 ID 与初始单位冲突：'+u.id);
+        }
+        if(wave.gateUnitId!=null&&(!wave.units.some(u=>u.id===wave.gateUnitId)||typeof wave.gateUnitId!=='string'))
+          errors.push('动态敌人波次门槛单位须属于本波名单');
+      }
+    }
+  }
+  if(config.endgameRules!=null&&!Array.isArray(config.endgameRules))errors.push('终局场景规则须为数组');
+  for(const rule of config.endgameRules??[]){
+    if(object(rule)&&rule.type==='mocAhaCycle'&&rule.mode==='moc'&&
+      Number.isFinite(rule.laughterPerUltimate)&&rule.laughterPerUltimate>0&&
+      Number.isFinite(rule.fixedPunchline)&&rule.fixedPunchline>0)continue;
+    if(object(rule)&&rule.type==='enemyCountScaleEffect'&&rule.mode==='as'&&rule.teamSide==='enemy'&&
+      Number.isSafeInteger(rule.excludedMonsterId)&&Number.isInteger(rule.maxStacks)&&rule.maxStacks>=1&&rule.maxStacks<=5&&
+      Number.isFinite(rule.damageReductionPerEnemy)&&rule.damageReductionPerEnemy>=0&&rule.damageReductionPerEnemy<1&&
+      Number.isFinite(rule.damageBoostPerEnemy)&&rule.damageBoostPerEnemy>=0&&Number.isSafeInteger(rule.sourceSkillId))continue;
+    if(object(rule)&&rule.type==='enemyDamageOnShieldedTarget'&&rule.mode==='anomaly'&&
+      ['ally','enemy'].includes(rule.attackerSide)&&['ally','enemy'].includes(rule.targetSide)&&
+      Number.isFinite(rule.damageBoost)&&rule.damageBoost>=0&&typeof rule.sourceTag==='string'&&typeof rule.sourceText==='string')continue;
+    errors.push('终局场景规则包含无效的机制配置');
+  }
+  if(config.encounterGroups!=null&&!Array.isArray(config.encounterGroups))errors.push('遭遇机制组须为数组');
+  const unitById=new Map(units.filter(object).map(u=>[u.id,u]));
+  const groupById=new Map();
+  for(const group of config.encounterGroups??[]){
+    if(!object(group)||typeof group.id!=='string'||!group.id||groupById.has(group.id)){
+      errors.push('遭遇机制组须有唯一字符串 ID');continue;
+    }
+    groupById.set(group.id,group);
+    if(!Array.isArray(group.memberIds)||!group.memberIds.length||new Set(group.memberIds).size!==group.memberIds.length)errors.push(group.id+'须列出不重复的假死成员');
+    for(const id of group.memberIds??[]){
+      const member=unitById.get(id);
+      if(!member||member.side!=='enemy')errors.push(group.id+'假死成员不存在或不是敌人：'+id);
+      else if(member.feignDeathGroup!==group.id)errors.push(id+'未绑定遭遇机制组 '+group.id);
+    }
+    if(!Array.isArray(group.activateOnClear)||!group.activateOnClear.length)errors.push(group.id+'须指定清空后的登场单位');
+    for(const entry of group.activateOnClear??[]){
+      const id=typeof entry==='string'?entry:entry?.unitId,target=unitById.get(id);
+      if(!target||target.side!=='enemy')errors.push(group.id+'清空后登场单位不存在或不是敌人：'+id);
+      else if(!target.mechanicReserve)errors.push(id+'须标记为 mechanicReserve 才能延后登场');
+      if(entry&&typeof entry==='object'&&entry.hpRatio!=null&&(!Number.isFinite(entry.hpRatio)||entry.hpRatio<=0||entry.hpRatio>1))errors.push(group.id+'登场生命比例须为 (0, 1]');
+      if(entry&&typeof entry==='object'&&entry.initialAdvance!=null&&(!Number.isFinite(entry.initialAdvance)||entry.initialAdvance<0||entry.initialAdvance>1))errors.push(group.id+'登场行动提前须为 0～1');
+      if(entry&&typeof entry==='object'&&['resetToughness','resetTurns'].some(key=>entry[key]!=null&&typeof entry[key]!=='boolean'))errors.push(group.id+'登场重置选项须为布尔值');
+    }
+  }
+  for(const u of units){
+    if(u?.mechanicReserve&&u.side!=='enemy')errors.push(u.id+' mechanicReserve 仅适用于敌人');
+    if(u?.feignDeathGroup!=null&&(!groupById.has(u.feignDeathGroup)||!groupById.get(u.feignDeathGroup).memberIds?.includes(u.id)))errors.push(u.id+'假死组引用无效');
+  }
   if(!units.some(u=>u?.side==='ally')||!units.some(u=>u?.side==='enemy'))errors.push('需要我方与敌方单位');
   if(units.filter(u=>u?.side==='ally'&&!u.memospriteOwner).length>4)errors.push('我方最多四个角色');
   if(config.requiredAllies===4&&units.filter(u=>u?.side==='ally'&&!u.memospriteOwner).length!==4)errors.push('四人自动战斗必须配置四名队员');
@@ -40,6 +115,8 @@ export function validateBattle(config) {
     if(u.memospriteOwner&&!units.some(t=>t.id===u.memospriteOwner&&t.side===u.side&&!t.memospriteOwner&&t!==u))errors.push(u.id+'忆灵须绑定同阵营召唤者');
     if(u.memospriteOwner&&units.filter(t=>t.memospriteOwner===u.memospriteOwner).length>1)errors.push(u.id+'同一角色不能同时有多个忆灵');
     for(const k of ['hp','atk','def','speed'])if(!Number.isFinite(u.panel?.[k])||u.panel[k]<(k==='hp'||k==='speed'?EPS:0))errors.push(u.id+'面板 '+k+' 无效');
+    if(u.hpCount!=null&&(!Number.isInteger(u.hpCount)||u.hpCount<1||u.hpCount>10))errors.push(u.id+'生命阶段数无效');
+    if(u.phaseRatios!=null&&(!Array.isArray(u.phaseRatios)||u.phaseRatios.length!==(u.hpCount??1)||u.phaseRatios.some(r=>!Number.isFinite(r)||r<=0)))errors.push(u.id+'生命阶段比例须与阶段数一致且均大于零');
     if(!Number.isFinite(u.level)||u.level<1||u.level>100)errors.push(u.id+'等级无效');
     if(!u.actions?.basic)errors.push(u.id+'缺少基础动作');
     if(!Number.isFinite(u.energyMax??0)||(u.energyMax??0)<0)errors.push(u.id+'能量上限无效');
@@ -77,13 +154,14 @@ export function validateBattle(config) {
         if(item?.targetId&&!units.some(t=>t.id===item.targetId&&t.side===(['self','ally','allies','lowestAlly'].includes(a?.target)?u.side:tSide(u))))errors.push(u.name+' 逐回合操作目标不存在或阵营错误');
       }}
     }
-    if(u.policy?.ultimateTiming!=null&&!['afterAction','afterTurn'].includes(u.policy.ultimateTiming))errors.push(u.name+'终结技时机须为动作后或回合结束后');
+    if(u.policy?.ultimateTiming!=null&&!['auto','afterAction','afterTurn'].includes(u.policy.ultimateTiming))errors.push(u.name+'终结技时机须为角色默认、动作后或回合结束后');
+    if(u.policy?.poemStrategy!=null&&!['auto','fixed'].includes(u.policy.poemStrategy))errors.push(u.name+'献诗策略须为 auto / fixed');
     if(rotation!=null&&(!Array.isArray(rotation)||!rotation.length||rotation.some(k=>typeof k!=='string'||(!object(u.actions[k])&&!(k==='supportSkill'&&himekoSupportAction))||k==='ultimate')))errors.push(u.id+'动作循环须引用已配置的普通动作');
     if(u.kit&&Array.isArray(rotation)&&rotation.some(k=>!['basic','skill'].includes(k)&&!(k==='supportSkill'&&himekoSupportAction)))errors.push(u.name+'普通动作循环只能使用 basic / skill / 队伍已启用的 supportSkill；追加攻击和召唤物须由机制触发');
     for(const [key,a] of Object.entries(u.actions)){
       if(!object(a)){errors.push(u.id+'动作须为对象');continue;}
       if(config.strict&&units.some(t=>t?.kit)&&u.side==='enemy'&&a.terms?.length&&!Number.isFinite(a.hitEnergy))errors.push(u.name+' '+key+' 缺少受击回能数值（每个受击目标、每次攻击）');
-      if(a.target!=null&&!['self','ally','allies','lowestAlly','all','blast','single'].includes(a.target))errors.push(u.id+'动作目标无效');
+      if(a.target!=null&&!['self','ally','allies','lowestAlly','all','blast','single','sweep'].includes(a.target))errors.push(u.id+'动作目标无效');
       for(const k of ['energyCost','energyGain','spCost','spGain','hpCostRatio','toughness','adjacentToughness','bounceToughness','superBreak'])if(a[k]!=null&&(!Number.isFinite(a[k])||a[k]<0))errors.push(`${u.id}.${key}.${k} 无效`);
       if(u.kit&&a.superBreak!=null)errors.push(u.name+'没有已登记的超击破来源，不能直接添加系数');
       if(key==='ultimate'&&(!Number.isFinite(a.energyCost)||a.energyCost<=0||a.energyCost>(u.energyMax??0)))errors.push(u.id+'终结技必须指定有效的能量消耗');
@@ -92,6 +170,8 @@ export function validateBattle(config) {
       if(a.terms!=null&&!Array.isArray(a.terms)){errors.push(u.id+'伤害项须为数组');continue;}
       for(const term of a.terms??[])if(!term||!['atk','hp','def'].includes(term.scaling)||!Number.isFinite(term.multiplier)||term.multiplier<0)errors.push(`${u.id}.${key} 倍率无效`);
       if(a.hitShares&&(!Array.isArray(a.hitShares)||a.hitShares.some(x=>!Number.isFinite(x)||x<=0)||Math.abs(a.hitShares.reduce((x,y)=>x+y,0)-1)>EPS))errors.push(u.id+'分段比例总和须为 1');
+      if(a.hitEnergy!=null&&(!Number.isFinite(a.hitEnergy)||a.hitEnergy<0))errors.push(`${u.id}.${key} 受击回能无效`);
+      if(a.hitEnergyShares!=null&&(!Array.isArray(a.hitEnergyShares)||a.hitEnergyShares.length!==(a.hitShares?.length??1)||a.hitEnergyShares.some(x=>!Number.isFinite(x)||x<0)))errors.push(`${u.id}.${key} 分段受击回能比例无效`);
       if(a.bounceCount!=null&&(!Number.isInteger(a.bounceCount)||a.bounceCount<0))errors.push(u.id+'弹射次数无效');
       if(a.bounceTerms!=null&&(!Array.isArray(a.bounceTerms)||a.bounceTerms.some(t=>!object(t)||!['atk','hp','def'].includes(t.scaling)||!Number.isFinite(t.multiplier)||t.multiplier<0)))errors.push(u.id+'弹射倍率无效');
       if(a.bounceGroups!=null&&(!Array.isArray(a.bounceGroups)||a.bounceGroups.some(g=>!object(g)||!Number.isInteger(g.count)||g.count<0||!Array.isArray(g.terms)||g.terms.some(t=>!object(t)||!['atk','hp','def'].includes(t.scaling)||!Number.isFinite(t.multiplier)||t.multiplier<0))))errors.push(u.id+'分组弹射无效');
@@ -177,6 +257,7 @@ function startElationBattle(b){
   const team=elationTeam(b);b.aha={id:'aha:ally',name:'阿哈',side:'ally',kind:'aha_actor',order:-1,distance:ACTION_DISTANCE,speed:80,active:team.length>0};
   if(!team.length)return;
   b.laughter.ally+=team.length;
+  b.rules?.laughterGained?.(b,'ally',team.length,null,'战斗开始 · 初始笑点');
   // 战斗开始的 20 点好活当赏同样经过绯英【瞰众乐】转化：参演编号低于 1505 的队友，
   // 其获得量的 50%（E2 再 +50%）转给绯英（EVA:3587-3869）。
   const ev=team.find(u=>u.kit?.characterId===1505);
@@ -196,11 +277,23 @@ function startElationBattle(b){
   }
   b.aha.speed=currentAhaSpeed(b);
 }
+function instantiateUnit(source,index,activeOverride=undefined){
+  const u={...clone(source),active:activeOverride??(source.side==='ally'||((source.wave??1)===1&&source.active!==false&&!source.mechanicReserve)),
+    order:index,participantId:source.participantId??ELATION_PARTICIPANT_IDS[source.kit?.characterId],hpPhase:1,hpCount:source.hpCount??1,
+    phaseRatios:source.phaseRatios??Array.from({length:source.hpCount??1},()=>1),
+    hp:source.currentHp??source.panel.hp*(source.phaseRatios?.[0]??1),energy:source.energy??0,
+    distance:ACTION_DISTANCE*(1-Math.max(0,Math.min(1,source.initialAdvance??0))),
+    toughness:source.toughnessMax??0,broken:false,resources:{},shields:[],buffs:[],dots:[],turns:0};
+  return u;
+}
+function attachUnitToBattle(b,u){Object.defineProperty(u,'battle',{value:b});b.units.push(u);return u;}
+
 export function createBattle(config) {
   const errs=validateBattle(config);if(errs.length)throw new Error(errs.join('；'));
   const b={config:clone(config),planUsed:[],planQueued:[],av:0,wave:1,waveStartAV:0,cyclesSpent:0,laughter:{ally:0,enemy:0},ahaSpeedBonus:0,sp:config.sp??3,maxSP:maximumSP(config),turns:0,eventCount:0,queue:[],pendingActions:[],summons:[],actionEvents:[],log:[],random:seededRandom(config.seed??1),
-    units:config.units.map((u,i)=>({...clone(u),active:u.side==='ally'||(u.wave??1)===1,order:i,participantId:u.participantId??ELATION_PARTICIPANT_IDS[u.kit?.characterId],hp:u.currentHp??u.panel.hp,energy:u.energy??0,distance:ACTION_DISTANCE*(1-Math.max(0,Math.min(1,u.initialAdvance??0))),
-      toughness:u.toughnessMax??0,broken:false,resources:{},shields:[],buffs:[],dots:[],turns:0}))};
+    encounterGroups:new Map((config.encounterGroups??[]).map(g=>[g.id,{...clone(g),completed:false}])),
+    units:config.units.map((u,i)=>instantiateUnit(u,i)),
+    endgameSpawnPlan:config.endgameSpawnPlan?{source:clone(config.endgameSpawnPlan),waveIndex:0,cursor:config.endgameSpawnPlan.initialEnemyCount}:null};
   for(const u of b.units)Object.defineProperty(u,'battle',{value:b});
   b.eventActions=actionEventRuntime({record,execute:(b,u,e)=>useAction(b,u,e.key,'extra',e.targetId),live:alive,isFrozen:frozen});
   b.rules=kitRuntime({record,energy,advance,delay,damageTo,combatPanel,useAction,scheduleActionEvents,cancelActionEvents,updateActionEventSpeed,trueDamage:(b,u,to,amount,name)=>receiveDamage(b,u,to,amount,'true',{name})});b.breaks=breakRuntime({record,receiveDamage,delay,combatPanel});b.rules.onStart(b);startElationBattle(b);
@@ -208,7 +301,61 @@ export function createBattle(config) {
   b.rules.onWaveStart(b);return b;
 }
 const alive=(u)=>u.active!==false&&u.hp>EPS;
+function enterFeignedDeath(b,from,to){
+  const group=b.encounterGroups?.get(to.feignDeathGroup);
+  if(!group||group.completed)throw new Error(to.name+'假死组缺少有效的遭遇控制器');
+  to.hp=0;to.active=false;to.feignedDead=true;
+  record(b,'mechanic',from??to,{name:'【假死】',target:to.id,groupId:group.id});
+  const members=group.memberIds.map(id=>b.units.find(u=>u.id===id));
+  if(members.every(u=>u?.feignedDead)){
+    group.completed=true;
+    for(const entry of group.activateOnClear){
+      const spec=typeof entry==='string'?{unitId:entry}:entry,target=b.units.find(u=>u.id===spec.unitId);
+      if(!target)continue;
+      target.active=true;target.mechanicReserve=false;target.feignedDead=false;
+      if(spec.hpRatio!=null)target.hp=combatPanel(target).hp*spec.hpRatio;
+      if(spec.initialAdvance!=null)target.distance=ACTION_DISTANCE*(1-Math.max(0,Math.min(1,spec.initialAdvance)));
+      if(spec.resetToughness===true){target.toughness=target.toughnessMax??0;target.broken=false;}
+      if(spec.resetTurns===true)target.turns=0;
+      record(b,'mechanic',target,{name:'合而为一 · 重新登场',groupId:group.id,hp:target.hp});
+    }
+    record(b,'mechanic',from??members[0],{name:'假死成员全部集齐 · 触发合体',groupId:group.id,members:group.memberIds});
+  }
+}
 const waveCycle=av=>av<150-EPS?0:1+Math.floor(Math.max(0,av-150)/100);
+function nextMocCycleBoundary(b){
+  if(!(b.config.endgameRules??[]).some(rule=>rule.type==='mocAhaCycle'))return null;
+  const localAV=Math.max(0,b.av-b.waveStartAV),nextLocal=localAV<150-EPS?150:150+100*waveCycle(localAV);
+  return b.waveStartAV+nextLocal;
+}
+function advanceCombatTime(b,wait){
+  for(const unit of b.units.filter(u=>alive(u)&&!b.eventActions.suspended(b,u)))unit.distance=Math.max(0,unit.distance-combatPanel(unit).speed*wait);
+  for(const summon of b.summons.filter(s=>s.active))summon.distance=Math.max(0,summon.distance-summon.speed*wait);
+  for(const event of b.eventActions.active(b))event.distance=Math.max(0,event.distance-event.speed*wait);
+  if(b.aha?.active)b.aha.distance=Math.max(0,b.aha.distance-b.aha.speed*wait);
+}
+function beginFixedAha(b,punchline,cycle){
+  const actors=elationTeam(b).filter(u=>alive(u)&&u.actions?.elation)
+    .sort((a,c)=>(a.participantId??a.order)-(c.participantId??c.order));
+  const id=(b.ahaInstantSequence??0)+1;b.ahaInstantSequence=id;
+  b.ahaInstant={id,natural:false,fixedPunchline:punchline,ending:false,participants:actors.map(u=>u.id),completed:[],deferred:[]};
+  b.ahaCount=(b.ahaCount??0)+1;b.ahaCounted=punchline;
+  for(const actor of actors){actor.buffs=actor.buffs.filter(e=>!e.control);actor.dots=actor.dots.filter(e=>!e.control);}
+  record(b,'mechanic',null,{name:'混沌回忆·物竞天择轮开始',cycle,punchline,participants:actors.map(u=>u.id)});
+  const reactions=b.rules.ahaStart?.(b,{natural:false,punchline,cycle})??[];
+  b.queue.unshift(...reactions,...actors.map(actor=>({actor:actor.id,key:'elation',kind:'aha',ahaInstantId:id})));
+  if(!b.queue.length)finishAhaInstant(b);else flush(b);
+}
+function fireMocCycleStart(b){
+  const rule=(b.config.endgameRules??[]).find(entry=>entry.type==='mocAhaCycle');
+  if(!rule)return;
+  const cycle=b.cyclesSpent+waveCycle(b.av-b.waveStartAV);
+  if(b.mocAhaCycleCursor==null)b.mocAhaCycleCursor=-1;
+  while(b.mocAhaCycleCursor<cycle){
+    const next=++b.mocAhaCycleCursor;
+    beginFixedAha(b,rule.fixedPunchline,next);
+  }
+}
 export function combatPanel(u,{excludeConverted=false,skipAuras=false,action=null}={}){
   const out={...u.panel,baseStats:{...u.panel.baseStats},elemDmg:{...u.panel.elemDmg}};
   for(const b of u.buffs){if(excludeConverted&&(b.convert||b.converted)||b.abilityType&&b.abilityType!==action?.type)continue;
@@ -219,7 +366,12 @@ export function combatPanel(u,{excludeConverted=false,skipAuras=false,action=nul
     else if(['atkPct','hpPct','defPct'].includes(key)){const k=key.slice(0,-3);if(!Number.isFinite(u.panel.baseStats?.[k]))throw new Error(u.name+'缺少 '+k+'白值');out[k]+=u.panel.baseStats[k]*v;}
     else if(key.startsWith('elemDmg.'))out.elemDmg[key.slice(8)]=(out.elemDmg[key.slice(8)]??0)+v;
     else if(['atk','def','hp','speed','critRate','critDmg','breakEffect','breakEfficiency','effectHit','effectRes','dotRes','energyRegen','healingBoost','incomingHeal','shieldBoost','elation'].includes(key))out[key]=(out[key]??0)+v;
+    // 噬命（Monster_XP_Elite02_02 / MCommon_BlackBlood）：按可回复生命上限的比例扣减上限。
+    // 配置只公开 StackProperty DirtyHPRatio 与上限 50% 的说明；伤害转化为额外比例的公式
+    // 属于战斗内核，不在 Ability 中，故由 kit-runtime 明确按「实际损失生命 / 白值生命」追加。
+    else if(key==='dirtyHpRatio')out.dirtyHpRatio=Math.min(b.dirtyCap??.99,(out.dirtyHpRatio??0)+v);
   }
+  if(out.dirtyHpRatio>0)out.hp*=Math.max(0,1-out.dirtyHpRatio);
   if(u.battle){
     for(const s of u.gear?.sets??[]){
       if(s.id===301&&out.speed>=s.p2[1])out.atk+=(u.panel.baseStats?.atk??0)*s.p2[2];
@@ -245,10 +397,11 @@ export function combatPanel(u,{excludeConverted=false,skipAuras=false,action=nul
   u.battle?.rules?.panel?.(u.battle,u,out,{excludeConverted,skipAuras,action});
   if(out.speed<=0)throw new Error(u.name+'速度必须大于0'); return out;
 }
-const snapshot=(b)=>b.units.map(u=>({id:u.id,hp:u.hp,energy:u.energy,toughness:u.toughness,distance:u.distance,alive:alive(u)}));
+const hpPhaseMax=u=>combatPanel(u).hp*(u.phaseRatios?.[(u.hpPhase??1)-1]??1);
+const snapshot=(b)=>b.units.map(u=>({id:u.id,hp:u.hp,hpPhase:u.hpPhase??1,hpCount:u.hpCount??1,energy:u.energy,toughness:u.toughness,distance:u.distance,alive:alive(u)}));
 export function battleFrame(b){
   const units=b.units.map(u=>{const p=combatPanel(u);return {
-    id:u.id,active:u.active,hp:u.hp,maxHp:p.hp,energy:u.energy,energyMax:u.energyMax??0,toughness:u.toughness,toughnessMax:u.toughnessMax??0,
+    id:u.id,active:u.active,hp:u.hp,maxHp:hpPhaseMax(u),hpPhase:u.hpPhase??1,hpCount:u.hpCount??1,energy:u.energy,energyMax:u.energyMax??0,toughness:u.toughness,toughnessMax:u.toughnessMax??0,
     distance:u.distance,speed:p.speed,alive:alive(u),broken:u.broken,skipTurns:u.skipTurns??0,turns:u.turns,cannotAct:!!u.cannotAct,normalGaugeSuspended:!!b.eventActions?.suspended(b,u),
     panel:clone(p),resources:clone(u.resources??{}),buffs:[...u.buffs.map(e=>clone(e.convert?{...e,value:combatPanel(b.units.find(t=>t.id===e.convert.source),{excludeConverted:true})[e.convert.stat]*e.convert.ratio}:e)),...clone(b.rules?.displayEffects(b,u)??[])],shields:clone(u.shields),dots:clone(u.dots),
   };});
@@ -260,21 +413,30 @@ export function battleFrame(b){
   }).map(u=>({id:u.id,...(u.name==null?{}:{name:u.name}),kind:u.kind??null,wait:u.distance/(u.speed??currentAhaSpeed(b)),av:b.av+u.distance/(u.speed??currentAhaSpeed(b))}));
   return {version:1,av:b.av,wave:b.wave,waveAV:b.av-b.waveStartAV,cycles:b.cyclesSpent+waveCycle(b.av-b.waveStartAV),sp:b.sp,maxSP:b.maxSP,turnActor:b.turnActor??null,action:b.activeAction?clone(b.activeAction):null,
     units,summons:clone(b.summons??[]),aha:b.aha?.active?{...clone(b.aha),speed:currentAhaSpeed(b),punchline:b.laughter.ally??0}:null,
-    actionEvents:clone(b.eventActions?.active(b)??[]),queue:clone([...b.pendingActions,...b.queue]),readyContinuations:b.units.filter(u=>alive(u)&&u.kit?.characterId===1015&&b.turnActor===u.id&&u.buffs.some(e=>e.tag==='circuit')&&b.sp>=u.actions.skill.spCost&&(u.resources['连续战技次数']??0)<(u.policy?.skillLimit??5)).map(u=>u.id),readyUltimates:b.units.filter(u=>alive(u)&&u.policy?.autoUltimate!==false&&u.actions.ultimate&&u.energy>=(u.actions.ultimate.energyCost??u.energyMax)&&!b.queue.some(q=>q.actor===u.id&&q.kind==='ultimate')).map(u=>({actor:u.id,key:'ultimate',kind:'ultimate'})),normalOrder};
+    actionEvents:clone(b.eventActions?.active(b)??[]),queue:clone([...b.pendingActions,...b.queue]),readyContinuations:b.units.filter(u=>alive(u)&&u.kit?.characterId===1015&&b.turnActor===u.id&&u.buffs.some(e=>e.tag==='circuit')&&b.sp>=u.actions.skill.spCost&&(u.resources['连续战技次数']??0)<(u.policy?.skillLimit??5)).map(u=>u.id),readyUltimates:b.units.filter(u=>alive(u)&&u.policy?.autoUltimate!==false&&u.actions.ultimate&&!frozen(u)&&!u.buffs.some(e=>e.noUltimate)&&u.energy>=(u.actions.ultimate.energyCost??u.energyMax)&&!b.queue.some(q=>q.actor===u.id&&q.kind==='ultimate')).map(u=>({actor:u.id,key:'ultimate',kind:'ultimate'})),normalOrder};
 }
 function record(b,type,actor,extra={}){
   b.rules?.relics.refresh(b);
   if(++b.eventCount>(b.config.maxEvents??10000))throw new Error('事件数量超限，可能存在无限触发循环');
   b.log.push({index:b.log.length,av:b.av,wave:b.wave,waveAV:b.av-b.waveStartAV,cycle:b.cyclesSpent+waveCycle(b.av-b.waveStartAV),type,actor:actor?.id??null,sp:b.sp,...clone(extra),frame:battleFrame(b)});
 }
-const targets=(b,u,side)=>b.units.filter(t=>alive(t)&&t.side===(side==='ally'?u.side:tSide(u)));
+const targets=(b,u,side)=>b.units.filter(t=>alive(t)&&t.unselectable!==true&&t.side===(side==='ally'?u.side:tSide(u)));
 const tSide=(u)=>u.side==='ally'?'enemy':'ally';
 const frozen=u=>[...u.buffs,...u.dots].some(e=>e.control==='freeze');
+const sleeping=u=>[...u.buffs,...u.dots].some(e=>e.control==='sleep');
 function weightedTarget(b,units){const weights=units.map(u=>(u.aggro??1)*(combatPanel(u).aggroRatio??1));const total=weights.reduce((a,c)=>a+c,0);if(!Number.isFinite(total)||total<=0)throw new Error('仇恨权重无效');let n=b.random()*total;return units.find((u,i)=>(n-=weights[i])<0)??units.at(-1);}
 function selectedTargets(b,u,action){
   if(action.target==='self')return [u];
   const pool=targets(b,u,['ally','allies','lowestAlly'].includes(action.target)?'ally':'enemy');if(!pool.length)return [];
+  if(Number.isInteger(action.randomTargets)&&action.randomTargets>0){
+    const shuffled=[...pool];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(b.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+    return shuffled.slice(0,Math.min(action.randomTargets,shuffled.length));
+  }
   if(action.target==='all'||action.target==='allies')return pool;
+  if(action.target==='sweep'){
+    const count=Math.min(3,pool.length);
+    return action.sweepDirection==='right'?pool.slice(-count):pool.slice(0,count);
+  }
   if(action.target==='lowestAlly')return [pool.reduce((a,c)=>a.hp/a.panel.hp<c.hp/c.panel.hp?a:c)];
   if(action.targetId){const target=pool.find(t=>t.id===action.targetId);if(target)return [target];}
   // 强制嘲讽：敌方单位身上的 control:'taunt' 由施加者 source 指定唯一目标（云璃 / 波提欧 / 万敌 / 存护开拓者）。
@@ -289,6 +451,18 @@ function notifyEffectRemoved(b,owner,effect,reason){
 }
 function notifyUnitEffectsRemoved(b,owner,reason){
   for(const effect of [...(owner.buffs??[])])notifyEffectRemoved(b,owner,effect,reason);
+}
+function removeEffects(b,owner,predicate,reason){
+  const removed=[];
+  for(const list of [owner.buffs,owner.dots])for(let i=list.length-1;i>=0;i--){
+    const effect=list[i];if(!predicate(effect))continue;
+    list.splice(i,1);notifyEffectRemoved(b,owner,effect,reason);removed.push(effect);
+    record(b,'mechanic',owner,{name:'控制状态解除',reason,source:effect.source??null,key:effect.key??null});
+  }
+  return removed;
+}
+function removeEffectsBySourceFlag(b,sourceId,flag,reason){
+  for(const owner of b.units)removeEffects(b,owner,e=>e.source===sourceId&&e[flag]===true,reason);
 }
 function expiredTick(b,owner,at){
   for(const u of b.units) {
@@ -337,7 +511,7 @@ export function advance(b,id,ratio){
 export function delay(b,id,ratio){const u=b.units.find(x=>x.id===id);if(!u)throw new Error('未知单位');u.distance+=ACTION_DISTANCE*finite(ratio,'行动延后');record(b,'delay',u,{ratio,distance:u.distance});}
 export function receiveDamage(b,from,to,amount,kind,detail={}){
   finite(amount,'伤害');
-  let mechanicAbsorbed=0;
+  let mechanicAbsorbed=0,muteBreak=false;
   // 1208 符玄【穷观阵】：在护盾 / 生命结算之前，按比例把「未受护盾抵挡之前的伤害」改道给分摊者。
   // 改道后的份额重新进入本函数，因此仍按接收者自己的护盾 / 减伤结算；带 redirected 标记防止二次改道。
   if(!detail.redirected&&amount>EPS&&b.rules?.redirectDamage){
@@ -346,6 +520,7 @@ export function receiveDamage(b,from,to,amount,kind,detail={}){
       const share=Math.min(amount,Math.max(0,r.amount??0));if(share<=EPS)continue;
       if(r.absorb===true){
         amount-=share;mechanicAbsorbed+=share;
+        if(r.muteBreak===true)muteBreak=true;
         record(b,'mechanic',from??to,{name:r.reason??'机制抵御伤害',target:to.id,amount:share});
         continue;
       }
@@ -354,7 +529,7 @@ export function receiveDamage(b,from,to,amount,kind,detail={}){
       if(r.directHpLoss!=null){
         const paid=Math.max(0,r.directHpLoss),actual=Math.min(target.hp,paid);target.hp-=actual;
         if(actual>0){record(b,'hp_consume',from??target,{target:target.id,amount:actual,hp:target.hp,reason:r.reason??'伤害改道生命支付'});b.rules?.hpChanged?.(b,target,'consume',actual,from);}
-        if(!alive(target)){notifyUnitEffectsRemoved(b,target,'death');b.rules?.sync(b);record(b,'death',target);b.rules.relics.death(b,target);b.rules.death(b,from,target);}
+        if(!alive(target)){removeEffectsBySourceFlag(b,target.id,'removeOnSourceDeath','source_death');notifyUnitEffectsRemoved(b,target,'death');b.rules?.sync(b);record(b,'death',target);b.rules.relics.death(b,target);b.rules.death(b,from,target);markEndgameGateDefeated(b,target);refillEndgameSpawnWave(b);}
       }else receiveDamage(b,from,target,share,kind,{...detail,redirected:true});
     }
   }
@@ -364,18 +539,29 @@ export function receiveDamage(b,from,to,amount,kind,detail={}){
   // 返回 true 表示本次致命伤害被拦截，保留 1 点生命，后续治疗由模块结算。
   const lethal=to.hp>EPS&&lost>=to.hp-EPS;
   const saved=lethal&&(b.rules?.beforeLethal?.(b,from,to,amount)??false);
+  const feigned=lethal&&!saved&&to.side==='enemy'&&typeof to.feignDeathGroup==='string';
+  const phaseTransition=lethal&&!saved&&!feigned&&to.side==='enemy'&&(to.hpPhase??1)<(to.hpCount??1);
   // 拦截成功时：保留拦截时点已恢复的治疗量减去本次仍被扣除的生命值，至少保留 1 点。
-  to.hp=saved?Math.max(1,to.hp-lost):to.hp-lost;
+  if(feigned)enterFeignedDeath(b,from,to);
+  else if(phaseTransition){
+    const previousPhase=to.hpPhase??1;to.hpPhase=previousPhase+1;to.hp=hpPhaseMax(to);
+    if(to.enemyKit?.resetToughnessOnHpBarChange===true){to.toughness=to.toughnessMax??0;to.broken=false;}
+    record(b,'mechanic',from??to,{name:'切换生命阶段',target:to.id,fromPhase:previousPhase,toPhase:to.hpPhase,hp:to.hp,maxHp:hpPhaseMax(to)});
+    b.rules?.hpBarTransition?.(b,from,to,previousPhase,to.hpPhase);
+  }else to.hp=saved?Math.max(1,to.hp-lost):to.hp-lost;
   record(b,'damage',from,{target:to.id,damage:amount,hpDamage:lost,absorbed,mechanicAbsorbed,kind,hp:to.hp,...detail});
   if(lost>0)b.rules?.hpChanged?.(b,to,'damage',lost,from);
-  b.rules?.afterDamage(b,from,to,detail.triggerKind??kind);
-  if(!['dot','additional','break','break_dot','superbreak','true'].includes(kind)&&alive(to)&&(detail.hitEnergyPerHit||!b.hitEnergyTargets?.has(to.id))){energy(b,to,detail.hitEnergy??to.onHitEnergy??0,to.onHitEnergyFixed??false);b.hitEnergyTargets?.add(to.id);}
-  if(!['dot','additional','break','break_dot','superbreak','true'].includes(kind)&&alive(to)&&!b.attackedTargets?.has(to.id)){b.attackedTargets?.add(to.id);b.rules.relics.attacked(b,to);b.rules.attacked(b,to,from);}
-  if(!alive(to)){notifyUnitEffectsRemoved(b,to,'death');b.rules?.sync(b);record(b,'death',to);b.rules.relics.death(b,to);b.rules.death(b,from,to);if(from)energy(b,from,from.killEnergy??10,from.killEnergyFixed??false);}
-  if(!['dot','additional','break','break_dot','superbreak','true'].includes(kind)&&alive(to)&&to.reactions?.onAttacked&&!b.queue.some(q=>q.actor===to.id&&q.key===to.reactions.onAttacked))b.queue.push({actor:to.id,key:to.reactions.onAttacked,kind:'followup',targetId:from?.id});
+  b.rules?.afterDamage(b,from,to,detail.triggerKind??kind,lost);
+  if(!['dot','additional','break','break_dot','break_additional','superbreak','true'].includes(kind)&&alive(to)&&(detail.hitEnergyPerHit||!b.hitEnergyTargets?.has(to.id))){energy(b,to,detail.hitEnergy??to.onHitEnergy??0,to.onHitEnergyFixed??false);b.hitEnergyTargets?.add(to.id);}
+  if(!['dot','additional','break','break_dot','break_additional','superbreak','true'].includes(kind)&&alive(to)&&!b.attackedTargets?.has(to.id)){b.attackedTargets?.add(to.id);b.rules.relics.attacked(b,to);b.rules.attacked(b,to,from);}
+  if(!alive(to)&&!feigned){removeEffectsBySourceFlag(b,to.id,'removeOnSourceDeath','source_death');notifyUnitEffectsRemoved(b,to,'death');b.rules?.sync(b);record(b,'death',to);b.rules.relics.death(b,to);b.rules.death(b,from,to);if(from)energy(b,from,from.killEnergy??10,from.killEnergyFixed??false);markEndgameGateDefeated(b,to);refillEndgameSpawnWave(b);}
+  if(!['dot','additional','break','break_dot','break_additional','superbreak','true'].includes(kind)&&alive(to)&&to.reactions?.onAttacked&&!b.queue.some(q=>q.actor===to.id&&q.key===to.reactions.onAttacked))b.queue.push({actor:to.id,key:to.reactions.onAttacked,kind:'followup',targetId:from?.id});
+  return {muteBreak};
 }
 function breakTarget(b,from,to,element=from.element,action=null){
   to.broken=true;record(b,'break',from,{target:to.id});
+  removeEffects(b,to,e=>e.removeOnBreak===true,'owner_break');
+  removeEffectsBySourceFlag(b,to.id,'removeOnSourceBreak','source_break');
   b.rules.relics.broken(b,from,to);
   b.rules.weaknessBreak(b,from,to,action,element);
   if(to.standardBreak){b.breaks.apply(b,from,to,element);return;}
@@ -392,7 +578,7 @@ function applyEffects(b,u,action,chosen){
     for(const to of recipients){
       const p=combatPanel(u);const value=e.value??((p[e.scaling??'hp']??0)*(e.multiplier??0)+(e.flat??0));finite(value,'效果值',e.type==='buff'?-Infinity:0);
       if(e.type==='heal'){const healed=Math.min(Math.max(0,combatPanel(to).hp-to.hp),value*(1+(p.healingBoost??0))*(1+(combatPanel(to).incomingHeal??0)));to.hp+=healed;record(b,'heal',u,{target:to.id,amount:healed,hp:to.hp});if(healed>0)b.rules.hpChanged(b,to,'heal',healed,u);b.rules.relics.healed(b,u,to);}
-      else if(e.type==='laughter'){b.laughter[u.side]+=value;record(b,'resource',u,{name:'累计获得笑点',value:b.laughter[u.side]});break;}
+      else if(e.type==='laughter'){b.laughter[u.side]+=value;record(b,'resource',u,{name:'累计获得笑点',value:b.laughter[u.side]});b.rules?.laughterGained?.(b,u.side,value,u,'行动效果');break;}
       else if(e.type==='punchline'){to.resources['好活当赏']=(to.resources['好活当赏']??0)+value;record(b,'resource',u,{target:to.id,name:'好活当赏',value:to.resources['好活当赏']});}
       else if(e.type==='hpConsume'){const lost=Math.min(Math.max(0,to.hp-1),value);to.hp-=lost;if(lost){b.rules.hpChanged(b,to,'consume',lost,u);b.rules.relics.healthConsumed(b,to);}record(b,'hp_consume',u,{target:to.id,amount:lost,hp:to.hp});}
       else if(e.type==='advance')advance(b,to.id,value);
@@ -401,15 +587,29 @@ function applyEffects(b,u,action,chosen){
       else if(e.type==='extra'||e.type==='followup')b.queue.push({actor:to.id,key:e.action,kind:e.type,targetId:e.targetId});
       else {
         if(!Number.isInteger(e.duration)||e.duration<1)throw new Error('持续回合数须为正整数');
-        // 控制类负面状态：controlRes=1 完全免疫（沿用旧口径，不消耗随机数）；
-        // 0<controlRes<1 为部分抵抗（1213 丹恒•饮月 / 1109 虎克行迹），按乘法概率掷一次。
+        // A sourced enemy control skill can have SPHitBase without a damage
+        // term (for example 300304002 / 300304005). Resolve that per-target
+        // hit energy once from its control application instead of silently
+        // dropping it because damageTo had no term to process.
+        if(e.control&&u.side==='enemy'&&!(action.terms??[]).length&&(action.hitEnergy??0)>0)energy(b,to,action.hitEnergy,false);
+        // 控制类负面状态沿用游戏命中链：基础概率 × 效果命中 × 效果抵抗 × 控制抵抗。
+        // 100% 命中且没有对应抵抗时短路，不额外消耗随机数。
         const ctrlRes=combatPanel(to).controlRes??to.controlRes??0;
-        if(e.control&&ctrlRes>0&&(ctrlRes>=1||b.random()<ctrlRes)){record(b,'resist',to,{name:ctrlRes>=1?'免疫控制类负面状态':'抵抗控制类负面状态',key:e.key});continue;}
+        if(e.control){
+          if(to.enemyKit?.controlImmuneTag&&to.buffs.some(effect=>effect.tag===to.enemyKit.controlImmuneTag)){
+            record(b,'resist',to,{name:'免疫控制类负面状态',key:e.key,reason:'敌方来源力场'});continue;
+          }
+          const targetPanel=combatPanel(to),chance=Math.max(0,Math.min(1,(e.chance??1)*(1+(p.effectHit??0))*(1-(targetPanel.effectRes??0))*(1-ctrlRes)));
+          if(ctrlRes>=1||chance<1&&b.random()>=chance){record(b,'resist',to,{name:ctrlRes>=1?'免疫控制类负面状态':'抵抗控制类负面状态',key:e.key,chance});continue;}
+        }
         const tickOwner=e.tickOwner==='caster'?u:to;
         const data={...e,value:e.type==='shield'?value*(1+(p.shieldBoost??0)):value,source:u.id,id:e.id??u.id+':'+e.type+':'+(e.key??action.name),remaining:e.duration,tickOwner:tickOwner.id,tickAt:e.tickAt??'end',appliedTurn:tickOwner.turns};
         const list=e.type==='shield'?to.shields:e.type==='dot'?to.dots:to.buffs;
         const index=list.findIndex(x=>x.id===data.id);if(index>=0)list[index]=data;else list.push(data);
         record(b,e.type,u,{target:to.id,value:data.value,key:e.key,duration:e.duration});
+        // Kafka's sourced 支配 modifier is followed by ModifyActionDelay on
+        // the selected character, which brings the controlled attack forward.
+        if(e.control==='charm'&&e.actionAdvance===true)advance(b,to.id,1);
         if(e.debuff||e.type==='dot')b.rules.relics.debuff(b,u,to,data);
       }
     }
@@ -429,6 +629,19 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
   b.rules.relics.hit(b,u,to,action,triggerKind);
   b.rules.hit(b,u,to,action,triggerKind);
   const wasBroken=to.broken,p=combatPanel(u,{action}), targetPanel=combatPanel(to),mod=b.rules?.modifiers(b,u,to,action,damageKind)??{};
+  const sceneMechanics=[];
+  for(const rule of b.config.endgameRules??[])if(rule.type==='enemyCountScaleEffect'){
+    const layers=Math.min(rule.maxStacks,b.units.filter(unit=>alive(unit)&&unit.side===rule.teamSide&&unit.enemyKit?.id!==rule.excludedMonsterId).length);
+    if(layers<=0)continue;
+    if(u.side===rule.teamSide)mod.dmgBoost=(mod.dmgBoost??0)+layers*rule.damageBoostPerEnemy;
+    if(to.side===rule.teamSide){const reduction=layers*rule.damageReductionPerEnemy;mod.dmgReduction=1-(1-(mod.dmgReduction??0))*Math.max(0,1-reduction);}
+    sceneMechanics.push({ruleId:rule.id,layers,damageReduction:layers*rule.damageReductionPerEnemy,damageBoost:layers*rule.damageBoostPerEnemy});
+  }
+  for(const rule of b.config.endgameRules??[])if(rule.type==='enemyDamageOnShieldedTarget'&&u.side===rule.attackerSide&&
+    to.side===rule.targetSide&&to.shields.some(shield=>shield.value>EPS)){
+    mod.dmgBoost=(mod.dmgBoost??0)+rule.damageBoost;
+    sceneMechanics.push({ruleId:rule.id,targetShielded:true,damageBoost:rule.damageBoost});
+  }
   // These 4.6 DoT modifiers declare UseSnapshotEntity=true. Store only the
   // source attack stat they explicitly read; target defense/resistance remain live.
   if(damageKind==='dot'&&Number.isFinite(action.snapshotAtk))p.atk=action.snapshotAtk;
@@ -478,12 +691,14 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
   if(action.fixedCrit){p.critRate=action.fixedCrit.rate??1;p.critDmg=action.fixedCrit.critDmg??0;critMode='crit';}
   const hit=computeHit({panel:p,ability:skill,agg,enemy:{def:targetPanel.def,res:to.res??{}},state:{broken:to.side==='ally'?true:to.broken},options:{critMode},attackerLevel:u.level});
   if(!hit.ok)throw new Error(hit.error);
-  receiveDamage(b,u,to,hit.total,damageKind,{attackType:action.type??'Normal',triggerKind,element:skill.element,critMode,share,role,segment:action.segment,hitEnergy:action.hitEnergy==null?undefined:action.hitEnergy*(action.hitEnergyPerHit?share:1),hitEnergyPerHit:action.hitEnergyPerHit,formula:hit.trace.map(t=>({zone:t.zone,value:t.value,expr:t.expr}))});
+  const hitEnergyShare=Array.isArray(action.hitEnergyShares)?(action.hitEnergyShares[(action.segment??1)-1]??1):(action.hitEnergyPerHit?share:1);
+  const receipt=receiveDamage(b,u,to,hit.total,damageKind,{attackType:action.type??'Normal',triggerKind,element:skill.element,critMode,share,role,segment:action.segment,hitEnergy:action.hitEnergy==null?undefined:action.hitEnergy*hitEnergyShare,hitEnergyPerHit:action.hitEnergyPerHit,formula:hit.trace.map(t=>({zone:t.zone,value:t.value,expr:t.expr})),...(sceneMechanics.length?{sceneMechanics}:{})});
   b.rules.afterHit(b,u,to,action,triggerKind,{critMode,critRate:p.critRate});
   if(b.hitTargets&&!b.hitTargets.includes(to))b.hitTargets.push(to);
   if(wasBroken&&action.superBreak&&alive(to))b.breaks.superBreak(b,u,to,((role==='adjacent'?action.adjacentToughness:action.toughness)??0)*share,action.superBreak,skill.element);
   // 欢愉伤害同样按动作 stance 削韧（150120 等技能的 ShowStanceList 已提供主段/弹射段削韧）。
-  if(!['dot','additional'].includes(damageKind)&&alive(to)&&!to.broken&&(to.toughnessMax??0)>0&&(action.ignoreWeaknessToughness||(to.weaknesses??[]).includes(skill.element)||to.buffs.some(e=>e.weakness===skill.element))){
+  const toughnessLocked=to.enemyKit?.toughnessImmuneTag&&to.buffs.some(effect=>effect.tag===to.enemyKit.toughnessImmuneTag);
+  if(!receipt?.muteBreak&&!toughnessLocked&&!['dot','additional'].includes(damageKind)&&alive(to)&&!to.broken&&(to.toughnessMax??0)>0&&(action.ignoreWeaknessToughness||(to.weaknesses??[]).includes(skill.element)||to.buffs.some(e=>e.weakness===skill.element))){
     const reduction=(role==='adjacent'?action.adjacentToughness??action.toughness:action.toughness)??0;
     const amount=reduction*share*(1+(combatPanel(u).breakEfficiency??0));
     // 0 削韧的附加/欢愉伤害不应产生空的 toughness 事件（否则会污染逐段削韧断言）。
@@ -493,7 +708,37 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
     }
   }
 }
+function resolveCharmedAction(b,u,effect){
+  const excluded=new Set([u.id,...(effect.excludeTargetIds??[])]);
+  if(effect.excludeTargetId)excluded.add(effect.excludeTargetId);
+  const pool=targets(b,u,'ally').filter(t=>!excluded.has(t.id));
+  if(!pool.length){record(b,'skip',u,{name:'支配 · 没有可攻击的同伴'});return null;}
+  const target=pool[Math.floor(b.random()*pool.length)];
+  // CharmUseSkill selects a same-team target and routes the controlled unit's
+  // normal skill through the inserted-action path. The verified shared modifier
+  // supplies its attack-ratio clamp; an explicit action key can override the
+  // default basic attack for source records that name another skill. The
+  // source's MDF_SkillMaxHit split factor is not represented by the current
+  // actor schema, so a boss using this helper must remain marked incomplete.
+  const actionKey=effect.charmActionKey??'basic';
+  if(!u.actions?.[actionKey])throw new Error(u.name+'缺少支配插入动作 '+actionKey);
+  const panel=combatPanel(u),team=targets(b,u,'ally');
+  const averageAttack=team.reduce((sum,ally)=>sum+combatPanel(ally).atk,0)/Math.max(1,team.length);
+  const attackRatio=averageAttack/Math.max(EPS,panel.atk);
+  const clampedRatio=Math.max(effect.minDamageRatio??.5,Math.min(effect.maxDamageRatio??1.5,attackRatio));
+  const multiplier=(effect.charmDamagePercent??1)*clampedRatio;
+  finite(multiplier,'支配攻击倍率');
+  useAction(b,u,actionKey,'followup',target.id,{
+    name:effect.charmActionName??'支配 · 强制攻击同伴',target:'ally',targetId:target.id,
+    terms:[{scaling:'atk',multiplier}],hitShares:[1],hitEnergy:0,toughness:0,
+    repeatCount:1,bounceGroups:[],spCost:0,spGain:0,energyCost:0,energyGain:0,
+    hpCostRatio:0,hpCostCanKill:false,effects:[],
+  });
+  record(b,'mechanic',u,{name:'CharmUseSkill · 同伴攻击',target:target.id,source:effect.source??null,attackRatio,clampedRatio,multiplier});
+  return target;
+}
 function useAction(b,u,key,kind='normal',targetId=null,overrides=null){
+  if(key==='ultimate'&&kind!=='copy'&&u.buffs.some(e=>e.noUltimate))return;
   const original=u.actions[key];if(!original)throw new Error(u.name+'缺少动作 '+key);
   // 队列条目可以携带「仅作用于本次行动」的覆盖（例如开拓者终结技让目标立即施放 1 次
   // 固定计入 20 笑点的欢愉技）。覆盖在角色 prepare 之后合并，因此不改变角色自身的动作合同，
@@ -521,14 +766,29 @@ function useAction(b,u,key,kind='normal',targetId=null,overrides=null){
   record(b,'action',u,{name:action.name??key,key,kind,targets:selected.map(t=>t.id),energy:u.energy});
   b.rules.before(b,u,key,kind,action,selected);
   let segment=0;
+  const randomUniqueHitIds=new Set();
   for(let repeat=0;repeat<(action.repeatCount??1);repeat++){
   b.rules.repeatStart(b,u,key,kind,action,repeat);
   for(const share of action.hitShares??[1]){
     const packet={...action,segment:++segment};
-    for(const to of selected)if(alive(to))damageTo(b,u,to,packet,share,'primary',kind==='followup'||key==='dragon'?'followup':'direct');
+    let packetTargets=selected;
+    if(action.randomHitTargets){
+      const pool=targets(b,u,'enemy');if(!pool.length)break;
+      packetTargets=[pool[Math.floor(b.random()*pool.length)]];
+    }
+    if(action.randomUniqueHitTargets){
+      const pool=targets(b,u,'enemy');if(!pool.length)break;
+      let available=pool.filter(to=>!randomUniqueHitIds.has(to.id));
+      if(!available.length){randomUniqueHitIds.clear();available=pool;}
+      const first=segment===1?selected.find(to=>available.some(candidate=>candidate.id===to.id)):null;
+      const to=first??available[Math.floor(b.random()*available.length)];
+      randomUniqueHitIds.add(to.id);packetTargets=[to];
+    }
+    const packetShare=action.shareDamageAcrossTargets===true?share/Math.max(1,selected.length):share;
+    for(const to of packetTargets)if(alive(to))damageTo(b,u,to,packet,packetShare,'primary',kind==='followup'||key==='dragon'?'followup':'direct');
     if(action.target==='blast'){
       const pool=b.units.filter(t=>t.side===tSide(u)), at=pool.findIndex(t=>t.id===selected[0].id);
-      for(const to of [pool[at-1],pool[at+1]].filter(t=>t&&alive(t)))damageTo(b,u,to,packet,share,'adjacent',kind==='followup'?'followup':'direct');
+      for(const to of [pool[at-1],pool[at+1]].filter(t=>t&&alive(t)))damageTo(b,u,to,packet,packetShare,'adjacent',kind==='followup'?'followup':'direct');
     }
   }
   }
@@ -540,12 +800,25 @@ function useAction(b,u,key,kind='normal',targetId=null,overrides=null){
   }
   applyEffects(b,u,action,selected);energy(b,u,action.energyGain??0,action.fixedEnergy??false);
   if(u.side==='ally')b.rules.sp(b,u,action.spGain??0,'动作恢复');
-  const hitTargets=[...b.hitTargets],bounceTargets=[...b.hitBounceTargets];b.rules.after(b,u,key,kind,action,selected,hitTargets,bounceTargets);b.rules.sync(b);
+  // Native after hooks may remove attack-only efficiency before team reactors run.
+  // Retain that value on this action so deferred superbreak uses the attack's value.
+  const afterAction={...action,superBreakEfficiency:combatPanel(u).breakEfficiency??0};
+  const hitTargets=[...b.hitTargets],bounceTargets=[...b.hitBounceTargets];b.rules.after(b,u,key,kind,afterAction,selected,hitTargets,bounceTargets);
+  if(u.side==='ally'&&key==='ultimate'&&kind!=='copy')for(const rule of b.config.endgameRules??[]){
+    if(rule.type!=='mocAhaCycle')continue;
+    b.laughter.ally+=rule.laughterPerUltimate;
+    record(b,'resource',u,{name:'累计获得笑点',value:b.laughter.ally,added:rule.laughterPerUltimate,
+      reason:'混沌回忆·物竞天择：施放终结技'});
+    b.rules?.laughterGained?.(b,'ally',rule.laughterPerUltimate,u,'混沌回忆·物竞天择：施放终结技');
+  }
+  b.rules.sync(b);
   if(hitTargets.length)b.breaks.afterAttack(b,hitTargets);
   if(copy){b.rules.consumeCopy(b,copy,u);u.coupActive=false;}
   record(b,'action_end',u,{kind,state:snapshot(b)});
   queuePlannedActions(b,u,key,kind);
   b.activeAction=savedAction??null;b.hitTargets=savedHits;b.hitBounceTargets=savedBounceHits;b.hitEnergyTargets=savedEnergy;b.attackedTargets=savedAttacked;
+  applyPendingEndgameWaveTransition(b);
+  refillEndgameSpawnWave(b);
 }
 function queuePlannedActions(b,from,key,kind){
   for(const [i,cmd]of (b.config.actionPlan??[]).entries()){
@@ -567,7 +840,7 @@ function queuePlannedActions(b,from,key,kind){
 function enqueueUltimates(b,{beforeEnd=false}={}){
   if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy'))return;
   const queued=new Set(b.queue.filter(q=>q.kind==='ultimate').map(q=>q.actor));
-  for(const u of b.units)if(alive(u)&&!frozen(u)&&u.policy?.autoUltimate!==false&&!(beforeEnd&&u.id===b.turnActor&&u.policy?.ultimateTiming==='afterTurn')&&u.actions.ultimate&&!queued.has(u.id)&&!u.buffs.some(e=>e.noUltimate)&&(u.actions.ultimate.energyCost??u.energyMax)>0&&u.energy+EPS>=(u.actions.ultimate.energyCost??u.energyMax))b.queue.push({actor:u.id,key:'ultimate',kind:'ultimate'});
+  for(const u of b.units)if(alive(u)&&!frozen(u)&&!sleeping(u)&&u.policy?.autoUltimate!==false&&!(beforeEnd&&u.id===b.turnActor&&u.policy?.ultimateTiming==='afterTurn')&&u.actions.ultimate&&b.rules.shouldUseUltimate(b,u)!==false&&!queued.has(u.id)&&!u.buffs.some(e=>e.noUltimate)&&(u.actions.ultimate.energyCost??u.energyMax)>0&&u.energy+EPS>=(u.actions.ultimate.energyCost??u.energyMax))b.queue.push({actor:u.id,key:'ultimate',kind:'ultimate'});
 }
 function finishAhaInstant(b,actor=null){
   const instant=b.ahaInstant;if(!instant||instant.finished)return;
@@ -602,6 +875,7 @@ function finishAhaInstant(b,actor=null){
     b.laughter.ally=0;
     record(b,'resource',null,{name:'累计获得笑点',value:0,reason:'阿哈自然行动结算'});
     const next=elationTeam(b).length;b.laughter.ally=next;
+    if(next)b.rules?.laughterGained?.(b,'ally',next,null,'阿哈自然行动后队伍基础笑点');
     if(next)record(b,'resource',null,{name:'累计获得笑点',value:next,reason:'阿哈自然行动后队伍基础笑点'});
   }
   for(const fn of deferred)fn();
@@ -613,12 +887,14 @@ function beginNaturalAha(b){
   b.ahaInstant={id,natural:true,fixedPunchline:null,ending:false,participants:actors.map(u=>u.id),completed:[],deferred:[]};
   b.ahaCount=(b.ahaCount??0)+1;b.ahaCounted=b.laughter.ally??0;
   for(const u of actors){u.buffs=u.buffs.filter(e=>!e.control);u.dots=u.dots.filter(e=>!e.control);}
-  b.queue.unshift(...actors.map(u=>({actor:u.id,key:'elation',kind:'aha',ahaInstantId:id})));
   record(b,'mechanic',null,{name:'阿哈自然行动',counted:b.ahaCounted,participants:actors.map(u=>u.id),speed:currentAhaSpeed(b)});
-  if(!actors.length){record(b,'mechanic',null,{name:'阿哈欢笑兜底分支待实现',counted:b.ahaCounted});finishAhaInstant(b);}
+  const reactions=b.rules.ahaStart?.(b,{natural:true,punchline:b.ahaCounted})??[];
+  b.queue.unshift(...reactions,...actors.map(u=>({actor:u.id,key:'elation',kind:'aha',ahaInstantId:id})));
+  if(!b.queue.length){record(b,'mechanic',null,{name:'阿哈欢笑兜底分支待实现',counted:b.ahaCounted});finishAhaInstant(b);}
 }
 function flush(b,{abilitiesOnly=false}={}){
   while(b.queue.length){
+    applyPendingEndgameWaveTransition(b);
     if(!b.units.some(u=>alive(u)&&u.side==='ally')){b.queue=[];finishAhaInstant(b);break;}
     if(!b.units.some(u=>alive(u)&&u.side==='enemy')){
       nextWave(b);
@@ -634,8 +910,12 @@ function flush(b,{abilitiesOnly=false}={}){
     if(!u||!alive(u)){if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId&&b.ahaInstant.ending)finishAhaInstant(b);continue;}
     if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId)
       b.ahaInstant.ending=!b.queue.some(x=>x.kind==='aha'&&x.ahaInstantId===q.ahaInstantId);
-    if(frozen(u)){if(q.planIndex!=null)throw new Error('录像操作轴角色被冻结，不能执行插入动作');record(b,'skip',u,{name:'冻结 · 无法执行插入动作',kind:q.kind});continue;}
+    if(frozen(u)||sleeping(u)){if(q.planIndex!=null)throw new Error(sleeping(u)?'录像操作轴角色陷入【异梦】，不能执行插入动作':'录像操作轴角色被冻结，不能执行插入动作');record(b,'skip',u,{name:sleeping(u)?'异梦 · 无法执行插入动作':'冻结 · 无法执行插入动作',kind:q.kind});continue;}
     if(q.planIndex!=null&&q.targetId&&!b.units.some(t=>t.id===q.targetId&&alive(t)))throw new Error('录像操作轴目标已阵亡或尚未入场，不能自动换靶');
+    if(q.key==='ultimate'&&u.buffs.some(e=>e.noUltimate)){
+      if(q.planIndex!=null)throw new Error('录像操作轴角色当前状态禁止施放终结技');
+      record(b,'skip',u,{name:'当前状态禁止施放终结技',kind:q.kind});continue;
+    }
     if(q.kind==='ultimate'&&u.energy+EPS<(u.actions[q.key].energyCost??0))continue;
     // Extra turns/ultimates/follow-ups do not reset the normal action gauge.
     const actionLogStart=b.log.length;
@@ -648,9 +928,30 @@ function flush(b,{abilitiesOnly=false}={}){
     if(!abilitiesOnly)enqueueUltimates(b,{beforeEnd:!!b.turnActor});
   }
 }
-function nextWave(b){
-  if(b.units.some(u=>alive(u)&&u.side==='enemy')||!b.units.some(u=>alive(u)&&u.side==='ally'))return;
-  const next=b.units.filter(u=>u.side==='enemy'&&(u.wave??1)===b.wave+1);if(!next.length)return;
+function refillEndgameSpawnWave(b){
+  const runtime=b.endgameSpawnPlan;if(!runtime)return 0;
+  if(runtime.pendingGateTransition||runtime.completed)return 0;
+  const wave=runtime.source.waves[runtime.waveIndex];if(!wave)return 0;
+  let active=b.units.filter(u=>alive(u)&&u.side==='enemy').length,spawned=0;
+  while(active<wave.maxTeammateCount&&runtime.cursor<wave.units.length){
+    const blueprint=wave.units[runtime.cursor++],unit=instantiateUnit(blueprint,b.units.length,true);
+    unit.wave=b.wave;unit.distance=ACTION_DISTANCE;unit.advanceOrder=0;
+    attachUnitToBattle(b,unit);active++;spawned++;
+    record(b,'enemy_spawn',unit,{name:'虚构叙事 · 按来源顺序补入敌人',spawnIndex:runtime.cursor,
+      sourceWaveIndex:runtime.waveIndex+1,sourceWaveId:wave.id,activeEnemyCount:active,maxTeammateCount:wave.maxTeammateCount});
+  }
+  return spawned;
+}
+function markEndgameGateDefeated(b,unit){
+  const runtime=b.endgameSpawnPlan;
+  const wave=runtime?.source.waves[runtime.waveIndex];
+  if(!wave?.gateUnitId||wave.gateUnitId!==unit.id)return false;
+  runtime.pendingGateTransition=true;
+  record(b,'mechanic',unit,{name:'虚构叙事 · 首领门槛已击败',sourceWaveId:wave.id,
+    transition:'本次攻击结算后进入下一波'});
+  return true;
+}
+function enterWave(b,activate){
   record(b,'wave_end',null,{name:'第 '+b.wave+' 波结束'});b.cyclesSpent+=waveCycle(b.av-b.waveStartAV);
   const continuingAha=b.ahaInstant?b.queue.filter(q=>q?.kind==='aha'&&q.ahaInstantId===b.ahaInstant.id):[];
   // Character-granted extra turns/follow-ups are actions already earned by the
@@ -659,7 +960,7 @@ function nextWave(b){
   const continuingWaveActions=b.queue.filter(q=>q?.persistWave===true);
   for(const u of b.units.filter(u=>u.side==='enemy'&&u.active))u.active=false;
   b.wave++;b.waveStartAV=b.av;b.queue=[...continuingAha,...continuingWaveActions.filter(q=>!continuingAha.includes(q))];b.pendingActions=[];
-  for(const u of next){u.active=true;u.distance=ACTION_DISTANCE;u.advanceOrder=0;}
+  activate();
   if(b.config.waveMode!=='continuous'){
     // 非连续模式（混沌回忆）：换波时行动值全部重置为满条，倒计时召唤物同样重置。
     // 连续模式（虚构叙事 / 末日幻影）：保留行动值与倒计时进度。
@@ -671,8 +972,63 @@ function nextWave(b){
   // 逐波次事件：秘技「酣醉序曲」、镜中故我等每次波次开始的效果在此结算。
   b.rules.onWaveStart(b);
 }
+function applyPendingEndgameWaveTransition(b){
+  const runtime=b.endgameSpawnPlan;
+  if(!runtime?.pendingGateTransition)return false;
+  runtime.pendingGateTransition=false;
+  const nextIndex=runtime.waveIndex+1;
+  const wave=runtime.source.waves[runtime.waveIndex];
+  for(const unit of b.units.filter(u=>u.side==='enemy'&&u.active&&alive(u))){
+    record(b,'enemy_despawn',unit,{name:'虚构叙事 · 首领门槛推进',sourceWaveId:wave?.id,
+      reason:'本波门槛敌人被击败'});
+  }
+  if(nextIndex>=runtime.source.waves.length){
+    record(b,'wave_end',null,{name:'第 '+b.wave+' 波结束'});b.cyclesSpent+=waveCycle(b.av-b.waveStartAV);
+    for(const unit of b.units.filter(u=>u.side==='enemy'&&u.active))unit.active=false;
+    runtime.completed=true;
+    return true;
+  }
+  runtime.waveIndex=nextIndex;runtime.cursor=0;
+  enterWave(b,()=>{refillEndgameSpawnWave(b);});
+  return true;
+}
+function removeDrainedFictionalControllers(b){
+  const runtime=b.endgameSpawnPlan,wave=runtime?.source.waves[runtime.waveIndex];
+  if(!wave||runtime.cursor<wave.units.length)return false;
+  const active=b.units.filter(u=>alive(u)&&u.side==='enemy');
+  if(!active.length||active.some(u=>u.enemyKit?.waveController!==true))return false;
+  for(const unit of active){
+    unit.active=false;
+    record(b,'mechanic',unit,{name:'虚构叙事 · 来源名单耗尽后移除波次控制体',sourceWaveId:wave.id,
+      source:'Monster_XP_MonsterGroup_00_PassiveSkillInitiate OnDestroy'});
+    record(b,'enemy_despawn',unit,{name:'虚构叙事 · 波次控制体清场',sourceWaveId:wave.id,
+      reason:'该波全部来源敌人已生成并被击败'});
+  }
+  return true;
+}
+function nextWave(b){
+  if(!b.units.some(u=>alive(u)&&u.side==='ally'))return;
+  const dynamic=b.endgameSpawnPlan;
+  if(dynamic){
+    if(applyPendingEndgameWaveTransition(b))return;
+    removeDrainedFictionalControllers(b);
+    if(b.units.some(u=>alive(u)&&u.side==='enemy'))return;
+    if(refillEndgameSpawnWave(b)>0)return;
+    const nextIndex=dynamic.waveIndex+1;
+    if(nextIndex>=dynamic.source.waves.length)return;
+    dynamic.waveIndex=nextIndex;dynamic.cursor=0;
+    enterWave(b,()=>{refillEndgameSpawnWave(b);});
+    return;
+  }
+  if(b.units.some(u=>alive(u)&&u.side==='enemy'))return;
+  const next=b.units.filter(u=>u.side==='enemy'&&(u.wave??1)===b.wave+1);if(!next.length)return;
+  enterWave(b,()=>{for(const u of next){u.active=true;u.distance=ACTION_DISTANCE;u.advanceOrder=0;}});
+}
 export function stepBattle(b){
   b.eventActions.cleanup(b);
+  nextWave(b);
+  if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy'))return false;
+  fireMocCycleStart(b);
   nextWave(b);
   if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy'))return false;
   enqueueUltimates(b);flush(b);
@@ -680,21 +1036,43 @@ export function stepBattle(b){
   if(!b.units.some(u=>alive(u)&&u.side==='ally')||!b.units.some(u=>alive(u)&&u.side==='enemy'))return false;
   b.rules.sync(b);
   if(b.aha?.active)b.aha.speed=currentAhaSpeed(b);
-  const order=[...b.units.filter(u=>alive(u)&&!u.cannotAct&&!b.eventActions.suspended(b,u)).map(u=>({u,wait:u.distance/combatPanel(u).speed})),...b.summons.filter(s=>s.active).map(u=>({u,wait:u.distance/u.speed})),...b.eventActions.active(b).map(u=>({u,wait:u.distance/u.speed})),...(b.aha?.active&&(b.laughter.ally??0)>0?[{u:b.aha,wait:b.aha.distance/b.aha.speed}]:[])].sort((a,c)=>Math.abs(a.wait-c.wait)>EPS?a.wait-c.wait:sameTimeOrder(a.u,c.u));
+  const order=[...b.units.filter(u=>alive(u)&&!u.cannotAct&&!u.noAction&&!b.eventActions.suspended(b,u)).map(u=>({u,wait:u.distance/combatPanel(u).speed})),...b.summons.filter(s=>s.active).map(u=>({u,wait:u.distance/u.speed})),...b.eventActions.active(b).map(u=>({u,wait:u.distance/u.speed})),...(b.aha?.active&&(b.laughter.ally??0)>0?[{u:b.aha,wait:b.aha.distance/b.aha.speed}]:[])].sort((a,c)=>Math.abs(a.wait-c.wait)>EPS?a.wait-c.wait:sameTimeOrder(a.u,c.u));
   if(!order.length)return false;
-  const {u,wait}=order[0];if(b.av+wait>b.config.maxAV+EPS)return false;
-  for(const unit of b.units.filter(u=>alive(u)&&!b.eventActions.suspended(b,u)))unit.distance=Math.max(0,unit.distance-combatPanel(unit).speed*wait);
-  for(const s of b.summons.filter(s=>s.active))s.distance=Math.max(0,s.distance-s.speed*wait);
-  for(const e of b.eventActions.active(b))e.distance=Math.max(0,e.distance-e.speed*wait);
-  if(b.aha?.active)b.aha.distance=Math.max(0,b.aha.distance-b.aha.speed*wait);
+  const {u,wait}=order[0],cycleBoundary=nextMocCycleBoundary(b);
+  if(cycleBoundary!=null&&cycleBoundary<=b.av+wait+EPS){
+    const cycleWait=Math.max(0,cycleBoundary-b.av);
+    if(b.av+cycleWait>b.config.maxAV+EPS)return false;
+    advanceCombatTime(b,cycleWait);b.av+=cycleWait;fireMocCycleStart(b);return true;
+  }
+  if(b.av+wait>b.config.maxAV+EPS)return false;
+  advanceCombatTime(b,wait);
   if(u===b.aha){b.av+=wait;b.aha.distance=ACTION_DISTANCE;b.aha.speed=currentAhaSpeed(b);beginNaturalAha(b);flush(b);return true;}
   if(u.kind==='action_event'){b.av+=wait;b.eventActions.dispatch(b,u);enqueueUltimates(b);flush(b);return true;}
-  b.av+=wait;u.distance=ACTION_DISTANCE;u.advanceOrder=0;
+  b.av+=wait;
+  // Counter ultimates wait until the enemy's actual turn is about to begin.
+  // Explicit action plans still bypass this automatic timing decision.
+  if(u.side==='enemy'&&!frozen(u)&&!sleeping(u)&&!(u.skipTurns>0)){
+    b.ultimateWindowActor=u.id;enqueueUltimates(b);flush(b);delete b.ultimateWindowActor;
+    if(!alive(u))return true;
+  }
+  u.distance=ACTION_DISTANCE;u.advanceOrder=0;
   if(u.owner){b.turnActor=u.id;record(b,'summon_turn',b.units.find(t=>t.id===u.owner),{name:u.name,summon:u.id});b.rules.dragon(b,u);b.turnActor=null;enqueueUltimates(b);flush(b);return true;}
   u.turns++;b.turns++;
   b.turnActor=u.id;record(b,'turn_start',u);
   const thaw=frozen(u);
   for(const dot of [...u.dots]){const source=b.units.find(x=>x.id===dot.source);if(dot.breakData)b.breaks.tick(b,u,dot);else if(dot.terms)damageTo(b,source,u,{...dot,type:'DoT',toughness:0},1,'primary','dot');
+    else if(Number.isFinite(dot.bleedAtkRatio)&&Number.isFinite(dot.maxHpCapRatio)){
+      const raw=Math.min((dot.snapshotAtk??combatPanel(source).atk)*dot.bleedAtkRatio,combatPanel(u).hp*dot.maxHpCapRatio);
+      damageTo(b,source,u,{name:dot.name??'裂伤',type:'DoT',element:dot.element,
+        terms:[{scaling:'atk',multiplier:0,flatAdd:raw}],snapshotAtk:dot.snapshotAtk,toughness:0},1,'primary','dot');
+    }
+    // 以目标最大生命百分比结算的持续伤害（1013020 自动机兵•齿狼裂伤：
+    // Owner_MaxHP × Layer × 5%）。每层独立乘算，走普通持续伤害乘区。
+    else if(Number.isFinite(dot.maxHpRatio)){
+      const raw=combatPanel(u).hp*dot.maxHpRatio*(dot.stacks??1);
+      damageTo(b,source,u,{name:dot.name??'裂伤',type:'DoT',element:dot.element,
+        terms:[{scaling:'atk',multiplier:0,flatAdd:raw}],toughness:0},1,'primary','dot');
+    }
     // 只有固定值（无 terms）的持续伤害（如海瑟音天赋的物理裂伤）同样属于普通持续伤害：
     // 必须经过防御 / 抗性 / 易伤 / 增伤乘区并产出公式溯源，不能再把快照值当最终伤害直接扣除。
     // 用 multiplier:0 + flatAdd 的等价伤害项，与 breaks.damage 的固定值口径一致；非物理击破 DoT
@@ -706,26 +1084,42 @@ export function stepBattle(b){
   b.rules.onTurnStart(b,u);
   if(thaw){u.buffs=u.buffs.filter(e=>e.control!=='freeze');u.dots=u.dots.filter(e=>e.control!=='freeze');record(b,'skip',u,{name:'冻结 · 解冻回合'});advance(b,u.id,.5);}
   else if(u.skipTurns>0){u.skipTurns--;record(b,'skip',u);}
+  else if(sleeping(u))record(b,'skip',u,{name:'【异梦】无法行动'});
   else {
     if(u.broken){
       // 「尝试从弱点击破状态恢复」是残梅绽等延长击破效果的唯一触发点。
       if(b.rules.beforeRecover(b,u))record(b,'resource',u,{name:'弱点击破恢复被延长'});
       else {u.broken=false;u.toughness=u.toughnessMax;record(b,'recover',u);}
     }
-    const healing=u.policy?.healBelow!=null&&targets(b,u,'ally').some(t=>t.hp/combatPanel(t).hp<u.policy.healBelow);
-    const skill=u.actions.skill;
-    const effectiveSkill=skill?b.rules.prepare(b,u,'skill','normal',skill):null;
-    const maintain=u.policy?.maintainBond&&u.resources?.['同袍目标']&&b.units.some(t=>alive(t)&&t.id===u.resources['同袍目标']);
-    const useSkill=skill&&!maintain&&b.rules.shouldUseSkill(b,u)!==false&&u.policy?.basicOnly!==true&&(u.side==='enemy'||b.sp>=(effectiveSkill.spCost??0))&&(u.policy?.healBelow==null||healing);
-    const rotation=u.policy?.rotation;
-    let key=rotation?rotation[(u.turns-1)%rotation.length]:useSkill?'skill':'basic';
-    const scripted=u.policy?.turnPlan?.find(p=>p.turn===u.turns);if(scripted)key=scripted.key;
-    if(scripted?.targetId&&!b.units.some(t=>t.id===scripted.targetId&&alive(t)))throw new Error(u.name+' 录像操作轴目标已阵亡或尚未入场，不能自动换靶');
-    const chosen=b.rules.prepare(b,u,key,'normal',u.actions[key]);
-    if(scripted&&(u.side==='ally'&&(chosen.spCost??0)>b.sp||(chosen.energyCost??0)>u.energy+EPS))throw new Error(u.name+' 录像操作轴第 '+u.turns+' 回合资源不足');
-    if((u.side==='ally'&&(chosen.spCost??0)>b.sp)||(chosen.energyCost??0)>u.energy+EPS)key='basic';
-    useAction(b,u,key,'normal',scripted?.targetId);
-    if(u.kit?.characterId===1015&&key==='skill'){
+    const charm=u.side==='ally'?u.buffs.find(e=>e.control==='charm'):null;
+    let key;
+    if(charm){key=charm.charmActionKey??'basic';resolveCharmedAction(b,u,charm);}
+    else {
+      const healing=u.policy?.healBelow!=null&&targets(b,u,'ally').some(t=>t.hp/combatPanel(t).hp<u.policy.healBelow);
+      const skill=u.actions.skill;
+      const effectiveSkill=skill?b.rules.prepare(b,u,'skill','normal',skill):null;
+      const maintain=u.policy?.maintainBond&&u.resources?.['同袍目标']&&b.units.some(t=>alive(t)&&t.id===u.resources['同袍目标']);
+      const useSkill=skill&&!maintain&&b.rules.shouldUseSkill(b,u)!==false&&u.policy?.basicOnly!==true&&(u.side==='enemy'||b.sp>=(effectiveSkill.spCost??0))&&(u.policy?.healBelow==null||healing);
+      const rotation=u.policy?.rotation;
+      const enemyDecision=u.side==='enemy'?b.rules.enemyAction?.(b,u):null;
+      key=enemyDecision?.key??(rotation?rotation[(u.turns-1)%rotation.length]:useSkill?'skill':'basic');
+      const scripted=u.policy?.turnPlan?.find(p=>p.turn===u.turns);if(scripted)key=scripted.key;
+      if(scripted?.targetId&&!b.units.some(t=>t.id===scripted.targetId&&alive(t)))throw new Error(u.name+' 录像操作轴目标已阵亡或尚未入场，不能自动换靶');
+      const chosen=b.rules.prepare(b,u,key,'normal',u.actions[key]);
+      if(scripted&&(u.side==='ally'&&(chosen.spCost??0)>b.sp||(chosen.energyCost??0)>u.energy+EPS))throw new Error(u.name+' 录像操作轴第 '+u.turns+' 回合资源不足');
+      if((u.side==='ally'&&(chosen.spCost??0)>b.sp)||(chosen.energyCost??0)>u.energy+EPS)key='basic';
+      useAction(b,u,key,'normal',scripted?.targetId??enemyDecision?.targetId);
+    }
+    // A continuation belongs to the same turn: no AV, duration tick or ultimate
+    // insertion between breaths. Each activation still resolves its own attack hooks.
+    let continued=key;
+    while(!charm&&alive(u)&&b.units.some(t=>alive(t)&&t.side!==u.side)){
+      const next=b.rules.continueAction(b,u,continued);if(!next)break;
+      const nextKey=typeof next==='string'?next:next.key;
+      if(typeof nextKey!=='string'||!u.actions[nextKey])throw new Error(u.name+' 连续行动钩子返回了无效动作');
+      useAction(b,u,nextKey,'continuation',typeof next==='string'?null:next.targetId);continued=nextKey;
+    }
+    if(!charm&&u.kit?.characterId===1015&&key==='skill'){
       // All active shots share one normal turn. Insertions settle between shots;
       // they neither spend AV nor tick recipient-turn durations.
       enqueueUltimates(b,{beforeEnd:true});flush(b);
@@ -743,8 +1137,8 @@ export function simulateBattle(config){
   const allyAlive=battle.units.some(u=>alive(u)&&u.side==='ally'),enemyAlive=battle.units.some(u=>alive(u)&&u.side==='enemy');
   const outcome=!allyAlive?'defeat':!enemyAlive?'victory':'time_limit';record(battle,'battle_end',null,{outcome});
   return {replayVersion:1,config:clone(config),av:battle.av,sp:battle.sp,turns:battle.turns,outcome,plan:{used:battle.planUsed,unused:(config.actionPlan??[]).map((_,i)=>i).filter(i=>!battle.planUsed.includes(i))},
-    units:snapshot(battle),log:battle.log,accuracy:config.strict?'strict':'approximate',unsupported:battleMechanicsWarnings(config),
-    damage:battle.log.filter(x=>x.type==='damage'&&config.units.find(u=>u.id===x.actor)?.side==='ally').reduce((s,x)=>s+x.damage,0),
+    units:snapshot(battle),actors:battle.units.map(u=>({id:u.id,side:u.side,memospriteOwner:u.memospriteOwner??null})),log:battle.log,accuracy:config.strict?'strict':'approximate',unsupported:battleMechanicsWarnings(config),
+    damage:battle.log.filter(x=>x.type==='damage'&&battle.units.find(u=>u.id===x.actor)?.side==='ally'&&battle.units.find(u=>u.id===x.target)?.side==='enemy').reduce((s,x)=>s+x.damage,0),
     healing:battle.log.filter(x=>x.type==='heal').reduce((s,x)=>s+x.amount,0)};
 }
 export function compareReplay(result,anchors,{avTolerance=0.01,damageTolerance=0.01}={}){

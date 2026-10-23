@@ -97,8 +97,9 @@ function spawnServant(b,u,spec,api){
     cur.hp=wasFull?maxHp:Math.min(cur.hp,maxHp);
     return cur;
   }
+  const inherited=b.rules.relics.servantPanel(b,u,base);
   const s={id,name:spec.name,side:u.side,level:u.level,element:spec.element,memospriteOwner:u.id,
-    panel:{...base,hp:maxHp,atk:base.atk,def:base.def,speed,baseStats:{hp:maxHp,atk:base.baseStats?.atk??base.atk,def:base.baseStats?.def??base.def},elemDmg:{...base.elemDmg}},
+    panel:{...inherited,hp:maxHp,atk:base.atk,def:base.def,speed,baseStats:{hp:maxHp,atk:base.baseStats?.atk??base.atk,def:base.baseStats?.def??base.def},elemDmg:{...base.elemDmg}},
     baseSpeed:speed,energyMax:0,energy:0,actions:spec.actions(),policy:{autoUltimate:false,basicOnly:true},
     aggro:spec.aggro??100,toughnessMax:0,toughness:0,broken:false,res:{},
     order:b.units.reduce((n,t)=>Math.max(n,t.order??0),0)+1,
@@ -192,7 +193,8 @@ const factories={
     }
     return {
       // 行迹 point06：至高之姿下阿格莱雅与衣匠攻击力提高（固定值，不能用 atkPct —— 那会乘白值）。
-      panel(b,u,target,out){
+      panel(b,u,target,out,{excludeConverted=false}={}){
+        if(excludeConverted)return;
         if(target!==u)return;   // roster.panel 的第 3 个参数是被计算的单位
         if(!supreme(u)||!trace(u,1)||out.speed==null||out.atk==null)return;
         const s=mem(b,u),ms=s?combatPanel(s).speed:0;
@@ -215,7 +217,7 @@ const factories={
         if(kind!=='copy'&&supreme(u)&&key==='basic')return {...u.actions.enhancedBasic,targetId:a.targetId};
         return a;
       },
-      shouldUseSkill(b,u){return !supreme(u);},
+      shouldUseSkill(b,u){const s=mem(b,u);return !supreme(u)&&(!s||s.hp/combatPanel(s).hp<=.5);},
       before(b,u,actor,key,kind,a,selected){
         if(actor!==u)return;
         const p=P(u);
@@ -325,7 +327,7 @@ const factories={
     };
     const newbudCap=(b,u)=>maxOf(b,u)*(u.resources['新蕊溢出倍率']??1);
     const servantActions=()=>({
-      basic:{name:SERVANT[1140702].name,type:'Talent',element:'Quantum',target:'all',terms:[],hitShares:[1],
+      basic:{name:SERVANT[1140702].name,type:'Talent',element:'Quantum',target:'all',terms:[],hitShares:Array(10).fill(.1),
         energyGain:0,spCost:0,spGain:0,toughness:SERVANT[1140702].stance[1],repeatCount:1}});
     const dragonTerm=(u,mult)=>[{scaling:'hp',multiplier:0,flatAdd:combatPanel(u).hp*mult}];
     const breathMult=(n,sv)=>n<=0?sv[1]:n===1?sv[2]:sv[3];
@@ -342,6 +344,7 @@ const factories={
         // 「西风的驻足」只持续至原回合结束，带过血条会让新死龙从旧层数起步。
         // 有持续时间的增益同样属于上一回合，一并清除；整场生效的增益保留。
         delete s.resources['晦翼已结算'];
+        delete s.resources['焰息收尾'];
         s.buffs=s.buffs.filter(e=>e.tag!=='castoriceWestWind'&&e.remaining==null);
         s.dots=[];
       }
@@ -375,6 +378,8 @@ const factories={
           terms:[{scaling:'hp',multiplier:0,flatAdd:p.hp*q[0]*(1+overflow)}],toughness:SERVANT[1140706].stance[0]},1,'primary','additional');
       }
       for(const to of allies(b,u))heal(b,u,to,p.hp*q[2]+q[3]);
+      // Wing healing occurs before departure and cannot charge the next dragon.
+      scanCastoriceHealing(b,u);
       record(b,'mechanic',u,{name:'灼掠幽墟的晦翼',target:s.id});
     }
     // 1140706「死龙消失时」：被敌方击倒、被 1140703 的 500% 反噬耗尽、或 3 回合到期都算消失。
@@ -402,14 +407,14 @@ const factories={
       if(b.queue.some(q=>q.actor===u.id&&q.key==='summonDragon'))return;
       b.queue.push({actor:u.id,key:'summonDragon',kind:'extra'});
     }
-    function gainNewbud(b,u,amount){
+    function gainNewbud(b,u,amount,{direct=false}={}){
       if(!(amount>0))return;
       const cap=maxOf(b,u),s=mem(b,u);
-      if(s){s.hp=Math.min(s.panel.hp,s.hp+amount);record(b,'resource',u,{name:'死龙生命值',value:s.hp});return;}
+      if(s&&!direct){s.hp=Math.min(s.panel.hp,s.hp+amount);record(b,'resource',u,{name:'死龙生命值',value:s.hp});return;}
       const next=Math.min(newbudCap(b,u),(u.resources['新蕊']??0)+amount);
       resource(b,u,'新蕊',next);
       const holdOverflow=!!u.policy?.holdNewbudOverflow&&!!u.resources['新蕊溢出倍率'];
-      if(next>=cap&&(!holdOverflow||next>=newbudCap(b,u)))queueDragon(b,u);
+      if(!s&&next>=cap&&(!holdOverflow||next>=newbudCap(b,u)))queueDragon(b,u);
     }
     // 行迹 1407101：治疗转新蕊/死龙生命，每名受疗目标单次行动最多转化新蕊上限的12%。
     // 日志在 after 钩子中扫描，保证同一动作内多次治疗先合并后结算；每个单位行动后清零限额。
@@ -510,12 +515,15 @@ const factories={
           const pool=enemies(b,u),allDead=pool.length===0;
           if(allDead||(packets.length>0&&packets.every(e=>(e.hpDamage??0)<=0)))
             buff(b,u,s,'倒置的火炬 · 速度','speedPct',trace(u,2)?.[2]??1,1,{id:u.id+':dragon-trace-speed'});
+          if(s.resources['焰息收尾'])dismissDragon(b,u,s);
         }
         // key 仍为 skill：按准备后的强化战技识别；40% 消耗已在 before 完成，这里不再重复扣血。
         if(actor===u&&kind!=='copy'&&isEnhanced(u,a)){
           // E2：召唤死龙后的「下一次」强化战技返还【新蕊】上限 30% 的【新蕊】；一次性消费。
           if(u.resources['E2新蕊返还']){
-            gainNewbud(b,u,maxOf(b,u)*u.resources['E2新蕊返还']);
+            // Skill21 calls AddSpecialSP with IgnoreBlock=true, even while the
+            // dragon exists. This 30% reserves the next summon, not dragon HP.
+            gainNewbud(b,u,maxOf(b,u)*u.resources['E2新蕊返还'],{direct:true});
             resource(b,u,'E2新蕊返还',0);
           }
         }
@@ -541,7 +549,8 @@ const factories={
         // previous breath does not fire the talent until the next breath is activated.
         const hpBefore=s.hp;
         if(s.hp<=s.panel.hp*q[4]){
-          s.hp=1;action.repeatCount=repeat+1;wingBlast(b,u,s);
+          // The last breath deals damage first; wings then heal and remove the dragon.
+          s.hp=1;s.resources['焰息收尾']=1;
         }else if(e2)resource(b,u,'炽意',(u.resources['炽意']??0)-1);
         else s.hp=Math.max(0,s.hp-s.panel.hp*q[0]);
         // 死龙的生命降低同样触发「我方生命降低」监听（140704/141304 等）。
@@ -554,6 +563,9 @@ const factories={
           buff(b,u,s,'西风的驻足','dmgBoost',trace(u,3)[0]*n,null,{id:u.id+':west-wind',tag:'castoriceWestWind',stacks:n});
         }
         void kind;
+      },
+      continueAction(b,u,actor,key){
+        return actor===mem(b,u)&&key==='basic'?'basic':null;
       },
       weaknessBreak(b,u,actor,target,action,element){
         const s=mem(b,u);
@@ -568,9 +580,8 @@ const factories={
         if(s&&actor===s){
           spawnServant(b,u,{key:'dragon',name:'死龙•玻吕刻斯',element:'Quantum',aggro:100,
             hpOf:()=>Math.max(1,maxOf(b,u)),speedOf:()=>P(u).Ultra[0],actions:servantActions},api);
-          // 一次攻击中可重复发动【燎尽黯泽的焰息】：按当前生命最多发动 min(4, ⌊HP/25%上限⌋+1) 次。
-          const q=SV(1140702);
-          s.actions.basic.repeatCount=Math.min(4,Math.max(1,Math.floor(s.hp/(s.panel.hp*q[0]))+1));
+          // 连续施放至最后一喷；每次按实际生命与炽意重新判断，不预估次数。
+          s.actions.basic.repeatCount=1;
         }
         if(actor===u&&!s&&(u.resources['新蕊']??0)>=maxOf(b,u)&&u.actions.summonDragon&&
           (!(u.policy?.holdNewbudOverflow&&u.resources['新蕊溢出倍率'])||(u.resources['新蕊']??0)>=newbudCap(b,u)))useAction(b,u,'summonDragon','extra');
@@ -1096,6 +1107,21 @@ const factories={
       }
     }
     const HEIRS=new Set([1402,1403,1404,1405,1406,1407,1408,1409,1410,1412,1413,1414,1415,8007,8008]);
+    function performPoem(b,u,s){
+      const team=allies(b,u).filter(t=>!t.memospriteOwner),seen=u.resources['献诗目标']??[];
+      let target=api.get(b,u.policy?.allyTargetId)??team.find(t=>t!==u);
+      if(u.policy?.poemStrategy!=='fixed'){
+        const butterfly=team.find(t=>t.characterId===1407),night=team.find(t=>t.characterId===1413);
+        if(butterfly&&night)target=[night,butterfly].find(t=>!seen.includes(t.id))??u;
+        // Do not overwrite unspent Romance with the immediately available second ultimate.
+        else if(target?.characterId===1402&&target.buffs.some(e=>e.tag==='cyreneAglaeaRomance:'+u.id))target=u;
+      }
+      if(target===u){
+        castPoem(b,u,s,u);
+        resource(b,u,'真我之诗待结算',1);
+        useAction(b,s,'basic','extra');
+      }else useAction(b,s,'poem','extra',target?.id);
+    }
     function castPoem(b,u,s,target){
       if(!target||target.side!==u.side||!api.live(target))return;
       const id=target.characterId??target.kit?.characterId,old=s.resources['诗篇目标'];
@@ -1189,7 +1215,7 @@ const factories={
           buff(b,u,to,'献予「创世」之诗 · 暴击','critRate',crit,null,{id:u.id+':creation-crit:'+to.id,tag:'cyreneCreationPoem:'+u.id});
         }
       }
-      record(b,'mechanic',u,{name:'德谬歌施放诗篇',target:target.id,poem:id===1413?'岁月':id===1406?'诡计':id===1410?'海洋':id===1407?'生死':id===1408?'负世':id===1403?'门径':id===1405?'理性':id===1409?'天空':id===1412?'律法':id===8007||id===8008?'创世':HEIRS.has(id)?'专属诗篇':'一切生命'});
+      record(b,'mechanic',u,{name:'德谬歌施放诗篇',target:target.id,poem:id===1415?'真我':id===1413?'岁月':id===1406?'诡计':id===1410?'海洋':id===1407?'生死':id===1408?'负世':id===1403?'门径':id===1405?'理性':id===1409?'天空':id===1412?'律法':id===8007||id===8008?'创世':HEIRS.has(id)?'专属诗篇':'一切生命'});
     }
     // 1141518【真知】：只作用于「智识」命途角色；攻击力与战技伤害两条增益同源，
     // 在下一个那刻夏回合开始时一并移除。
@@ -1234,6 +1260,7 @@ const factories={
         }
       },
       entry(b,u){fieldOn(b,u,P(u).BPSkill[1]);},
+      shouldUseSkill(b,u){return !ripple(u);},
       prepare(b,u,key,kind,a){
         if(kind!=='copy'&&ripple(u)&&key==='basic')return {...u.actions.enhancedBasic,targetId:a.targetId};
         return a;
@@ -1260,7 +1287,7 @@ const factories={
             if(ripple(u)){
               spendMemo(b,u,12);
               const existing=mem(b,u),teammates=allies(b,u).filter(t=>!t.memospriteOwner);
-              if(existing)useAction(b,existing,teammates.length>=2?'poem':'basic','extra',api.get(b,u.policy?.allyTargetId)?.id);
+              if(existing){if(teammates.length>=2)performPoem(b,u,existing);else useAction(b,existing,'basic','extra');}
               story(b,u,1);
             }
             return;
@@ -1273,7 +1300,7 @@ const factories={
           s.distance=0;s.advanceOrder=(b.advanceSequence=(b.advanceSequence??0)+1);
           // Skill03_Phase02：场上可选我方角色数≥2时施放辅助忆灵技；否则直接施放舞曲。
           const teammates=allies(b,u).filter(t=>!t.memospriteOwner);
-          if(teammates.length>=2)useAction(b,s,'poem','extra',api.get(b,u.policy?.allyTargetId)?.id);
+          if(teammates.length>=2)performPoem(b,u,s);
           else useAction(b,s,'basic','extra');
           // 激活全体队友的终结技。
           for(const to of allies(b,u)){

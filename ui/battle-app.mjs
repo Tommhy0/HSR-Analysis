@@ -11,9 +11,12 @@ import { validateBattle } from '../simulator/engine.mjs';
 import { strictParty } from '../simulator/party.mjs';
 import { KIT_IDS,SUPPORTED_SETS } from '../simulator/kits.mjs';
 import {renderSetRules} from './relic-rules.mjs';
-import {withReavers} from '../simulator/encounters.mjs';
+import {withAutomatonBeetle,withMoonrageWolves,withReavers} from '../simulator/encounters.mjs';
+import {buildEndgameEncounter} from '../simulator/endgame-battles.mjs';
+import {inspectEndgameTarget,listEndgameTargets} from '../simulator/endgame-scenes.mjs';
 import {withHimekoBeamCount} from '../simulator/himeko-plan.mjs';
 import {mountTeamImport} from './config-import.mjs';
+import {mountEndgameSceneView} from './endgame-scene-view.mjs';
 const data=window.__HSR_DATA__,ctx=createContext(data),characters=listCharacters(ctx),get=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const defaultParty=()=>({...strictParty(ctx),strict:document.documentElement?.dataset?.strictReview==='true'});
@@ -74,8 +77,25 @@ function renderHimekoControl(){
 function renderRuntime(){renderSimulator({host:get('battle-runtime'),state,requireFour:true,onActorPanelChange:id=>{drafts.delete(id);renderBuilder();},onConfigReplace:()=>{drafts.clear();error=null;renderBuilder();},onEditActor:id=>{selected=id;error=null;renderBuilder();get('battle-builder-wrap').open=true;get('battle-builder').scrollIntoView?.({behavior:'smooth'});}});renderHimekoControl();}
 document.querySelectorAll?.('a[href="#battle-builder"]').forEach(el=>el.onclick=()=>{get('battle-builder-wrap').open=true;});
 initTheme();get('battle-version').textContent=`数据 ${data._meta.version} · 四人队伍`;
+mountEndgameSceneView({host:get('battle-scenes'),ctx,onRunScene:spec=>{
+  try{
+    state.config=buildEndgameEncounter(ctx,state.config,spec);state.result=null;state.error=null;state.draft=null;state.stale=false;state.playback={};renderRuntime();
+    get('battle-storage-note').textContent=`已载入${spec.mode==='moc'?'混沌回忆':spec.mode==='pf'?'虚构叙事':'末日幻影'} ${spec.seasonId}:${spec.floorId} 第 ${spec.side} 侧的真实敌方编队；关卡词条与模式计分仍未加入。`;
+    get('battle-runtime').scrollIntoView?.({behavior:'smooth'});
+  }catch(e){get('battle-storage-note').textContent='该场景暂时不能执行：'+e.message;}
+}});
 get('battle-preset').onclick=()=>{state.config=defaultParty();state.result=null;state.error=null;state.draft=null;state.stale=false;state.playback={};drafts.clear();error=null;selected=state.config.units[0].id;renderBuilder();renderRuntime();get('battle-storage-note').textContent='已载入 E0S1 四人专武参考队。星魂、面板、秘技与花火版本均可编辑；可读取先前保存的配置。';};
 get('battle-reavers').onclick=()=>{state.config=withReavers(ctx,state.config);state.result=null;state.error=null;state.draft=null;state.stale=false;state.playback={};renderRuntime();get('battle-storage-note').textContent='已保留四名队员，换为三只 Lv.90 虚卒·掠夺者。行动、分段回能与叠速按 4.6 源脚本建模。';};
+get('battle-mecha').onclick=()=>{let sceneEnemy=null;const pf=listEndgameTargets(ctx).find(s=>s.id==='pf');for(const target of pf?.targets??[]){try{sceneEnemy=inspectEndgameTarget(ctx,{mode:'pf',seasonId:pf.seasonId,floorId:target.floorId}).enemies.find(e=>e.childId===1012030)??null;if(sceneEnemy)break;}catch{}}state.config=withAutomatonBeetle(ctx,state.config,{...(sceneEnemy?{sceneEnemy}:{})});state.result=null;state.error=null;state.draft=null;state.stale=false;state.playback={};renderRuntime();get('battle-storage-note').textContent=sceneEnemy?`已保留四名队员，使用虚构叙事 ${sceneEnemy.seasonId}:${sceneEnemy.floorId} 的甲虫源面板（Lv.${sceneEnemy.level}、HP ${sceneEnemy.hp}、速度 ${sceneEnemy.speed}）；敌方只放入 1 只作为机制样本。`:'已保留四名队员，载入自由沙盒 Lv.90 自动机兵·甲虫。不稳定力场与一次屏障按 4.6 AI、能力和全局修饰器规则结算。';};
+function loadLycanSample(childId){
+  let sceneEnemy=null;const modes=listEndgameTargets(ctx);
+  for(const modeId of ['moc','pf']){const mode=modes.find(s=>s.id===modeId);for(const target of mode?.targets??[]){try{sceneEnemy=inspectEndgameTarget(ctx,{mode:modeId,seasonId:mode.seasonId,floorId:target.floorId}).enemies.find(e=>e.childId===childId)??null;if(sceneEnemy)break;}catch{}}if(sceneEnemy)break;}
+  state.config=withMoonrageWolves(ctx,state.config,{childId,...(sceneEnemy?{sceneEnemy}:{})});state.result=null;state.error=null;state.draft=null;state.stale=false;state.playback={};renderRuntime();
+  const label=childId===2032010?'玄爪狼卒':'蚀月狼卒';
+  get('battle-storage-note').textContent=sceneEnemy?`已保留四名队员，使用${sceneEnemy.mode==='moc'?'混沌回忆':'虚构叙事'} ${sceneEnemy.seasonId}:${sceneEnemy.floorId} ${label}源面板（Lv.${sceneEnemy.level}、HP ${sceneEnemy.hp}、速度 ${sceneEnemy.speed}）；单只狼用于核对真实招式与共享月狂机制。`:`已载入自由沙盒 Lv.${state.config.units.find(u=>u.side==='enemy')?.level??90} ${label}。本样本只还原该狼种的攻击、月狂与裂伤规则。`;
+}
+get('battle-lycan').onclick=()=>loadLycanSample(2032020);
+get('battle-lycan-base').onclick=()=>loadLycanSample(2032010);
 get('battle-two-waves').onclick=()=>{state.config=withReavers(ctx,state.config,{waves:2});state.result=null;state.error=null;state.draft=null;state.stale=false;state.playback={};renderRuntime();get('battle-storage-note').textContent='已保留四人配装，载入两波基础虚卒。换波保留生命、能量与效果，秘技不会再次施放。';};
 get('battle-save').onclick=()=>{try{localStorage.setItem(storageKey,JSON.stringify(state.config));get('battle-storage-note').textContent='已保存当前已应用的四人战斗配置。';}catch(e){get('battle-storage-note').textContent=e.message;}};
 get('battle-load').onclick=()=>{try{const raw=localStorage.getItem(storageKey);if(!raw)throw new Error('尚无已保存的战斗配置');const c=JSON.parse(raw);c.requiredAllies=4;const problems=validateBattle({...c,strict:false});if(problems.length)throw new Error(problems.join('；'));state.config=c;state.result=null;state.error=null;state.draft=null;state.stale=false;drafts.clear();error=null;renderBuilder();renderRuntime();get('battle-storage-note').textContent='已读取独立的四人战斗配置。';}catch(e){get('battle-storage-note').textContent=e.message;}};

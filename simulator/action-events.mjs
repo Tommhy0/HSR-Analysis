@@ -19,7 +19,7 @@ export function actionEventRuntime({record,execute,live,isFrozen}){
       if(!Number.isFinite(distance)||distance<0)throw Error('行动事件距离无效');
       return {id,name:s.name??u.actions[s.key].name??s.key,owner:ownerId,side:u.side,key:s.key,targetId:s.targetId??null,
         speed,distance,initialDistance:distance,group:options.group??null,suspendNormalGauge:options.suspendNormalGauge!==false,
-        redirectAdvance:options.redirectAdvance===true,noWaveReset:options.noWaveReset===true,active:true,
+        redirectAdvance:options.redirectAdvance===true,noWaveReset:options.noWaveReset===true,ignoreFrozen:s.ignoreFrozen===true,active:true,
         kind:'action_event',order:b.units.length+b.summons.length+(b.actionEvents?.length??0)+ids.size};
     });
     b.actionEventSequence=sequence;(b.actionEvents??=[]).push(...events);
@@ -47,7 +47,7 @@ export function actionEventRuntime({record,execute,live,isFrozen}){
     let executed=false,skipped=null;
     try{
       record(b,'action_event_start',u,{name:e.name,eventId:e.id,kind:'extra'});
-      if(isFrozen(u)){skipped='frozen';record(b,'skip',u,{name:'冻结 · 无法执行行动事件',kind:'extra'});}
+      if(!e.ignoreFrozen&&isFrozen(u)){skipped='frozen';record(b,'skip',u,{name:'冻结 · 无法执行行动事件',kind:'extra'});}
       else if(b.rules.actionEventStart?.(b,u,e)===false)skipped='module';
       else {execute(b,u,e);executed=true;}
       b.rules.actionEventEnd?.(b,u,e,{executed,skipped});

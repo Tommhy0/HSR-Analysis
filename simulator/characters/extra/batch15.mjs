@@ -80,6 +80,7 @@ function H(api){
     if(!n)return 0;
     b.laughter[u.side]=(b.laughter[u.side]??0)+n;
     record(b,'resource',u,{name:'累计获得笑点',value:b.laughter[u.side],reason:reason??'笑点'});
+    b.rules?.laughterGained?.(b,u.side,n,u,reason??'笑点');
     return b.laughter[u.side];
   }
   const laughterOf=(b,u)=>b.laughter?.[u.side]??0;

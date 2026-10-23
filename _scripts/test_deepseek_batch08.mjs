@@ -108,7 +108,8 @@ test('流萤：β模组按击破特攻阈值注入超击破并在击破目标上
   const evs=dmgOf(b,self.id,'superbreak').slice(before,before+self.actions.enhancedBasic.hitShares.length);
   assert.equal(evs.length,self.actions.enhancedBasic.hitShares.length,'超击破段数与强化普攻段数不一致');
   const total=evs.reduce((s,e)=>s+baseOf(e),0);
-  const tough=st(1310,131008,0)*(1+(0));
+  // 完全燃烧的本次攻击效率在 after 中移除，期望值须包含攻击期间的 Ultra[1]。
+  const tough=st(1310,131008,0)*(1+(combatPanel(self).breakEfficiency??0)+self.kit.params.Ultra[1]);
   near(total,BREAK_BASE[self.level]*tough/30*(1+3.6)*t[3]);
 });
 
@@ -155,6 +156,7 @@ test('流萤：E2 强化攻击击破或击杀后获得额外回合并进入冷�
   b.queue.length=0;en.broken=true;en.hp=en.panel.hp*0;en.hp=1;
   b.rules.after(b,self,'basic','normal',prep,[en],[en]);
   assert.ok(b.queue.some(q=>q.actor===self.id&&q.kind==='extra'),'E2 未给出额外回合');
+  assert.equal(b.queue.find(q=>q.actor===self.id&&q.kind==='extra').key,'skill','二魂额外回合默认使用强化战技');
   // 冷却计时者为流萤自身回合（E2「#2 回合后可再次触发」）。
   assert.equal(self.resources['E2冷却'],self.turns+self.kit.ranks[2][1]);
 });
@@ -365,9 +367,9 @@ test('开拓者•同谐：终结技给全队伴舞（击破特攻/持续回合�
   const evs=dmgOf(b,m.id,'superbreak').slice(before);
   assert.equal(evs.length,1,'伴舞未触发超击破');
   const be=combatPanel(m).breakEffect??0;
-  near(baseOf(evs[0]),BREAK_BASE[m.level]*30/30*(1+be)*1);
+  near(baseOf(evs[0]),BREAK_BASE[m.level]*30/30*(1+be)*(1+self.kit.trace[1][4]));
   // 卫我起舞：1 名敌人 → trace[1][4] 增伤在 modifiers 中按 kind=superbreak 提供
-  near(b.rules.modifiers(b,m,en,{type:'SuperBreak',element:'Physical'},'superbreak').dmgBoost,self.kit.trace[1][4]);
+  near(b.rules.modifiers(b,m,en,{type:'SuperBreak',element:'Physical',superBreakSource:self.id},'superbreak').superBreakDmgBoost,self.kit.trace[1][4]);
 });
 
 test('开拓者•同谐：战技首段削韧 +100% 与 E6 额外弹射；E1 首次战技回点 / E2 回能效率 / E4 队友击破特攻',()=>{

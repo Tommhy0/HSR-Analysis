@@ -191,7 +191,7 @@ test('遐蝶：焰息每次消耗 25% 生命、倍率 0.336→0.392→0.476；�
   const b=createBattle(config([actor(1407)]));const [self,en]=b.units;
   b.rules.before(b,self,'summonDragon','extra',self.actions.summonDragon,[self]);
   const d=memOf(b,self);d.hp=d.panel.hp;b.rules.onTurnStart(b,d);
-  assert.ok(d.actions.basic.repeatCount>=2,'死龙应能在一回合内重复发动焰息');
+  assert.equal(b.rules.continueAction(b,d,'basic'),'basic','死龙应能在同一回合继续发动下一次焰息');
   b.activeAction={sequence:1,actor:d.id,key:'basic',kind:'normal'};
   const q=svp(1407,1140702),p=self.kit.params;
   const action={...d.actions.basic};
@@ -209,8 +209,11 @@ test('遐蝶：焰息每次消耗 25% 生命、倍率 0.336→0.392→0.476；�
   const heals0=b.log.filter(e=>e.type==='heal').length;
   b.rules.repeatStart(b,d,'basic','normal',action,3);
   const wing=svp(1407,1140706);
-  near(d.hp,Math.min(d.panel.hp,1+combatPanel(self).hp*wing[2]+wing[3]),'the low-HP activation sets 1 HP before the talent heal also restores the dragon');
-  assert.equal(action.repeatCount,4,'the current low-HP activation is the final repeat of this action');
+  near(d.hp,1,'最后一喷先扣至1血，伤害结算前不能触发晦翼治疗');
+  assert.equal(dmgOf(b,d.id,'additional').length,n0,'晦翼不得先于最后一喷结算');
+  b.rules.after(b,d,'basic','normal',action,[en],[en],[]);
+  assert.equal(d.active,false,'最后一喷之后结算晦翼并退场');
+  assert.equal(b.rules.continueAction(b,d,'basic'),null,'已经自爆退场的死龙不能继续行动');
   assert.equal(dmgOf(b,d.id,'additional').length-n0,wing[1],'晦翼应对随机单体弹射 6 次');
   for(const ev of dmgOf(b,d.id,'additional').slice(n0))near(baseOf(ev),combatPanel(self).hp*wing[0]);
   assert.ok(b.log.filter(e=>e.type==='heal').length>heals0,'晦翼应为我方全体回复生命');

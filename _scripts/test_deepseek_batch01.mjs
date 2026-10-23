@@ -69,7 +69,7 @@ test('阮•梅天赋「分型的螺旋」由击破者触发、伤害归属阮�
     const c=config([rm,rob],200);breakable(c,60,['Physical']);
     const b=createBattle(c),rmU=b.units[0];
     stepUntil(b,()=>b.log.some(x=>x.type==='break'));
-    const ev=b.log.find(x=>x.type==='damage'&&x.kind==='break_dot'&&x.actor===rmU.id);
+    const ev=b.log.find(x=>x.type==='damage'&&x.kind==='break_additional'&&x.actor===rmU.id);
     assert.ok(ev,'缺少阮•梅天赋击破伤害');
     return {base:ev.formula.find(z=>z.zone==='base').value,rmU};
   };
@@ -97,7 +97,7 @@ test('残梅绽：敌方恢复前只附加一次，触发时延长击破、按�
   assert.ok(en.broken,'残梅绽未延长弱点击破状态');
   const dly=b.log.slice(at).find(x=>x.type==='delay'&&x.actor===en.id);
   near(dly.ratio,ratio);
-  const imp=b.log.slice(at).find(x=>x.type==='damage'&&x.kind==='break_dot'&&x.actor===rmU.id);
+  const imp=b.log.slice(at).find(x=>x.type==='damage'&&x.kind==='break_additional'&&x.actor===rmU.id);
   assert.ok(imp,'残梅绽未造成击破伤害');
   near(imp.formula.find(z=>z.zone==='base').value,BREAK_BASE[80]*(1+be)*(.5+30/120)*rmU.kit.params.Ultra[4]);
   // 仍处于击破状态的后续攻击不能再次附加

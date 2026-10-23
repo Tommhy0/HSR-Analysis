@@ -302,7 +302,8 @@ function remembranceTrailblazer(id){
         trueDamage(b,from,to,ev.damage*supportRatio(b,u,owner),'迷迷的声援 · 真实伤害');
       },
       // 忆灵天赋 1800703：我方全体暴击伤害提高（迷迷暴伤 ×16.8% + 33.6%）。
-      panel(b,u,target,out){
+      panel(b,u,target,out,{excludeConverted=false}={}){
+        if(excludeConverted)return;
         if(target.memospriteOwner)return;
         if(target.side!==u.side)return;
         const s=mimiOf(b,u);if(!s)return;
@@ -611,6 +612,7 @@ function phainon(api){
   }
   function activeCountdowns(b,u){return b.actionEvents.filter(e=>e.active&&e.owner===u.id&&e.group===eventGroup).length;}
   return {
+    shouldUseSkill(b,u){return !kh(u)||ruin(u)>=4||enemies(b,u).length>=3;},
     start(b,u){
       resource(b,u,'毁伤',0);resource(b,u,'火种溢出',0);resource(b,u,'弑魂之炽',0);resource(b,u,'反击层数',0);
       energy(b,u,-u.energy,true);                                  // 【火种】从 0 开始
@@ -639,7 +641,7 @@ function phainon(api){
       if(key==='ultimate'&&kind!=='copy'&&!kh(u))resource(b,u,'本次变身火种来源',(u.energy??0)+(u.resources['火种溢出']??0));
       if(kind==='copy'||kind==='technique'||!kh(u))return a;
       if(key==='basic')return {...u.actions.enhancedBasic,targetId:a.targetId};
-      if(key==='skill')return {...u.actions.enhancedSkill2,targetId:a.targetId};
+      if(key==='skill')return {...(ruin(u)>=4?u.actions.enhancedSkill2:u.actions.enhancedSkill),targetId:a.targetId};
       return a;
     },
     // 天赋 140804：白厄成为其他任意目标的技能目标时 +1【火种】；若施放者为队友，暴击伤害 +30%/3 回合。
@@ -667,8 +669,8 @@ function phainon(api){
       if(actor!==u)return;
       // 战技 140802 获得 2 点【火种】。
       if(key==='skill'&&kind!=='copy'&&!kh(u))addKindling(b,u,P(u).BPSkill[2]);
-      if(key==='ultimate'&&kind!=='copy'){
-        buff(b,u,u,'卡厄斯兰那','marker',0,null,{tag:'phainonKhaos'});
+      if(key==='ultimate'&&kind!=='copy'&&!kh(u)){
+        buff(b,u,u,'卡厄斯兰那','marker',0,null,{tag:'phainonKhaos',noUltimate:true});
         buff(b,u,u,'卡厄斯兰那 · 攻击力','atkPct',kForm[3],null,{id:u.id+':khaos-atk',tag:'phainonKhaosAtk'});
         buff(b,u,u,'卡厄斯兰那 · 生命上限','hpPct',kForm[4],null,{id:u.id+':khaos-hp',tag:'phainonKhaosHp'});
         beginKhaosCountdown(b,u);

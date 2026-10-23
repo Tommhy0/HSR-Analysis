@@ -114,7 +114,9 @@ export function abyssHpFromOperands(operands) {
  *  1731 行里有 107 行「弱点的补集」并不等于抗性列出集（有的怪既是弱点又有抗性）。 */
 export function fullResistance(list) {
   const out = Object.fromEntries(ELEMENTS.map((e) => [e, 0]));
-  for (const it of list ?? []) {
+  const rows=Array.isArray(list)?list:list&&typeof list==='object'
+    ? Object.entries(list).map(([damage_type,value])=>({damage_type,value})) : [];
+  for (const it of rows) {
     if (it?.damage_type && Number.isFinite(it.value)) out[it.damage_type] = it.value;
   }
   return out;
@@ -197,6 +199,8 @@ export function listAbyssEnemies(ctx, spec) {
       hpCount: r.hpCount ?? 1,
       phaseRatios: r.phaseRatios,
       isInfinite: r.isInfinite,
+      infiniteWaveId: r.infiniteWaveId == null ? null : String(r.infiniteWaveId),
+      hpFormula: r.hpFormula ?? null,
       _provenance: {
         hp: 'known', level: 'known', res: 'known',
         def: def == null ? 'unknown' : 'known',

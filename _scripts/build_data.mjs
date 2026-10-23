@@ -301,6 +301,20 @@ const monsters = all(`SELECT id, name, rank, camp, camp_name, weak_json, desc FR
 }));
 note('monsters', monsters.length);
 
+// --- 敌人招式目录 -----------------------------------------------------------
+// skill_desc 只说明招式用途；倍率、目标、冷却和状态仍须从原始战斗脚本登记。
+// 保留原始 child/skill 复合键与空字段，不把“有描述”误当成“已能执行”。
+const monsterSkills = all(`
+  SELECT monster_id, child_id, skill_id, skill_name, skill_desc,
+         damage_type, sp_hit_base, extra_json
+  FROM monster_skills ORDER BY child_id, skill_id, monster_id`).map((r) => ({
+  monsterId: r.monster_id, childId: r.child_id, id: r.skill_id,
+  name: r.skill_name, desc: r.skill_desc, element: r.damage_type || null,
+  hitEnergy: r.sp_hit_base == null || r.sp_hit_base === '' ? null : num(r.sp_hit_base),
+  extra: parse(r.extra_json, {}),
+}));
+note('monster_skills', monsterSkills.length);
+
 // 精英组倍率。两张表结构相同、命名空间不重叠（345+ 是无限波用的），合并导出。
 // 没有 name 列 —— 只有倍率。abyss_wave_monsters 的 hp_formula_json 已经
 // 把 eg_hp_ratio 预先算好了，所以这张表只有「自由沙盒走公式路径」时才用得上。
@@ -336,15 +350,33 @@ note('abyss_seasons', abyssSeasons.length);
 
 const abyssFloors = all(`
   SELECT mode, season_id, floor_id, floor_name, is_boss, hard_name,
-         damage_types_json, boss_monster_id, tags_json, buffs_json, phase_json
+         damage_types_json, boss_monster_id, npc_monster_ids_json,
+         maze_group_id, maze_group_id2, boss_skill_json,
+         tags_json, buffs_json, phase_json
   FROM abyss_floors ORDER BY mode, season_id, floor_id`).map((r) => ({
   mode: r.mode, seasonId: r.season_id, floorId: r.floor_id,
   floorName: r.floor_name, isBoss: r.is_boss, hardName: r.hard_name,
   damageTypes: parse(r.damage_types_json),
   bossMonsterId: r.boss_monster_id,
+  npcMonsterIds: parse(r.npc_monster_ids_json),
+  mazeGroupId: r.maze_group_id, mazeGroupId2: r.maze_group_id2,
+  bossSkill: parse(r.boss_skill_json),
   tags: parse(r.tags_json), buffs: parse(r.buffs_json), phase: parse(r.phase_json),
 }));
 note('abyss_floors', abyssFloors.length);
+
+// 场景事件把同一层拆成事件 / 半场；waves_json 保留源格式，避免把它展平成
+// 一条敌人列表后丢掉战斗边界、事件等级或场景覆盖的精英组。
+const abyssEvents = all(`
+  SELECT mode, season_id, floor_id, side, event_index, stage_id,
+         level, hard_level_group, elite_group, waves_json
+  FROM abyss_events ORDER BY mode, season_id, floor_id, side, event_index`).map((r) => ({
+  mode: r.mode, seasonId: r.season_id, floorId: r.floor_id,
+  side: r.side, event: r.event_index, stageId: r.stage_id,
+  level: r.level, hardLevelGroup: r.hard_level_group, eliteGroup: r.elite_group,
+  waves: parse(r.waves_json, []),
+}));
+note('abyss_events', abyssEvents.length);
 
 const abyssBuffs = all(`
   SELECT mode, season_id, floor_id, buff_index, name, desc, params_json
@@ -374,7 +406,7 @@ const abyssWave = all(`
   SELECT mode, season_id, floor_id, side, event_index, wave_index, slot,
          monster_id, base_monster_id, monster_name, level, hp, speed, stance,
          status_res, toughness, weaknesses_json, spawn_count, hp_count,
-         phase_ratios_json, is_infinite, hp_formula_json
+         phase_ratios_json, is_infinite, infinite_wave_id, hp_formula_json
   FROM abyss_wave_monsters ORDER BY mode, season_id, floor_id, side, wave_index, slot`
 ).map((r) => ({
   mode: r.mode, seasonId: r.season_id, floorId: r.floor_id, side: r.side,
@@ -385,7 +417,8 @@ const abyssWave = all(`
   weak: parse(r.weaknesses_json, []),
   spawnCount: r.spawn_count, hpCount: r.hp_count,
   phaseRatios: parse(r.phase_ratios_json),
-  isInfinite: r.is_infinite, hpFormula: parse(r.hp_formula_json),
+  isInfinite: r.is_infinite, infiniteWaveId: r.infinite_wave_id,
+  hpFormula: parse(r.hp_formula_json),
 }));
 note('abyss_wave_monsters', abyssWave.length);
 
@@ -412,8 +445,8 @@ const core = {
   characters, charStats, traces, ranks, skills,
   servantSkills, servantSupport, servantStats,
   lightcones, lcStats, levelCaps, relicsets,
-  hardLevels, monsterStats, monsterChilds, monsters, eliteGroups,
-  abyssSeasons, abyssFloors, abyssBuffs, abyssTags, abyssWave,
+  hardLevels, monsterStats, monsterChilds, monsterSkills, monsters, eliteGroups,
+  abyssSeasons, abyssFloors, abyssEvents, abyssBuffs, abyssTags, abyssWave,
   annotations,
 };
 
