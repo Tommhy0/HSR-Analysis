@@ -5,8 +5,8 @@
 //   ② 对比同角色在若干套配队下的伤害 (buildComparison) —— 不写新公式，就是把 computeHit 跑 N 遍
 import { listAbyssEnemies, waveTotalHp } from './enemy.mjs';
 import { computeHit } from './damage.mjs';
-import { hasNumericEffect, aggregate } from './buffs.mjs';
-import { C, rollupZones } from './provenance.mjs';
+import { hasNumericEffect, aggregate, valueOf } from './buffs.mjs';
+import { C, rollupZones, worst } from './provenance.mjs';
 
 const MODE_CN = { moc: '混沌回忆', pf: '虚构叙事', as: '末日幻影' };
 
@@ -177,7 +177,12 @@ export function loadScenario(ctx, { mode, seasonId, floorId, annotations, sides,
   const key = `${mode}:${seasonId}:${floorId}`;
   const enemies = listAbyssEnemies(ctx, { mode, seasonId, floorId });
   const sources = scenarioSources(ctx, { mode, seasonId, floorId });
-  const byId = new Map((annotations?.buffs ?? []).map((a) => [a.id, a]));
+  const byId = new Map();
+  for(const rec of annotations?.buffs??[]){
+    const id=rec.id.replace(/\.b\d+$/,'');
+    if(!byId.has(id))byId.set(id,[]);
+    byId.get(id).push(rec);
+  }
 
   const activeBuffs = [];
   const gaps = [];
@@ -217,12 +222,13 @@ export function loadScenario(ctx, { mode, seasonId, floorId, annotations, sides,
     }
 
     if (!hasNumericEffect(src.text)) continue;   // 没数字的条目对伤害没影响
-    const rec = byId.get(src.id);
-    if (!rec) {
+    const recs = byId.get(src.id);
+    if (!recs?.length) {
       const parsed = ctx.data.scenarioEffects?.[src.id];
       if (parsed) {
         for (const e of parsed.effects) {
-          const item = { ...e, label: src.label, selected: selections[e.id] === true };
+          const unresolvedTarget=e.scope?.unresolvedTarget||/该扑满|该目标|此目标|该敌方目标/.test(e.text??'');
+          const item = { ...e, scope:{...e.scope,...(unresolvedTarget?{unresolvedTarget:true}:{})}, label: src.label, selected: !unresolvedTarget&&selections[e.id] === true };
           availableBuffs.push(item);
           if (item.selected) activeBuffs.push(item);
         }
@@ -233,7 +239,11 @@ export function loadScenario(ctx, { mode, seasonId, floorId, annotations, sides,
       gaps.push({ id: src.id, label: src.label, text: src.text, reason: 'no_annotation' });
       continue;
     }
-    activeBuffs.push({ ...rec, label: src.label });
+    for(const rec of recs){
+      const value=valueOf(ctx,rec);
+      if(value==null||!rec.effect?.key){gaps.push({...src,reason:'param_missing'});continue;}
+      activeBuffs.push({...rec,id:rec.id,key:rec.effect.key,value:value*(rec.effect.scale??1),side:rec.effect.side,target:rec.effect.target,scope:rec.effect.scope??{},condition:rec.condition??null,label:src.label});
+    }
   }
 
   return {
@@ -334,12 +344,15 @@ export function buildComparison(ctx, { loadouts, scenario, annotations, options 
     r.vsBest = best && best.total > 0 ? r.total / best.total : null;
     r.vsBaseline = ok.length && ok[0].total > 0 ? r.total / ok[0].total : null;
   }
+  const zones={};
+  for(const r of rows)for(const [key,z] of Object.entries(r.coverage?.zones??{})){const old=zones[key];zones[key]={...z,level:worst(old?.level,z.level),missing:[...(old?.missing??[]),...(z.missing??[])]};}
+  if(rows.some(r=>!r.ok))zones.errors={level:C.UNKNOWN,missing:rows.filter(r=>!r.ok).map(r=>r.error)};
   return {
     rows,
     best: best?.label ?? null,
     baseline: ok[0]?.label ?? null,
     // 配队对比的可信度 = 各套里最差的那个
-    coverage: rollupZones(Object.assign({}, ...rows.flatMap((r) => Object.entries(r.coverage?.zones ?? {})))),
+    coverage: rollupZones(zones),
     warnings: rows.filter((r) => !r.ok).map((r) => `「${r.label}」算不出来：${r.error}`),
   };
 }

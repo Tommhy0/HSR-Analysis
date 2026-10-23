@@ -18,6 +18,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { declarationNames } from './_scripts/bundle-exports.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const BATTLE=process.argv.includes('--battle');
@@ -81,8 +82,10 @@ function load(file) {
     return '';
   });
 
-  src = src.replace(RE_EXPORT_DECL, (m, asyncKw, kind, name) => {
-    exports.add(name);
+  src = src.replace(RE_EXPORT_DECL, (m, asyncKw, kind, name, offset, original) => {
+    const names = ['const','let','var'].includes(kind)
+      ? declarationNames(original, offset + m.length - name.length) : [name];
+    for (const binding of names) exports.add(binding);
     return m.replace(/^[ \t]*export\s+/, '');
   });
   src = src.replace(RE_EXPORT_LIST, (m, names) => {
@@ -301,7 +304,7 @@ console.log('  端到端: ' + S.ctx.charById.get(S.st.characterId).name
 //   里那些「使我方全体…」的条目 —— 它们同时属于自拐卡片（装备者是你）和辅助目录
 //   （作用对象是团队）。所以这里必须挑一把**带非自身条目**的光锥装上，
 //   否则下面 (3) 等于没跑。
-const lcWithTeam = S.DATA.lightcones.find((l) => S.CATALOG.some(
+const lcWithTeam = S.DATA.lightcones.find((l) => l.path===S.DATA.characters.find(c=>c.id===S.st.characterId)?.path && S.CATALOG.some(
   (e) => e.kind === 'lightcone' && e.ref && e.ref.lcId === l.id && e.target !== 'self'));
 if (!lcWithTeam) throw new Error('库里没有任何「带非自身条目」的光锥，(3) 会退化成恒真');
 S.st.lightconeId = lcWithTeam.id;
@@ -838,6 +841,8 @@ const saved=new Map();globalThis.localStorage={getItem:key=>saved.get(key)??null
 globalThis.__HSR_DATA__=JSON.parse(fs.readFileSync(${JSON.stringify(path.join(ROOT,'_data_cache','hsr_core.json'))},'utf8'));
 await import(${JSON.stringify('file:///'+TMP_BUNDLE.replace(/\\/g,'/'))});window.__HSR_BOOT__();
 const S=window.__HSR_BATTLE__;if(!S||S.state.config.units.filter(u=>u.side==='ally').length!==4)throw new Error('独立战斗入口不是四人队伍');
+for(const id of S.KIT_IDS)S.buildBattleActor(S.ctx,{...S.newBattleBuild(),characterId:id});
+console.log('  打包后的全部登记角色均可构造');
 node('sim-run').onclick();if(S.state.error)throw new Error(S.state.error);if(!(S.state.result.damage>0))throw new Error('四人输出为空');
 if(!node('battle-runtime').innerHTML.includes('sim-contributions'))throw new Error('缺少各队员贡献统计');
 if(window.__HSR)throw new Error('独立战斗入口意外启动单次伤害计算器');

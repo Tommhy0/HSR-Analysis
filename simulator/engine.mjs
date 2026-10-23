@@ -1,3 +1,4 @@
+import {resistsStatus} from './status-resistance.mjs';
 // Pure deterministic event simulation. No wall clock, DOM, or game-client automation.
 // Distances are kept in the 10000-unit action gauge: changing speed preserves progress.
 import { computeHit } from '../core/damage.mjs';
@@ -112,6 +113,13 @@ export function validateBattle(config) {
     if(typeof u.id!=='string'||!u.id||ids.has(u.id))errors.push('单位 ID 必须为唯一字符串');ids.add(u.id);
     if(u.side==='ally'&&u.characterId){if(characters.has(u.characterId))errors.push('同一角色不能重复加入队伍');characters.add(u.characterId);}
     if(!['ally','enemy'].includes(u.side))errors.push(u.id+'阵营无效');
+    if(u.build!=null){
+      if(typeof u.build!=='object'||Array.isArray(u.build))errors.push(u.id+'配装须为对象');
+      else {
+        for(const [key,min,max] of [['level',1,80],['lightconeLevel',1,80],['superimpose',1,5],['eidolon',0,6]])if(u.build[key]!=null&&(!Number.isInteger(u.build[key])||u.build[key]<min||u.build[key]>max))errors.push(u.id+'.build.'+key+' 无效');
+        for(const key of ['characterId','lightconeId'])if(u.build[key]!=null&&(!Number.isInteger(u.build[key])||u.build[key]<=0))errors.push(u.id+'.build.'+key+' 无效');
+      }
+    }
     if(u.memospriteOwner&&!units.some(t=>t.id===u.memospriteOwner&&t.side===u.side&&!t.memospriteOwner&&t!==u))errors.push(u.id+'忆灵须绑定同阵营召唤者');
     if(u.memospriteOwner&&units.filter(t=>t.memospriteOwner===u.memospriteOwner).length>1)errors.push(u.id+'同一角色不能同时有多个忆灵');
     for(const k of ['hp','atk','def','speed'])if(!Number.isFinite(u.panel?.[k])||u.panel[k]<(k==='hp'||k==='speed'?EPS:0))errors.push(u.id+'面板 '+k+' 无效');
@@ -382,7 +390,7 @@ export function combatPanel(u,{excludeConverted=false,skipAuras=false,action=nul
       if(s.id===320&&out.speed>=s.p2[1])out.healingBoost=(out.healingBoost??0)+(out.speed>=s.p2[2]?s.p2[4]:s.p2[3]);
     }
     if(u.gear?.cone?.id===21003&&u.battle.units.filter(t=>alive(t)&&t.side!==u.side).length<=2)out.critRate+=u.gear.cone.p[1];
-    for(const s of u.gear?.sets??[])if(s.id===318&&u.battle.summons.some(s=>s.active&&s.bondmate===u.id))out.critDmg+=s.p2[1];
+    for(const s of u.gear?.sets??[])if(s.id===318&&[...u.battle.summons,...u.battle.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))out.critDmg+=s.p2[1];
     if(!skipAuras)for(const source of u.battle.units.filter(t=>alive(t)&&t.side===u.side))for(const s of source.gear?.sets??[]){const raw=combatPanel(source,{excludeConverted:true,skipAuras:true});
       if(s.id===302&&raw.speed>=s.p2[1])out.atk+=(u.panel.baseStats?.atk??0)*s.p2[2];
       if(s.id===310&&raw.effectRes>=s.p2[1])out.critDmg+=s.p2[2];
@@ -398,10 +406,10 @@ export function combatPanel(u,{excludeConverted=false,skipAuras=false,action=nul
   if(out.speed<=0)throw new Error(u.name+'速度必须大于0'); return out;
 }
 const hpPhaseMax=u=>combatPanel(u).hp*(u.phaseRatios?.[(u.hpPhase??1)-1]??1);
-const snapshot=(b)=>b.units.map(u=>({id:u.id,hp:u.hp,hpPhase:u.hpPhase??1,hpCount:u.hpCount??1,energy:u.energy,toughness:u.toughness,distance:u.distance,alive:alive(u)}));
+const snapshot=(b)=>b.units.map(u=>({id:u.id,name:u.name,side:u.side,owner:u.owner??u.memospriteOwner??null,hp:u.hp,hpPhase:u.hpPhase??1,hpCount:u.hpCount??1,energy:u.energy,toughness:u.toughness,distance:u.distance,alive:alive(u)}));
 export function battleFrame(b){
   const units=b.units.map(u=>{const p=combatPanel(u);return {
-    id:u.id,active:u.active,hp:u.hp,maxHp:hpPhaseMax(u),hpPhase:u.hpPhase??1,hpCount:u.hpCount??1,energy:u.energy,energyMax:u.energyMax??0,toughness:u.toughness,toughnessMax:u.toughnessMax??0,
+    id:u.id,name:u.name,side:u.side,level:u.level,owner:u.owner??u.memospriteOwner??null,active:u.active,hp:u.hp,maxHp:hpPhaseMax(u),hpPhase:u.hpPhase??1,hpCount:u.hpCount??1,energy:u.energy,energyMax:u.energyMax??0,toughness:u.toughness,toughnessMax:u.toughnessMax??0,
     distance:u.distance,speed:p.speed,alive:alive(u),broken:u.broken,skipTurns:u.skipTurns??0,turns:u.turns,cannotAct:!!u.cannotAct,normalGaugeSuspended:!!b.eventActions?.suspended(b,u),
     panel:clone(p),resources:clone(u.resources??{}),buffs:[...u.buffs.map(e=>clone(e.convert?{...e,value:combatPanel(b.units.find(t=>t.id===e.convert.source),{excludeConverted:true})[e.convert.stat]*e.convert.ratio}:e)),...clone(b.rules?.displayEffects(b,u)??[])],shields:clone(u.shields),dots:clone(u.dots),
   };});
@@ -413,7 +421,7 @@ export function battleFrame(b){
   }).map(u=>({id:u.id,...(u.name==null?{}:{name:u.name}),kind:u.kind??null,wait:u.distance/(u.speed??currentAhaSpeed(b)),av:b.av+u.distance/(u.speed??currentAhaSpeed(b))}));
   return {version:1,av:b.av,wave:b.wave,waveAV:b.av-b.waveStartAV,cycles:b.cyclesSpent+waveCycle(b.av-b.waveStartAV),sp:b.sp,maxSP:b.maxSP,turnActor:b.turnActor??null,action:b.activeAction?clone(b.activeAction):null,
     units,summons:clone(b.summons??[]),aha:b.aha?.active?{...clone(b.aha),speed:currentAhaSpeed(b),punchline:b.laughter.ally??0}:null,
-    actionEvents:clone(b.eventActions?.active(b)??[]),queue:clone([...b.pendingActions,...b.queue]),readyContinuations:b.units.filter(u=>alive(u)&&u.kit?.characterId===1015&&b.turnActor===u.id&&u.buffs.some(e=>e.tag==='circuit')&&b.sp>=u.actions.skill.spCost&&(u.resources['连续战技次数']??0)<(u.policy?.skillLimit??5)).map(u=>u.id),readyUltimates:b.units.filter(u=>alive(u)&&u.policy?.autoUltimate!==false&&u.actions.ultimate&&!frozen(u)&&!u.buffs.some(e=>e.noUltimate)&&u.energy>=(u.actions.ultimate.energyCost??u.energyMax)&&!b.queue.some(q=>q.actor===u.id&&q.kind==='ultimate')).map(u=>({actor:u.id,key:'ultimate',kind:'ultimate'})),normalOrder};
+    actionEvents:clone(b.eventActions?.active(b)??[]),queue:clone([...b.pendingActions,...b.queue]),readyContinuations:b.units.filter(u=>alive(u)&&u.kit?.characterId===1015&&b.turnActor===u.id&&u.buffs.some(e=>e.tag==='circuit')&&b.sp>=u.actions.skill.spCost&&(u.resources['连续战技次数']??0)<(u.policy?.skillLimit??5)).map(u=>u.id),readyUltimates:b.units.filter(u=>alive(u)&&u.policy?.autoUltimate!==false&&u.actions.ultimate&&!frozen(u)&&!sleeping(u)&&!u.buffs.some(e=>e.noUltimate)&&u.energy>=(u.actions.ultimate.energyCost??u.energyMax)&&!b.queue.some(q=>q.actor===u.id&&q.kind==='ultimate')).map(u=>({actor:u.id,key:'ultimate',kind:'ultimate'})),normalOrder};
 }
 function record(b,type,actor,extra={}){
   b.rules?.relics.refresh(b);
@@ -592,6 +600,7 @@ function applyEffects(b,u,action,chosen){
         // hit energy once from its control application instead of silently
         // dropping it because damageTo had no term to process.
         if(e.control&&u.side==='enemy'&&!(action.terms??[]).length&&(action.hitEnergy??0)>0)energy(b,to,action.hitEnergy,false);
+        if(resistsStatus(b,u,to,e,{combatPanel,record,skipControlResistance:true}))continue;
         // 控制类负面状态沿用游戏命中链：基础概率 × 效果命中 × 效果抵抗 × 控制抵抗。
         // 100% 命中且没有对应抵抗时短路，不额外消耗随机数。
         const ctrlRes=combatPanel(to).controlRes??to.controlRes??0;
@@ -659,7 +668,7 @@ function damageTo(b,u,to,action,share=1,role='primary',kind='direct'){
   // 角色模块按乘区声明的减伤（如 1315 波提欧「蛇之上行」受到非对峙目标伤害降低）：
   // 与 buff 循环中的 dmgReduction 同口径做乘法聚合；未声明该字段的模块行为完全不变。
   if(mod.dmgReduction)agg.dmgReduction=1-(1-agg.dmgReduction)*Math.max(0,1-mod.dmgReduction);
-  agg.resPen[element]=(agg.resPen[element]??0)+(mod.resPen??0)+to.buffs.filter(e=>e.resReduction&&e.element===element).reduce((n,e)=>n+e.value,0);
+  agg.resPen[element]=(agg.resPen[element]??0)+(mod.resPen??0)+to.buffs.filter(e=>e.resReduction&&(!e.element||e.element===element)).reduce((n,e)=>n+e.value,0);
   p.critRate=(p.critRate??0)+(mod.critRate??0);p.critDmg=(p.critDmg??0)+(mod.critDmg??0);
   if(elation){
     const levelBase=BREAK_BASE[u.level];
@@ -743,7 +752,7 @@ function useAction(b,u,key,kind='normal',targetId=null,overrides=null){
   // 队列条目可以携带「仅作用于本次行动」的覆盖（例如开拓者终结技让目标立即施放 1 次
   // 固定计入 20 笑点的欢愉技）。覆盖在角色 prepare 之后合并，因此不改变角色自身的动作合同，
   // 也不会写入动作表或影响同一角色之后的行动。
-  const prepared=()=>{const a=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);return overrides?{...a,...overrides}:a;};
+  const prepared=()=>{const a=b.rules.prepare(b,u,key,kind,targetId?{...original,targetId}:original);return {...a,...(overrides??{}),...(targetId?{targetId}:{})};};
   let action=prepared();
   // 火花【爆点】：可抵扣战技点消耗。只对「引擎已扣款」的部分要求 SP，抵扣部分由角色 before 结算。
   const substitute=u.side==='ally'&&u.resources?Math.min(action.spCost??0,u.resources['爆点']??0):0;
@@ -761,7 +770,7 @@ function useAction(b,u,key,kind='normal',targetId=null,overrides=null){
     u.resources['爆点']=Math.max(0,(u.resources['爆点']??0)-substitute);
     record(b,'resource',u,{name:'爆点',value:u.resources['爆点'],reason:'抵扣战技点'});
   }
-  if(action.hpCostRatio){const old=u.hp;u.hp=Math.max(action.hpCostCanKill?0:1,u.hp-combatPanel(u).hp*action.hpCostRatio);if(u.hp<old)b.rules.relics.healthConsumed(b,u);}
+  if(action.hpCostRatio){const old=u.hp;u.hp=Math.max(action.hpCostCanKill?0:1,u.hp-combatPanel(u).hp*action.hpCostRatio);if(u.hp<old){b.rules.relics.healthConsumed(b,u);b.rules.hpChanged(b,u,'consume',old-u.hp,u);}}
   b.activeAction={sequence:b.log.length,actor:u.id,name:action.name??key,key,kind,targets:selected.map(t=>t.id)};
   record(b,'action',u,{name:action.name??key,key,kind,targets:selected.map(t=>t.id),energy:u.energy});
   b.rules.before(b,u,key,kind,action,selected);
@@ -907,10 +916,9 @@ function flush(b,{abilitiesOnly=false}={}){
     if(!q||typeof q!=='object')throw new Error('插入动作队列出现空事件（wave '+b.wave+', AV '+b.av+'; actor '+b.turnActor+'; queue '+JSON.stringify(beforeQueue)+'）');
     if(q.planIndex!=null)b.planQueued=b.planQueued.filter(i=>i!==q.planIndex);
     const u=b.units.find(u=>u.id===q.actor);
+    if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId)b.ahaInstant.ending=!b.queue.some(x=>x.kind==='aha'&&x.ahaInstantId===q.ahaInstantId);
     if(!u||!alive(u)){if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId&&b.ahaInstant.ending)finishAhaInstant(b);continue;}
-    if(q.kind==='aha'&&b.ahaInstant?.id===q.ahaInstantId)
-      b.ahaInstant.ending=!b.queue.some(x=>x.kind==='aha'&&x.ahaInstantId===q.ahaInstantId);
-    if(frozen(u)||sleeping(u)){if(q.planIndex!=null)throw new Error(sleeping(u)?'录像操作轴角色陷入【异梦】，不能执行插入动作':'录像操作轴角色被冻结，不能执行插入动作');record(b,'skip',u,{name:sleeping(u)?'异梦 · 无法执行插入动作':'冻结 · 无法执行插入动作',kind:q.kind});continue;}
+    if(frozen(u)||sleeping(u)){if(q.planIndex!=null)throw new Error(sleeping(u)?'录像操作轴角色陷入【异梦】，不能执行插入动作':'录像操作轴角色被冻结，不能执行插入动作');record(b,'skip',u,{name:sleeping(u)?'异梦 · 无法执行插入动作':'冻结 · 无法执行插入动作',kind:q.kind});if(q.kind==='aha'&&b.ahaInstant?.ending)finishAhaInstant(b);continue;}
     if(q.planIndex!=null&&q.targetId&&!b.units.some(t=>t.id===q.targetId&&alive(t)))throw new Error('录像操作轴目标已阵亡或尚未入场，不能自动换靶');
     if(q.key==='ultimate'&&u.buffs.some(e=>e.noUltimate)){
       if(q.planIndex!=null)throw new Error('录像操作轴角色当前状态禁止施放终结技');
@@ -1056,7 +1064,7 @@ export function stepBattle(b){
     if(!alive(u))return true;
   }
   u.distance=ACTION_DISTANCE;u.advanceOrder=0;
-  if(u.owner){b.turnActor=u.id;record(b,'summon_turn',b.units.find(t=>t.id===u.owner),{name:u.name,summon:u.id});b.rules.dragon(b,u);b.turnActor=null;enqueueUltimates(b);flush(b);return true;}
+  if(u.owner){b.turnActor=u.id;record(b,'summon_turn',b.units.find(t=>t.id===u.owner),{name:u.name,summon:u.id});b.activeSummon=u;try{b.rules.dragon(b,u);}finally{b.activeSummon=null;}b.turnActor=null;enqueueUltimates(b);flush(b);return true;}
   u.turns++;b.turns++;
   b.turnActor=u.id;record(b,'turn_start',u);
   const thaw=frozen(u);

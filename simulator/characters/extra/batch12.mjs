@@ -533,6 +533,7 @@ const factories={
           energy(b,u,p.Talent[0]*cost);
         }
         // 行迹「锁接」：施放终结技时效果命中 +60%，持续至本次终结技行动结束。
+        if(actor===u&&key==='ultimate'&&rank(u,6))buff(b,u,u,'米沙 E6 · 增伤','dmgBoost',rank(u,6,1),null,{id:E6_ID(u),tag:E6_TAG});
         if(actor===u&&key==='ultimate'&&trace(u,2))
           buff(b,u,u,'锁接 · 效果命中','effectHit',trace(u,2)[0],null,{id:E7_ID(u)});
         void selected;
@@ -586,7 +587,8 @@ const factories={
         damageTo(b,u,actor,{name:'冻结 · 附加伤害',type:'Additional',element:'Ice',
           terms:atk(f.freezeMult??0),toughness:0},1,'primary','additional');
       },
-      turnEnd(b,u){
+      turnEnd(b,u,actor){
+        if(actor!==u)return;
         u.buffs=u.buffs.filter(e=>e.tag!==E6_TAG);
       },
       modifiers(b,u,actor,to,a,kind){

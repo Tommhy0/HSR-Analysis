@@ -738,7 +738,9 @@ section(5.5, '提取器回归');
       //   但**不能就这么排除掉**：那等于给这两条挖一个静默的洞。
       //   所以下面单开一条，把 `UNMODELLED` 的名单**逐 id 钉死**。
       const unmodelledIds = new Set(CAT.UNMODELLED.keys());
-      const modelled = human.filter((h) => !unmodelledIds.has(h.id));
+      const unsupportedHuman=human.filter(h=>CAT.blockedReason(catById.get(h.id),{})==='unmodelled_ability');
+      ok(unsupportedHuman.map(h=>h.id).sort().join(',')==='lc.23052.b1,lc.23052.b2','追加攻击人工标注保留在目录并显式标为当前模型不支持',unsupportedHuman.map(h=>h.id).join(','));
+      const modelled = human.filter((h) => !unmodelledIds.has(h.id)&&!unsupportedHuman.includes(h));
       const reachable = modelled.filter(hasValue);
 
       ok(reachable.length === modelled.length,
@@ -1583,7 +1585,7 @@ section(7.7, '忆灵技（memosprite_json）');
     `得到 ${audit.clauseTotal}`);
   const cat = buildCatalog(data, annotations.buffs);
   // 958 = 上一轮的 948 + 10 条光锥（人工表补的分错桶伤害类增益，见 annotations/buffs.jsonl 末 10 行）。
-  ok(cat.entries.length === V(968,983), '增益目录 968 条（现烘现比，不是读缓存里那份）',
+  ok(cat.entries.length === V(968,984), '增益目录 968 条（现烘现比，不是读缓存里那份）',
     `得到 ${cat.entries.length}`);
 
   // ⑨ ★ 两张忆灵技表不许相交，辅助技不许漏进技能下拉框 ★
@@ -2128,7 +2130,7 @@ section(9, '增益目录的守恒与分桶');
       '同时提到多个技能类型的子句，每个类型都记上了（不许只记正则最后捕获的那个）',
       shorted.slice(0, 3).map((e) => `${JSON.stringify(e.scope)}：${e.text.slice(0, 40)}`).join(' ｜ '));
     // 反向：记下的类型必须是**句子里真出现过的**，不许凭空塞
-    const ELEMENT_KINDS = { Normal: '普攻', BPSkill: '战技', Ultra: '终结技', Talent: '天赋', Maze: '秘技' };
+    const ELEMENT_KINDS = { FollowUp:'追加攻击',Counter:'反击',Memosprite:'忆灵技',Assist:'助战技',ElationDamage:'欢愉技', Normal: '普攻', BPSkill: '战技', Ultra: '终结技', Talent: '天赋', Maze: '秘技' };
     const invented = multi.filter((e) => (e.scope?.abilityTypes ?? [])
       .some((t) => !e.text.includes(ELEMENT_KINDS[t] ?? t)));
     ok(invented.length === 0, '认定的技能类型都在句子里真出现过（不许凭空塞一个）',
@@ -2558,7 +2560,7 @@ section(10, '增益目录的运行期（core/catalog.mjs）');
   //      ② 值真的取得到（不是「可选但没数」）。
   //    反证见 `_rev.mjs` 的 R27（把 eidolon 分支加回去 → 必须红）。
   const eidolonEntries = CATALOG.filter((e) => e.kind === 'eidolon');
-  const stillLocked = eidolonEntries.filter((e) => CAT.blockedReason(e, base));
+  const stillLocked = eidolonEntries.filter((e) => CAT.blockedReason(e, base)?.startsWith('rank_locked'));
   ok(eidolonEntries.length > 0, '目录里确实有星魂条目（否则下面几条是空集恒真）',
     `星魂条目 ${eidolonEntries.length} 条`);
   // ⚠ 标签里**不许出现 ` ——`**：`_rev.mjs` 用 `^  ✗ (.+?) ——`（懒惰）抓标签，
@@ -2572,7 +2574,7 @@ section(10, '增益目录的运行期（core/catalog.mjs）');
   //  这里喂满而不是排除：排除的话，那几条就没人守着了 —— 它们的系数项、
   //  归属者名、面板字段任何一处写错，都表现为「静默少一条」。
   const eidolonNoValue = eidolonEntries.filter(
-    (e) => CAT.catalogValue(ctx, e, { ...base, panels: PANELS }) == null);
+    (e) => CAT.catalogValue(ctx, e, { ...base, panels: PANELS }) == null && CAT.blockedReason(e,base)!=='unmodelled_ability');
   ok(eidolonNoValue.length === 0,
     `全部星魂条目在基础档下都取得到值（「可勾但没数」和「锁着」一样没法用）`,
     eidolonNoValue.slice(0, 3).map((e) => `${e.id} paramIndex=${e.paramIndex}`).join(' ｜ '));
@@ -3043,8 +3045,8 @@ section(10.5, '目录行的三态（core/catalog.mjs 的 rowView）');
   // 而红的位置在件数那边 —— 又一处「断言名字对、结论全错」。
   ok(entries.filter((e) => CAT.rowView(ctx, e, shortPieces).blocked).length
     === entries.filter((e) => e.kind === 'relicset' && (e.ref?.piece ?? 0) > 2).length
-      + entries.filter((e) => CAT.UNMODELLED.has(e.id)).length,
-  'blocked 的条数 = 「件数需求 > 2」的遗器套装数 + UNMODELLED 条数',
+      + entries.filter((e) => !(e.kind==='relicset'&&(e.ref?.piece??0)>2)&&(CAT.UNMODELLED.has(e.id)||CAT.blockedReason(e,base)==='unmodelled_ability')).length,
+  'blocked 的条数包含件数不足、平值伤害与无法识别的攻击类别，重叠只计一次',
   // ★ 这一条**必须带详情**，哪怕只是一串数 ★
   //   `_rev.mjs` 靠 `  ✗ 标签 —— 详情` 这行的 ` ——` 认出「哪条红了」；
   //   没有详情就没有分隔符，那条反证会报「该红未红，这条断言是恒真的」——

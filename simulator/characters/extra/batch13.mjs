@@ -512,13 +512,13 @@ const factories={
         }
         if(rank(u,2))for(const to of enemies(b,u)){
           applyDecay(b,u,to,rank(u,2,1));
-          buff(b,u,to,'大丽花 E2 · 全属性抗性降低','resPen',rank(u,2,0),null,{id:u.id+':dahlia-e2',debuff:true,element:'Fire',resReduction:true});
+          buff(b,u,to,'大丽花 E2 · 全属性抗性降低','resPen',rank(u,2,0),null,{id:u.id+':dahlia-e2',tag:'dahlia-e2',debuff:true,resReduction:true});
         }
       },
       waveStart(b,u){
         if(rank(u,2))for(const to of enemies(b,u)){
           if(!to.buffs.some(e=>e.tag==='dahliaDecay'))applyDecay(b,u,to,rank(u,2,1));
-          if(!to.buffs.some(e=>e.tag==='dahlia-e2'))buff(b,u,to,'大丽花 E2 · 全属性抗性降低','resPen',rank(u,2,0),null,{id:u.id+':dahlia-e2',debuff:true,element:'Fire',resReduction:true});
+          if(!to.buffs.some(e=>e.tag==='dahlia-e2'))buff(b,u,to,'大丽花 E2 · 全属性抗性降低','resPen',rank(u,2,0),null,{id:u.id+':dahlia-e2',tag:'dahlia-e2',debuff:true,resReduction:true});
         }
       },
       turnStart(b,u,actor){

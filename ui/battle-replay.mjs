@@ -17,10 +17,11 @@ EVENTS.planned_action='录像操作轴指令';KINDS.superbreak='超击破伤害'
 const percentageKey=k=>!['atk','hp','def','speed','energyRegen'].includes(k)&&!k?.endsWith('Delta');
 const propertyName=k=>k?.startsWith('elemDmg.')?(ELEMENTS[k.slice(8)]??k.slice(8))+'属性增伤':KEYS[k]??k;
 export function registerFrameDefinitions(frame,definitions,summonNames=new Map()){
-  for(const entity of [...(frame.summons??[]),...(frame.actionEvents??[])])definitions.set(entity.id,{...entity,side:entity.side??'ally'});
-  for(const unit of frame.units??[])if(!definitions.has(unit.id)){
-    const ownerId=unit.id.includes(':')?unit.id.slice(0,unit.id.lastIndexOf(':')):null,owner=definitions.get(ownerId);
-    definitions.set(unit.id,{id:unit.id,name:summonNames.get(unit.id)??unit.name??`${owner?.name??unit.id} · 召唤物`,side:owner?.side??'ally',level:owner?.level});
+  for(const entity of [...(frame.summons??[]),...(frame.actionEvents??[]),...(frame.aha?[frame.aha]:[])])definitions.set(entity.id,{...definitions.get(entity.id),...entity,side:entity.side??definitions.get(entity.id)?.side??'ally'});
+  for(const unit of frame.units??[]){
+    const prior=definitions.get(unit.id);
+    const ownerId=unit.owner??unit.memospriteOwner??(unit.id.includes(':')?unit.id.slice(0,unit.id.lastIndexOf(':')):null),owner=definitions.get(ownerId);
+    definitions.set(unit.id,{...prior,...unit,id:unit.id,name:unit.name??prior?.name??summonNames.get(unit.id)??`${owner?.name??unit.id} · 召唤物`,side:unit.side??prior?.side??owner?.side??'ally',level:unit.level??prior?.level??owner?.level});
   }
   return definitions;
 }

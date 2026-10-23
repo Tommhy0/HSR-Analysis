@@ -16,6 +16,7 @@
 //   所以这里不做任何「降低 → 取负」的转换，`direction` 只是文本极性记录。
 import { resolveParam, effectiveSkillLevel } from './ctx.mjs';
 import { baseLevelOf } from './abilities.mjs';
+import { UNCOMPUTABLE_ABILITY } from './attr.mjs';
 
 // ---------------------------------------------------------------------------
 // 全局开关
@@ -117,6 +118,7 @@ export function blockedReason(entry, opts) {
   const o = withDefaults(opts);
   const ref = entry.ref ?? {};
   if (entry.kind === 'relicset' && ref.piece > o.pieces) return `piece_short:${ref.piece}`;
+  if ([...(entry.scope?.abilityTypes??[]),entry.scope?.abilityKind].some(t=>UNCOMPUTABLE_ABILITY.has(t))) return 'unmodelled_ability';
   if (UNMODELLED.has(entry.id)) return `unmodelled:${entry.id}`;
   return null;
 }
@@ -263,7 +265,7 @@ export const DISPLAY_ONLY_KEYS = new Set([
 
 /** 我方受到的减伤只影响生存，不影响我方输出。 */
 export function isDisplayOnly(entry) {
-  return DISPLAY_ONLY_KEYS.has(entry.key) || (entry.key === 'dmgReduction' && entry.side === 'ally');
+  return entry.side === 'enemy' && /^(atk|hp|def|speed)(Pct|Flat)$/.test(entry.key) || DISPLAY_ONLY_KEYS.has(entry.key) || (entry.key === 'dmgReduction' && entry.side === 'ally');
 }
 
 /** 三个页签。由 side + target 决定，与「作用对象」这一级完全对应。 */
@@ -349,6 +351,7 @@ export function buffsFromSelections(ctx, entries, pickedIds, opts, ctxVars = {})
     const e = byId.get(id);
     if (!e) { skipped.push({ id, reason: 'not_in_catalog' }); continue; }
 
+    if(e.kind==='lightcone'&&ctxVars.lightconeId===e.ref?.lcId&&ctx.lcById.get(e.ref.lcId)?.path!==ctx.charById.get(charId)?.path){skipped.push({id,reason:'path_mismatch',label:e.label,text:e.text});continue;}
     const blocked = blockedReason(e, opts);
     if (blocked) { skipped.push({ id, reason: blocked, label: e.label, text: e.text }); continue; }
 
@@ -396,7 +399,7 @@ export function buffsFromSelections(ctx, entries, pickedIds, opts, ctxVars = {})
       source: e.ref,
       kind: e.kind,
       shared: isShared,
-      stacks: perStack ? o.stacks : 1,
+      stacks: perStack || e.condition?.stacks ? o.stacks : 1,
       displayOnly: isDisplayOnly(e),
     });
   }
@@ -491,7 +494,7 @@ export function displayValueOf(ctx, entry, opts) {
     if (why?.startsWith('unmodelled')) {
       return {
         text: '算不了',
-        title: UNMODELLED.get(why.slice('unmodelled:'.length)) ?? '',
+        title: why === 'unmodelled_ability' ? '此类攻击需要战斗机制判定，单次伤害计算器尚不支持；可在战斗模拟器使用。' : UNMODELLED.get(why.slice('unmodelled:'.length)) ?? '',
         value: null,
         blocked: true,
       };

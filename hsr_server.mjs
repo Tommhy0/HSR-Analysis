@@ -52,7 +52,7 @@ function page(mode='calculator') {
   return inject(out, '<!--__BOOT__-->', '<script type="module" src="/ui/'+(mode==='battle'?'battle-app':'app')+'.mjs"></script>', '启动');
 }
 
-const server = http.createServer((req, res) => {
+export function handleRequest(req, res) {
   let url;
   try { url = decodeURIComponent((req.url ?? '/').split('?')[0]); }
   catch { res.writeHead(400); res.end('invalid URL'); return; }
@@ -74,6 +74,8 @@ const server = http.createServer((req, res) => {
     }
     // 只允许访问仓库内的文件，挡住 ../
     const rel = url.replace(/^\/+/, '');
+    if (!/^(ui|core|simulator)\//.test(rel) && rel !== '_data_cache/hsr_core.json') { res.writeHead(403); res.end('forbidden'); return; }
+    if (rel.split('/').some(part=>part.startsWith('.'))) { res.writeHead(403); res.end('forbidden'); return; }
     const abs = path.resolve(ROOT, rel);
     if (!abs.startsWith(ROOT + path.sep)) { res.writeHead(403); res.end('forbidden'); return; }
     if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) { res.writeHead(404); res.end('not found: ' + rel); return; }
@@ -81,11 +83,11 @@ const server = http.createServer((req, res) => {
     res.end(fs.readFileSync(abs));
   } catch (e) {
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end(String(e.stack ?? e));
+    res.end('internal server error');
   }
-});
+}
 
-server.listen(PORT, '127.0.0.1', () => {
+if(process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) http.createServer(handleRequest).listen(PORT, '127.0.0.1', () => {
   console.log(`开发服务器: http://localhost:${PORT}/`);
   console.log('（关掉这个窗口就停；Ctrl+C 也行）');
 });

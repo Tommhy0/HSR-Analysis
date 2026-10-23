@@ -37,6 +37,7 @@ export function supplementData(core, root) {
         const received = (h.side === 'enemy' && /受到/.test(part)) || inheritedReceived;
         const key = received && ['dmgBoost','abilityDmg','elemDmg'].includes(h.key) ? 'vuln' : h.key;
         const scope = { ...(h.scope ?? {}) };
+        if(/该扑满|该目标|此目标|该敌方目标/.test(analysisText))scope.unresolvedTarget=true;
         if (key !== 'abilityDmg' && !scope.abilityTypes) {
           const types = [['普攻','Normal'],['战技','BPSkill'],['终结技','Ultra']].filter(([word]) => analysisText.includes(word)).map(([,type]) => type);
           if (types.length) scope.abilityTypes = types;

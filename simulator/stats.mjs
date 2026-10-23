@@ -1,12 +1,16 @@
 export function battleActorIndex(result){
-  const actors=new Map([...result.config.units,...(result.actors??[])].map(u=>[u.id,u]));
+  const actors=new Map();
+  const frames=result.actors?.length?[result.log.at(-1)?.frame]:result.log.map(event=>event.frame);
+  for(const unit of [...result.config.units,...(result.actors??[]),...(result.units??[]),
+    ...frames.flatMap(frame=>[...(frame?.units??[]),...(frame?.summons??[])])])
+    actors.set(unit.id,{...actors.get(unit.id),...unit});
   // Old replays have no runtime actor table; summon events still preserve ownership.
   for(const e of result.log)if(e.type==='summon'&&e.target&&!actors.has(e.target)){
     const owner=actors.get(e.actor);if(owner)actors.set(e.target,{id:e.target,side:owner.side,memospriteOwner:e.actor});
   }
   return actors;
 }
-export function battleOwnerId(actors,id){const seen=new Set();while(actors.get(id)?.memospriteOwner&&!seen.has(id)){seen.add(id);id=actors.get(id).memospriteOwner;}return id;}
+export function battleOwnerId(actors,id){const seen=new Set();while((actors.get(id)?.owner??actors.get(id)?.memospriteOwner)&&!seen.has(id)){seen.add(id);id=actors.get(id).owner??actors.get(id).memospriteOwner;}return id;}
 // Every ally contributes to the same team total; servants belong to their summoner.
 export function battleStatistics(result){
   const actors=battleActorIndex(result);

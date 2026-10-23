@@ -20,7 +20,7 @@ import {
   createContext, listCharacters, characterDisplayName, SKILL_TYPE_CN, ELEMENT_CN,
   ELEMENTS, promotionForLevel,
 } from '../core/ctx.mjs';
-import { emptyPanel, suggestPanel } from '../core/panel.mjs';
+import { emptyPanel, suggestPanel, validatePanel } from '../core/panel.mjs';
 import { defaultRelics, relicContributions, applyRelics } from '../core/relics.mjs';
 import { renderRelics } from './relic-view.mjs';
 import { initTheme } from './theme.mjs';
@@ -109,6 +109,7 @@ const st = {
   supportPanels: {},
   tier: 'base',          // 全局技能等级：'base' 基础满级 / 'max' 满级+满星魂（星魂类条目不受它影响）
   picks: { ids: {}, tab: 'ally_team', kind: '', q: '' },   // 队友目录的勾选
+  selfPickOverrides: {},
   selfPicks: {},         // 自拐卡片的勾选（id → bool，由 syncSelfPicks 物化）
   scenario: { mode: null, seasonId: null, floorId: null },
   scenarioPicks: {},
@@ -125,7 +126,8 @@ function autoFillPanel() {
   const sug = suggestPanel(ctx, {
     characterId: st.characterId, level: st.level, lightconeId: st.lightconeId,
   });
-  st.panel = { ...sug.panel };
+  if(st.relicAuto) st.panel = { ...sug.panel };
+  else st.panel = { ...st.panel, baseStats: sug.panel.baseStats };
   st.panelNote = sug.warning ?? '';
   const relic = relicContributions(DATA.relicTables, st.relics);
   if(st.relicAuto && relic.ok) {
@@ -178,6 +180,7 @@ function catalogOpts() {
     tier: st.tier,
     superimpose: st.superimpose,
     pieces: 4,
+    stacks: st.stacks ?? 1,
     // 当前角色的星魂数用 ① 里那一档，其余按全局档位。
     // ★ 它现在只影响**技能等级**（星魂 R3/R5 的「+2/+1」），不再决定星魂条目能否勾选。
     eidolons: { [st.characterId]: st.eidolon },
@@ -340,7 +343,7 @@ function bindPanelBoxes(host) {
 }
 
 /** 一条条目在当前开关下可不可选；不可选则返回原因串（现在只剩 'piece_short:4' 这类）。 */
-function blockedOf(e) { return blockedReason(e, catalogOpts()); }
+function blockedOf(e) { return e.kind==='lightcone'&&e.ref?.lcId===st.lightconeId&&ctx.lcById.get(st.lightconeId)?.path!==character(st.characterId)?.path?'path_mismatch':blockedReason(e, catalogOpts()); }
 
 /**
  * 自拐卡片装哪些条目。
@@ -360,7 +363,7 @@ function blockedOf(e) { return blockedReason(e, catalogOpts()); }
 function selfEntries() {
   return CATALOG.filter((e) => (
     e.kind === 'lightcone'
-      ? e.ref?.lcId === st.lightconeId
+      ? e.ref?.lcId === st.lightconeId && ctx.lcById.get(st.lightconeId)?.path === character(st.characterId)?.path
       : e.target === 'self' && e.ownerId === st.characterId
   ));
 }
@@ -412,18 +415,14 @@ function hiddenNote() {
 /**
  * 把自拐卡片的勾选状态物化。
  *
- * 默认**全勾**（保持改造之前的行为：行迹/星魂/光锥本来就算自动生效的），
- * 但当前开关下不可用的（现在只剩「遗器件数不够」这一类）默认不勾，并且**显示成置灰**。
- * 用户手动取消过的（值为 false）不会被重新勾上。
- *
- * 星魂**不再**进「不可用」那一支 —— `blockedReason` 里的 `rank_locked` 已退役，
- * 189 条星魂条目现在默认就是勾上的。
+ * 行迹和匹配命途的光锥默认勾选；星魂默认跟随当前配置。
+ * 用户明确勾选或取消的条目保留在 selfPickOverrides，不受默认规则覆盖。
  */
 function syncSelfPicks() {
   const live = selfEntries();
   const next = {};
   for (const e of live) {
-    next[e.id] = st.selfPicks[e.id] === false ? false : !blockedOf(e);
+    next[e.id] = st.selfPickOverrides[e.id] ?? (!blockedOf(e) && (e.kind !== 'eidolon' || e.ref?.rankId <= st.eidolon));
   }
   st.selfPicks = next;   // 顺带丢掉上一把光锥/上一个角色留下的陈旧 id
 }
@@ -468,7 +467,7 @@ function selfQuery() {
   return {
     characterId: st.characterId,
     eidolon: st.eidolon,
-    lightconeId: st.lightconeId,
+    lightconeId: ctx.lcById.get(st.lightconeId)?.path === character(st.characterId)?.path ? st.lightconeId : null,
     superimpose: st.lightconeId ? { [st.lightconeId]: st.superimpose } : {},
     relicSets: {},
   };
@@ -488,7 +487,7 @@ function selfQuery() {
 function gather(pickOverride) {
   const opts = catalogOpts();
   const ids = pickOverride ?? allPickedIds();
-  const sel = buffsFromSelections(ctx, CATALOG, ids, opts, { characterId: st.characterId });
+  const sel = buffsFromSelections(ctx, CATALOG, ids, opts, { characterId: st.characterId, lightconeId:st.lightconeId });
   const auto = collectBuffs(ctx, { ...selfQuery(), team: [], annotations: ANN });
   const builtin = builtinBuffs(ctx, st.characterId, { level: st.level })
     .filter((b) => st.panel.elemDmg?.[b.scope?.element] == null);
@@ -526,6 +525,8 @@ function comboGroups() {
 }
 
 function compute() {
+  const panelErrors=validatePanel(st.panel);
+  if(panelErrors.length){st.result={ok:false,error:panelErrors.map(e=>e.msg).join('；')};renderOutput();return;}
   const relicCheck=relicContributions(DATA.relicTables,st.relics);
   if(st.relicAuto && !relicCheck.ok) {st.result={ok:false,error:'请修正遗器配装：'+relicCheck.errors.join('；')};renderOutput();return;}
   if(st.relicAuto&&st.relicDraftDirty){autoFillPanel();renderPanel();st.relicDraftDirty=false;}
@@ -537,8 +538,8 @@ function compute() {
   //   `core/damage.mjs` 那句「该技能没有可用的倍率（annotations/multipliers.jsonl
   //   里还没补录）」—— 把「这技能本来就不打伤害」说成「我们还没录」，
   //   正是这次要消灭的那种错标注。文案必须在这里给。
-  if (ab.status === 'non-damage') {
-    st.result = { ok: false, error: ab.note || '这个技能不造成伤害，不参与计算' };
+  if (['non-damage','out-of-scope','unresolved'].includes(ab.status)) {
+    st.result = { ok: false, error: ab.note || ({'non-damage':'这个技能不造成伤害，不参与计算','out-of-scope':'此技能的伤害类型尚不支持计算','unresolved':'此技能的倍率或机制尚未解析'})[ab.status] };
     renderOutput(); return;
   }
 
@@ -697,7 +698,7 @@ function renderActor() {
   bind('f-char', (v) => {
     st.characterId = Number(v); st.abilityId = null;
     st.skillLevels = {}; st.hitsOverride = {}; st.targetRole = 'primary'; st.includeConditional = false;
-    st.selfPicks = {}; autoFillPanel(); syncSelfPicks();
+    st.selfPicks = {}; st.selfPickOverrides={}; autoFillPanel(); syncSelfPicks();
   }, true);
   bind('f-eid', (v) => { st.eidolon = Number(v); syncSelfPicks(); }, true);
   bind('f-level', (v) => { st.level = Number(v); autoFillPanel(); }, true);
@@ -820,7 +821,8 @@ function renderPanel() {
   $('sec-panel').querySelectorAll('[data-panel]').forEach((el) => {
     el.oninput = () => {
       const k = el.dataset.panel;
-      const raw = el.value === '' ? null : Number(el.value);
+      const input = el.value === '' ? null : Number(el.value);
+      const raw = input == null ? null : Math.max(['hp','speed'].includes(k)?1:0, Math.min(k==='critRate'?100:Infinity, Number.isFinite(input)?input:0));
       st.panel = { ...st.panel, [k]: raw == null ? null : (PCT_FIELDS.has(k) ? raw / 100 : raw) };
       st.relicAuto = false; renderRelicPanel();
       markStale();
@@ -829,7 +831,7 @@ function renderPanel() {
   $('sec-panel').querySelectorAll('[data-elem]').forEach((el) => {
     el.oninput = () => {
       const e = el.dataset.elem;
-      st.panel = { ...st.panel, elemDmg: { ...(st.panel.elemDmg ?? {}), [e]: (Number(el.value) || 0) / 100 } };
+      st.panel = { ...st.panel, elemDmg: { ...(st.panel.elemDmg ?? {}), [e]: el.value === '' ? null : Math.max(0,Number(el.value) || 0) / 100 } };
       st.relicAuto = false; renderRelicPanel();
       markStale();
     };
@@ -850,10 +852,12 @@ function renderGlobals() {
     { v: 'base', label: '基础满级 —— 技能等级：普攻 6 / 其余 10（R3/R5 的 +2/+1 按 ① 的星魂数，队友按 0）' },
     { v: 'max', label: '满级 —— 技能等级：普攻 10 / 其余 15（R3/R5 按满星魂，队友也按满星魂）' },
   ], st.tier, (o) => o.label)}</select></div>
+    <label class="field"><span>每层 / 每点增益的层数</span><input id="g-stacks" type="number" min="0" step="1" value="${st.stacks??1}"></label>
     <div class="faint">技能等级决定目录里<b>技能</b>类条目的数值（含星魂 R3/R5 的「技能等级 +2/+1」）。
-      <b>星魂类条目一律可勾，不受这里影响</b> —— 勾了就是「这一条算进去」，
+      <b>星魂类条目可手动勾选，默认按角色当前星魂数选择</b> —— 勾了就是「这一条算进去」，
       数值取该星魂自己的参数，与有没有解锁无关。</div>`;
 
+  bind('g-stacks', v=>{st.stacks=Math.max(0,Math.trunc(Number(v)||0));markStale();}, true);
   bind('g-tier', (v) => { st.tier = v; syncSelfPicks(); }, true);
 }
 
@@ -963,13 +967,13 @@ function renderSelf() {
       2 件套的属性已经在面板 ③ 里了，再收一遍就是重复计算。</div>`;
 
   $('sec-self').querySelectorAll('[data-cat]').forEach((el) => {
-    el.onchange = () => { st.selfPicks[el.dataset.cat] = el.checked; markStale(); };
+    el.onchange = () => { st.selfPickOverrides[el.dataset.cat] = st.selfPicks[el.dataset.cat] = el.checked; markStale(); };
   });
   bindPanelBoxes($('sec-self'));
   const all = $('s-all');
   if (all) all.onchange = () => {
     const on = all.checked;
-    for (const e of selfEntries()) if (!blockedOf(e)) st.selfPicks[e.id] = on;
+    for (const e of selfEntries()) if (!blockedOf(e)) st.selfPickOverrides[e.id] = st.selfPicks[e.id] = on;
     renderSelf(); markStale();
   };
 }
@@ -1108,17 +1112,17 @@ function renderScenario() {
 
   $('f-mode').onchange = (e) => {
     st.scenario = { mode: e.target.value || null, seasonId: null, floorId: null };
-    st.enemyIndex = 0; st.scenarioPicks = {}; renderScenario(); renderSceneEffects(); markStale();
+    st.enemyIndex = 0; st.scenarioPicks = {}; renderScenario(); renderSceneEffects(); renderAbility(); markStale();
   };
   const se = $('f-season');
   if (se && s.mode) se.onchange = (e) => {
     st.scenario = { ...s, seasonId: e.target.value ? Number(e.target.value) : null, floorId: null };
-    st.enemyIndex = 0; st.scenarioPicks = {}; renderScenario(); renderSceneEffects(); markStale();
+    st.enemyIndex = 0; st.scenarioPicks = {}; renderScenario(); renderSceneEffects(); renderAbility(); markStale();
   };
   const fl = $('f-floor');
   if (fl && scn) fl.onchange = (e) => {
     st.scenario = { ...s, floorId: e.target.value || null };
-    st.enemyIndex = 0; st.scenarioPicks = {}; renderScenario(); renderSceneEffects(); markStale();
+    st.enemyIndex = 0; st.scenarioPicks = {}; renderScenario(); renderSceneEffects(); renderAbility(); markStale();
   };
   const en = $('f-enemy');
   if (en) en.onchange = (e) => { st.enemyIndex = Number(e.target.value); markStale(); };
@@ -1183,7 +1187,7 @@ function renderSceneEffects() {
   const items = scn?.availableBuffs ?? [];
   $('sec-scene-effects').innerHTML = `<h2>情境增益 <span class="hint">${items.length} 项已解析</span></h2>
     <p class="faint">选择本次实际生效的祝福与增益。勾选即表示原文中的触发条件已满足。</p>
-    ${items.length ? `<div class="catwrap">${items.map(e=>`<label class="catrow"><input type="checkbox" data-scene="${esc(e.id)}"${st.scenarioPicks[e.id]?' checked':''}><span class="catval">+${(e.value*100).toFixed(1)}%</span><span class="catmain"><span class="catlabel">${esc(e.label)}</span><span class="cattext">${esc(e.sourceText)}</span></span></label>`).join('')}</div>` : `<div class="empty">${scn?'此层没有可直接选择的额外增益。敌人的已知机制由计算自动计入。':'先选择战斗情境，再查看该层的增益。'}</div>`}`;
+    ${items.length ? `<div class="catwrap">${items.map(e=>`<label class="catrow"><input type="checkbox" data-scene="${esc(e.id)}"${e.selected?' checked':''}${e.scope?.unresolvedTarget?' disabled title="此效果仅作用于特定目标，尚未建立目标映射"':''}><span class="catval">+${(e.value*100).toFixed(1)}%</span><span class="catmain"><span class="catlabel">${esc(e.label)}</span><span class="cattext">${esc(e.sourceText)}${e.scope?.unresolvedTarget?'（目标未解析，暂不计入）':''}</span></span></label>`).join('')}</div>` : `<div class="empty">${scn?'此层没有可直接选择的额外增益。敌人的已知机制由计算自动计入。':'先选择战斗情境，再查看该层的增益。'}</div>`}`;
   $('sec-scene-effects').querySelectorAll('[data-scene]').forEach(el=>{
     el.onchange=()=>{st.scenarioPicks[el.dataset.scene]=el.checked;markStale();};
   });
@@ -1226,11 +1230,13 @@ function renderOutput() {
 
 function skipReasonCN(reason) {
   if (!reason) return '原因未知';
+  if (reason === 'path_mismatch') return '光锥命途不符，仅计白值，被动不生效';
   if (reason.startsWith('rank_locked')) {
     const [, need, have] = reason.split(':');
     return `需要星魂 R${need}，当前只有 R${have}`;
   }
   if (reason.startsWith('piece_short')) return `需要 ${reason.split(':')[1]} 件套`;
+  if (reason === 'unmodelled_ability') return '此类攻击需要战斗机制判定，单次计算暂不支持';
   if (reason.startsWith('unmodelled')) {
     // 长说明在 `UNMODELLED` 里（`core/catalog.mjs`），目录行的悬停提示也是它。
     // 这里只说「不是数据缺了、是模型没有这一档」——不写这句的话，

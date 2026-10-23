@@ -1,3 +1,4 @@
+// 已废弃：现役托帕实现位于 extra/batch04.mjs；请勿在此维护战斗机制。
 // Accepted Topaz extraction from batch04; source revision 312b4597691e0a29cf9828a15b592757dba86949.
 const clone=x=>JSON.parse(JSON.stringify(x));const ELEMENT={物理:'Physical',火:'Fire',冰:'Ice',雷:'Thunder',风:'Wind',量子:'Quantum',虚数:'Imaginary'};
 export const elementOf=s=>ELEMENT[s]??s;

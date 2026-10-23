@@ -575,9 +575,10 @@ const factories={
         if(to.side===u.side)return;
         // 只在真正的「弱点击破」事件上触发：引擎 breakTarget 会先写一条 type='break' 日志。
         const key=to.id;
-        if(u.resources['破韧事件:'+key]===b.log.length)return;
-        if(!b.log.slice(-4).some(e=>e.type==='break'&&e.target===to.id))return;
-        u.resources['破韧事件:'+key]=b.log.length;
+        const ev=b.log.findLast(e=>e.type==='break'&&e.target===to.id);
+        const index=ev?.index??b.log.indexOf(ev);
+        if(!ev||u.resources['破韧事件:'+key]===index)return;
+        u.resources['破韧事件:'+key]=index;
         gainCharge(b,u,1);
         // 行迹「魔天」：精英级别及以上目标被击破时额外 +1 充能与 10 能。
         if(trace(u,1)&&to.rank==='elite'){gainCharge(b,u,trace(u,1)[1]);energy(b,u,trace(u,1)[0]);}
@@ -662,13 +663,13 @@ const factories={
       },
       afterDamage(b,u,from,to,kind){
         void kind;
-        if(from===u)return;
         if(to.side===u.side)return;
         // 天赋：敌方弱点被击破时开拓者回 Talent[0] 能量；以引擎的 type='break' 日志判定。
         const key=to.id;
-        if(u.resources['破韧事件:'+key]===b.log.length)return;
-        if(!b.log.slice(-4).some(e=>e.type==='break'&&e.target===to.id))return;
-        u.resources['破韧事件:'+key]=b.log.length;
+        const ev=b.log.findLast(e=>e.type==='break'&&e.target===to.id);
+        const index=ev?.index??b.log.indexOf(ev);
+        if(!ev||u.resources['破韧事件:'+key]===index)return;
+        u.resources['破韧事件:'+key]=index;
         energy(b,u,u.kit.params.Talent[0]);
         // 行迹「剧院之帽」：我方目标造成弱点击破后额外使敌方行动延后 30%。
         if(trace(u,3)&&from&&from.side===u.side)delay(b,to.id,trace(u,3)[0]);

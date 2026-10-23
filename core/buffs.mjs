@@ -19,6 +19,7 @@ import { normalize, affectsDamage, hasPlaceholder } from './clauses.mjs';
 // 技能等级基值的唯一出处。放在 abilities.mjs 而不是这儿，是因为**输出者自己的倍率**
 // 也用它 —— 两处各写一份「普攻 6、其余 10」，迟早会漂。
 import { baseLevelOf } from './abilities.mjs';
+import { UNMODELLED } from './catalog.mjs';
 
 /** 探测一段描述里是否含数值效果。有数值却没标注 = 缺口。 */
 export const RE_HAS_NUMERIC = /#\d+\[(?:i|f\d)\]/;
@@ -250,6 +251,7 @@ export function collectBuffs(ctx, query) {
       //   现在按子句报「这 146 条认不出属性键」。后者更准，因为它不依赖有没有人标注。
       //   真要查一条技能为什么没进目录，去 build_catalog.mjs --dump <桶名> 看原文。
       if (src.kind === 'skill') continue;
+      if (src.kind === 'lightcone' && ctx.lcById.get(actor.lightconeId)?.path !== ctx.charById.get(actor.characterId)?.path) continue;
       const recs = byBase.get(src.id);
       if (!recs?.length) {
         // 有数值效果却没标注 —— 这是缺口，不是「没有增益」。
@@ -269,6 +271,7 @@ export function collectBuffs(ctx, query) {
       }
       // 一个来源可能有多条标注（一句话里好几个效果），逐条都要算
       for (const rec of recs) {
+        if (UNMODELLED.has(rec.id) || ctx.data.buffCatalog?.some(e => e.id === rec.id)) continue;
         const varsFor = { ...vars, skillLevels: undefined };
         if (!isActive(rec, varsFor)) continue;
         const value = valueOf(ctx, rec, varsFor);
@@ -393,10 +396,13 @@ export function aggregate(buffs, { state = {}, enemy = null, ability = null } = 
     if (b.provenance === 'unknown') { z.level = C.UNKNOWN; z.missing.push(b.text ?? b.label); }
   };
 
-  for (const b of buffs) {
+  for (let b of buffs) {
     const k = b.key;
     let reason = null;
-    if (b.key === 'dmgReduction' && b.side === 'ally') reason = '我方减伤仅影响生存';
+    const triggerType = {on_普攻:'Normal',on_战技:'BPSkill',on_终结技:'Ultra'}[b.condition?.trigger];
+    if (b.side === 'enemy' && /^(atk|hp|def|speed)(Pct|Flat)$/.test(k)) reason = '影响敌方输出，不改变本次伤害';
+    else if (triggerType && triggerType !== ability?.type) reason = '不适用于当前技能类型';
+    else if (b.key === 'dmgReduction' && b.side === 'ally') reason = '我方减伤仅影响生存';
     else if (b.scope?.enemySide != null && b.scope.enemySide !== enemy?.side) reason = '不属于当前半场';
     else if (b.scope?.enemySlot != null && b.scope.enemySlot !== enemy?.slot) reason = '不作用于当前敌人';
     else if (b.scope?.unresolvedTarget) reason = '情境效果目标未解析';
@@ -406,6 +412,7 @@ export function aggregate(buffs, { state = {}, enemy = null, ability = null } = 
     else if (b.scope?.element && !['elemDmg','resPen'].includes(k) && ability
       && b.scope.element !== ability.element) reason = '不适用于当前伤害属性';
     if (reason) { agg._skipped.push({ ...b, reason }); continue; }
+    if ((b.condition?.stacks || b.scope?.perStack) && !MULT_KEYS.includes(k)) b = { ...b, value: b.value * (b.stacks ?? state.stacks ?? 1) };
     if (k === 'elemDmg') {
       const el = b.scope?.element;
       if (el && el in agg.elemDmg) agg.elemDmg[el] += b.value; else for (const e of ELEMENTS) agg.elemDmg[e] += b.value;
@@ -449,7 +456,7 @@ export function aggregate(buffs, { state = {}, enemy = null, ability = null } = 
     }
     agg._contributions.push({ key: k, value: b.value, from: b.label, owner: b.owner, provenance: b.provenance,
       // 「每层/每点」类：层数只有界面知道，这里按 1 层算 —— 标记出来让界面能说明
-      perStack: b.scope?.perStack === true, abilityKind: b.scope?.abilityKind ?? null });
+      perStack: b.scope?.perStack === true || b.condition?.stacks === true, stacks: b.stacks ?? state.stacks ?? 1, abilityKind: b.scope?.abilityKind ?? null });
   }
 
   return agg;

@@ -2,6 +2,7 @@
 import {relicRuntime} from './relic-runtime.mjs';
 import {rosterRuntime} from './characters/runtime.mjs';
 import {equipmentRuntime} from './equipment-runtime.mjs';
+import {resistsStatus} from './status-resistance.mjs';
 const joyAscendantBlissTag='joyAscendantBliss';
 const ichorPheasantResonanceTag='ichorPheasantResonance';
 const silvermaneSupportTag='silvermaneCannoneerSupport';
@@ -89,6 +90,7 @@ export function kitRuntime(api) {
   const {record,energy,advance,delay,damageTo,combatPanel,useAction,trueDamage}=api;
   function remove(b,to,id){to.buffs=to.buffs.filter(e=>e.id!==id);}
   function buff(b,from,to,name,key,value,duration=null,extra={}){
+    if(resistsStatus(b,from,to,extra,{combatPanel,record,skipControlResistance:extra.controlChanceResolved===true}))return null;
     const owner=extra.tickOwner?get(b,extra.tickOwner):to,id=extra.id??from.id+':'+name+':'+key;
     // 入场 / 秘技阶段施加、且在持有者回合开始递减的效果：持有者的第 1 个回合不应消耗持续时间，
     // 否则与「N 回合」的说明相比会少 1 回合（例如缇宝秘技的【神启】）。
@@ -1230,7 +1232,7 @@ export function kitRuntime(api) {
     const attacker=combatPanel(from),target=combatPanel(to),controlRes=target.controlRes??to.controlRes??0;
     const probability=Math.max(0,Math.min(1,chance*(1+(attacker.effectHit??0))*(1-(target.effectRes??0))*(1-controlRes)));
     if(controlRes>=1||probability<1&&b.random()>=probability){record(b,'resist',to,{name:'抵抗【冻结】',source:from.id});return false;}
-    buff(b,from,to,'冻结','marker',0,duration,{id:from.id+':ice-freeze:'+to.id,tag:'iceOutOfSpaceFreeze',debuff:true,control:'freeze',tickAt:'start'});
+    if(!buff(b,from,to,'冻结','marker',0,duration,{id:from.id+':ice-freeze:'+to.id,tag:'iceOutOfSpaceFreeze',debuff:true,control:'freeze',tickAt:'start',controlChanceResolved:true}))return false;
     if(delayRatio>0)delay(b,to.id,delayRatio);
     record(b,'mechanic',from,{name:'【永冬之雨】施加冻结',target:to.id,chance,duration,delayRatio});
     return true;
@@ -1854,8 +1856,8 @@ export function kitRuntime(api) {
     const chance=Math.max(0,Math.min(1,(u.enemyKit?.confineChance??.2)*(1+(combatPanel(u).effectHit??0))*
       (1-(combatPanel(to).effectRes??0))));
     if(b.random()>=chance){record(b,'resist',u,{name:'抵抗【禁锢】',target:to.id,chance});return false;}
-    buff(b,u,to,'【禁锢】','marker',0,1,{id:u.id+':devourer-shadow-confine:'+to.id,tag:devourerShadowConfineTag,
-      debuff:true,control:'confine',tickAt:'start',modifierName:'MCommon_Confine'});
+    if(!buff(b,u,to,'【禁锢】','marker',0,1,{id:u.id+':devourer-shadow-confine:'+to.id,tag:devourerShadowConfineTag,
+      debuff:true,control:'confine',tickAt:'start',modifierName:'MCommon_Confine'}))return false;
     delay(b,to.id,u.enemyKit?.confineDelayRatio??.5);
     record(b,'mechanic',u,{name:'【禁锢】施加',target:to.id,chance,delayRatio:u.enemyKit?.confineDelayRatio??.5,reason});
     return true;
@@ -1933,11 +1935,12 @@ export function kitRuntime(api) {
         '【艾格勒印记】与【欧洛尼斯印记】共鸣');
       const ent=kit.mixedEntangle??{},chance=Math.max(0,Math.min(1,ent.chance??1.2));
       if(chance>=1||b.random()<chance){
-        buff(b,owner,to,'纠缠','marker',0,ent.lifetime??1,{id:owner.id+':noontide-gryphon-entangle:'+to.id,
-          tag:'noontideGryphonEntangle',debuff:true,control:'entangle'});
+        if(buff(b,owner,to,'纠缠','marker',0,ent.lifetime??1,{id:owner.id+':noontide-gryphon-entangle:'+to.id,
+          tag:'noontideGryphonEntangle',debuff:true,control:'entangle'})){
         delay(b,to.id,ent.actionDelayRatio??.4);
         record(b,'mechanic',owner,{name:'【共鸣】施加纠缠',target:to.id,chance:ent.chance??1.2,
           lifetime:ent.lifetime??1,actionDelayRatio:ent.actionDelayRatio??.4,damagePercentage:ent.damagePercentage??1});
+        }
       }
     }else{
       damageTo(b,owner,to,{name:'【艾格勒印记】爆发',type:'Normal',element:'Fire',
@@ -2258,6 +2261,7 @@ export function kitRuntime(api) {
     const res=1-(combatPanel(to).effectRes??0);
     const hit=dotRes>0?b.random()<base*(1-Math.min(1,dotRes)):(chance>=1&&res>=1)||b.random()<base;
     if(!hit){record(b,'resist',to,{name:name+' 被抵抗',element});return null;}
+    if(resistsStatus(b,u,to,{type:'dot',...extra},{combatPanel,record}))return null;
     const {snapshotAtk:wantSnapshotAtk,...dotExtra}=extra;
     const data={type:'dot',id:u.id+':'+name,name,source:u.id,remaining:duration,tickOwner:to.id,tickAt:'end',appliedTurn:to.turns,element,value,terms,stacks,debuff:true,...dotExtra,
       ...(wantSnapshotAtk?{snapshotAtk:combatPanel(u).atk}: {})};
@@ -2955,10 +2959,11 @@ export function kitRuntime(api) {
           const chance=Math.max(0,Math.min(1,u.enemyKit.skill052DizzyChance*(1+(attacker.effectHit??0))*(1-(target.effectRes??0))*(1-controlRes)));
           if(controlRes>=1||chance<1&&b.random()>=chance)record(b,'resist',to,{name:'抵抗【陶醉】',source:u.id});
           else{
-            buff(b,u,to,'陶醉','marker',0,u.enemyKit.skill052DizzyDuration,
-              {id:u.id+':rocking-rebel-dizzy:'+to.id,tag:rockingRebelDizzyTag,debuff:true,control:'dizzy',tickAt:'start'});
+            if(buff(b,u,to,'陶醉','marker',0,u.enemyKit.skill052DizzyDuration,
+              {id:u.id+':rocking-rebel-dizzy:'+to.id,tag:rockingRebelDizzyTag,debuff:true,control:'dizzy',tickAt:'start',controlChanceResolved:true})){
             to.skipTurns=Math.max(1,to.skipTurns??0);
             record(b,'mechanic',u,{name:'【狂奏】施加陶醉',target:to.id,chance,duration:u.enemyKit.skill052DizzyDuration,skipTurns:1});
+            }
           }
         }
         rockingRebelAddLaughter(b,u,u.enemyKit.skill052Laughter,'摇滚狂徒 · 狂奏');
@@ -3142,7 +3147,7 @@ export function kitRuntime(api) {
     if(!live(to)||to.buffs.some(e=>e.tag===lycanFearPreTag(source.id)||e.tag===lycanFearTag(source.id)))return false;
     const chance=jinrenDebuffChance(b,source,to,1);
     if(b.random()>=chance){record(b,'resist',to,{name:'抵抗【恐惧萦绕】',source:source.id});return false;}
-    buff(b,source,to,'恐惧萦绕','marker',0,null,{tag:lycanFearPreTag(source.id),debuff:true,removeOnSourceDeath:true});
+    if(!buff(b,source,to,'恐惧萦绕','marker',0,null,{tag:lycanFearPreTag(source.id),debuff:true,removeOnSourceDeath:true}))return false;
     record(b,'mechanic',source,{name:'施加【恐惧萦绕】',target:to.id,chance});return true;
   }
   function resolveLycanFearPre(b,u){
@@ -3152,7 +3157,7 @@ export function kitRuntime(api) {
     if(!fear){for(const e of pending)removeLycanTag(b,u,e.tag,'施加者退场，解除【恐惧萦绕】');return;}
     for(const e of pending)removeLycanTag(b,u,e.tag,'【恐惧萦绕】到期');
     const source=get(b,fear.source);
-    buff(b,source,u,'恐惧','marker',0,1,{tag:lycanFearTag(source.id),debuff:true,control:'fear',tickAt:'start'});
+    if(!buff(b,source,u,'恐惧','marker',0,1,{tag:lycanFearTag(source.id),debuff:true,control:'fear',tickAt:'start'}))return;
     u.skipTurns=Math.max(1,u.skipTurns??0);
     record(b,'mechanic',source,{name:'【恐惧萦绕】转为【恐惧】并跳过行动',target:u.id});
   }
@@ -3689,9 +3694,9 @@ export function kitRuntime(api) {
       for(const rs of s.gear?.sets??[]){if(rs.id===302&&combatPanel(s).speed>=rs.p2[1]){/* attack aura is applied in panel hook */}
         if(rs.id===312&&s!==u&&a.element===s.element)out.dmgBoost+=rs.p2[1];}
     }
-    const g=cone(u,23051);if(g&&tag(u,'garrison')&&b.summons.some(s=>s.active&&s.bondmate===u.id))out.dmgBoost+=g[2];
+    const g=cone(u,23051);if(g&&tag(u,'garrison')&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))out.dmgBoost+=g[2];
     // Garrison's conditional portion belongs to the wearer of the cone, not the recipient.
-    if(!g&&tag(u,'garrison')){const from=get(b,tag(u,'garrison').source),p=cone(from??{},23051);if(p&&b.summons.some(s=>s.active&&s.bondmate===u.id))out.dmgBoost+=p[2];}
+    if(!g&&tag(u,'garrison')){const from=get(b,tag(u,'garrison').source),p=cone(from??{},23051);if(p&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))out.dmgBoost+=p[2];}
     for(const s of u.gear?.sets??[]){if(s.id===108&&s.count>=4)out.defIgnore+=s.p4[0]+((to.weaknesses??[]).includes('Quantum')||to.buffs.some(e=>e.weakness==='Quantum')?s.p4[1]:0);
       if(s.id===306&&combatPanel(u).critRate>=s.p2[1]&&(a.type==='Ultra'||kind==='followup'||a.countAsFollowup))out.dmgBoost+=s.p2[2];
       if(s.id===311){const speed=combatPanel(u).speed;if(speed>=s.p2[1])out.dmgBoost+=speed>=s.p2[2]?s.p2[4]:s.p2[3];}
@@ -3724,7 +3729,7 @@ export function kitRuntime(api) {
       for(const s of source.gear?.sets??[]){if(s.id===302&&combatPanel(source).speed>=s.p2[1])add(source,s.name+' · 全队攻击','atkPct',s.p2[2]);if(s.id===310&&combatPanel(source).effectRes>=s.p2[1])add(source,s.name+' · 全队暴伤','critDmg',s.p2[2]);if(s.id===312&&source!==u&&source.element===u.element)add(source,s.name+' · 同属性增伤','dmgBoost',s.p2[1]);}
       const hermit=set(source,128);if(hermit?.count>=4&&u.shields.some(sh=>sh.source===source.id&&sh.value>0))add(source,hermit.name+' · 持有来源护盾','critDmg',hermit.p4[1]);
     }
-    const g=tag(u,'garrison'),from=g?get(b,g.source):null,p=from?cone(from,23051):null;if(p&&b.summons.some(s=>s.active&&s.bondmate===u.id))add(from,'卫戍 · 持有召唤物','dmgBoost',p[2],{remaining:g.remaining,tickOwner:u.id});
+    const g=tag(u,'garrison'),from=g?get(b,g.source):null,p=from?cone(from,23051):null;if(p&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))add(from,'卫戍 · 持有召唤物','dmgBoost',p[2],{remaining:g.remaining,tickOwner:u.id});
     const silent=cone(u,21003);if(silent&&enemies(b,u).length<=2)add(u,'唯有沉默 · 暴击率','critRate',silent[1]);
     for(const s of u.gear?.sets??[]){if(s.id===108&&s.count>=4)add(u,s.name+' · 无视防御','defIgnore',s.p4[0],{note:'目标有量子弱点时额外 '+Math.round(s.p4[1]*100)+'%'});
       if(s.id===301&&combatPanel(u).speed>=s.p2[1])add(u,s.name+' · 速度达标','atkPct',s.p2[2]);
@@ -3736,7 +3741,7 @@ export function kitRuntime(api) {
       if(s.id===319&&combatPanel(u).hp>=s.p2[1])add(u,s.name+' · 生命达标','critDmg',s.p2[2]);
       if(s.id===320&&combatPanel(u).speed>=s.p2[1])add(u,s.name+' · 速度达标','healingBoost',combatPanel(u).speed>=s.p2[2]?s.p2[4]:s.p2[3]);
       if(s.id===309&&combatPanel(u).critRate>=s.p2[1])for(const type of ['Normal','BPSkill'])add(u,s.name+' · '+type,'dmgBoost',s.p2[2],{abilityType:type});
-      if(s.id===318&&b.summons.some(s=>s.active&&s.bondmate===u.id))add(u,s.name+' · 持有召唤物','critDmg',s.p2[1]);
+      if(s.id===318&&[...b.summons,...b.units].some(s=>s.active!==false&&s.hp!==0&&(s.owner??s.memospriteOwner)===u.id))add(u,s.name+' · 持有召唤物','critDmg',s.p2[1]);
       if(s.id===122&&s.count>=4)for(const type of ['BPSkill','Ultra'])add(u,s.name+' · '+type,'dmgBoost',s.p4[0],{abilityType:type});
       if(s.id===102&&s.count>=4)add(u,s.name+' · 普攻增伤','dmgBoost',s.p4[1],{abilityType:'Normal'});
     }
@@ -3810,7 +3815,7 @@ export function kitRuntime(api) {
     if(controlRes>=1||b.random()>=jinrenDebuffChance(b,caster,to,caster.enemyKit.shakeChance)*(1-controlRes)){
       record(b,'resist',to,{name:'抵抗【强烈震荡】',source:caster.id});return;
     }
-    buff(b,caster,to,'强烈震荡','marker',0,caster.enemyKit.shakeDuration,{tag:jinrenShakeTag,debuff:true,control:'shake',tickOwner:caster.id,tickAt:'end'});
+    if(!buff(b,caster,to,'强烈震荡','marker',0,caster.enemyKit.shakeDuration,{tag:jinrenShakeTag,debuff:true,control:'shake',tickOwner:caster.id,tickAt:'end',controlChanceResolved:true}))return;
     delay(b,to.id,caster.enemyKit.shakeDelayRatio);to.skipTurns=(to.skipTurns??0)+caster.enemyKit.shakeSkipTurns;
     record(b,'mechanic',caster,{name:'【震荡】转为【强烈震荡】',target:to.id,skipTurns:caster.enemyKit.shakeSkipTurns,delayRatio:caster.enemyKit.shakeDelayRatio});
     const disabled=caster.broken||caster.cannotAct||(caster.skipTurns??0)>0||[...caster.buffs,...caster.dots].some(e=>e.control||e.disableAction===true);
