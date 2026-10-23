@@ -2,6 +2,11 @@ export function pela(api){const {enemies,live,rank,trace,buff,energy,resource,co
   const negative=t=>t.buffs.some(e=>e.debuff)||t.dots.length>0;
   const apply=(b,u,to,name,key,value,duration,chance,extra={})=>{const probability=chance*(1+(combatPanel(u).effectHit??0))*(1-(combatPanel(to).effectRes??0));if(probability<1&&b.random()>=probability){record(b,'resist',to,{name:name+'被抵抗'});return;}buff(b,u,to,name,key,value,duration,{debuff:true,...extra});};
   return {
+    shouldUseSkill(b,u){const to=enemies(b,u).find(t=>t.id===u.actions.skill?.targetId)??enemies(b,u)[0];
+      if(!to)return false;
+      if(to.buffs.some(e=>!e.debuff&&!e.control&&e.dispellable!==false))return true;
+      return !!rank(u,4)&&b.units.some(t=>live(t)&&t.side===u.side&&t!==u&&t.element==='Ice')&&
+        !to.buffs.some(e=>e.source===u.id&&e.name==='佩拉 E4 · 冰抗降低'&&(e.remaining??Infinity)>1);},
     entry(b,u){const p=u.kit.params.Maze,pool=enemies(b,u),to=pool[Math.floor(b.random()*pool.length)];if(to)damageTo(b,u,to,{name:'先发制人',type:'Maze',element:'Ice',terms:[{scaling:'atk',multiplier:p[3]}],toughness:60},1,'primary','technique');for(const t of pool)apply(b,u,t,'先发制人 · 减防','defShred',p[1],p[2],p[0]);},
     before(b,u,actor,key,kind,a,selected){if(actor!==u)return;
       if(key==='skill'){resource(b,u,'本次解除增益',0);const to=selected[0],positive=to.buffs.filter(e=>!e.debuff&&!e.control&&e.dispellable!==false).slice().reverse().slice(0,u.kit.params.BPSkill[1]);for(const e of positive){to.buffs=to.buffs.filter(x=>x!==e);record(b,'dispel',u,{target:to.id,name:e.name});}if(positive.length)resource(b,u,'本次解除增益',positive.length);if(u.kit.eidolon>=4){const p=u.kit.ranks[4];apply(b,u,to,'佩拉 E4 · 冰抗降低','resPen',p[1],p[2],p[0],{resReduction:true,element:'Ice'});}}

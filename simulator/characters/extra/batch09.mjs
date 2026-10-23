@@ -202,6 +202,9 @@ const factories={
       return [pool[at-1],pool[at+1]].filter(t=>t&&live(t));
     };
     return {
+      shouldUseSkill(b,u){const main=enemies(b,u).find(t=>t.id===u.actions.skill?.targetId)??enemies(b,u)[0];
+        return !!main&&[main,...adjacentOf(b,u,main)].some(t=>!t.buffs.some(e=>
+          e.source===u.id&&e.name==='失坠 · 防御降低'&&(e.remaining??Infinity)>1));},
       // 秘技「取此真相，弃舍表征」：对每个敌人以 Maze[0]=1.5（必定成功）开始连锁叠层，
       // 每次成功后基础概率变为上一次的 Maze[1]=50%，直到失败。
       entry(b,u){
@@ -579,6 +582,8 @@ const factories={
       return element;
     }
     return {
+      shouldUseSkill(b,u){const to=enemies(b,u).find(t=>t.id===u.actions.skill?.targetId)??enemies(b,u)[0];
+        return !!to&&!to.buffs.some(e=>e.source===u.id&&e.tag==='silverwolfWeakness'&&(e.remaining??Infinity)>1);},
       // 秘技「强制结束进程」：对敌方全体造成 Maze[0]=0.8 倍量子伤害（削韧 60）并无视弱点削韧。
       entry(b,u){
         const P=u.kit.params;

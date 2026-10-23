@@ -162,6 +162,7 @@ const factories={
       },
       // 秘技 120807：屏障期间进入战斗时自动开启【穷观阵】Maze[1]=2 回合。
       entry(b,u){openArray(b,u,u.kit.params.Maze[1]);},
+      shouldUseSkill(b,u){const e=u.buffs.find(e=>e.tag===ARRAY);return !e||(e.remaining??Infinity)<=1;},
       // 行迹 point06：穷观阵已开启时施放战技额外回 20 能（判定必须在本次开启之前）。
       before(b,u,actor,key,kind,a,selected){
         if(actor!==u)return;
@@ -311,6 +312,8 @@ const factories={
       resource(b,u,'控制日志游标',cur);
     }
     return {
+      shouldUseSkill(b,u){return allies(b,u).some(t=>!hasShield(u,t)||
+        Math.max(0,...t.shields.filter(s=>s.id===SID(u)).map(s=>s.value))<skillValue(u)*.5);},
       start(b,u){
         const P=u.kit.params;
         resource(b,u,'盲注',0);
@@ -711,9 +714,8 @@ const factories={
         }
       },
       shouldUseSkill(b,u){
-        void b;
         if(u.resources['强化'])return false;   // 强化普攻状态无法施放战技
-        return undefined;
+        return !live(masterOf(b,u));
       },
       prepare(b,u,key,kind,a){
         if(key==='basic'&&u.resources['强化'])return {...u.actions.enhancedBasic};

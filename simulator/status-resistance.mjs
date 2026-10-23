@@ -1,6 +1,10 @@
 // Apply immunity before inserting any negative effect, in every runtime path.
-export function resistsStatus(b, from, to, effect, {combatPanel, record}) {
+export function resistsStatus(b, from, to, effect, {combatPanel, record, skipControlResistance=false}) {
   if (!(effect.debuff || effect.control || effect.type === 'dot')) return false;
+  if(effect.control&&to.enemyKit?.controlImmuneTag&&to.buffs.some(e=>e.tag===to.enemyKit.controlImmuneTag)){
+    record(b,'resist',to,{name:'免疫控制类负面状态',reason:'敌方来源力场'});
+    return true;
+  }
   const ward = to.buffs.find(e => e.tag === 'debuffWard' && e.stacks > 0
     && (!e.requiresTag || b.units.find(u=>u.id===e.requiresTag.unit)?.buffs.some(x=>x.tag===e.requiresTag.tag)));
   if (ward) {
@@ -14,7 +18,7 @@ export function resistsStatus(b, from, to, effect, {combatPanel, record}) {
     record(b,'resist',to,{name:'襄尺 · 抵抗负面效果'});
     return true;
   }
-  const resistance = effect.control ? combatPanel(to).controlRes ?? to.controlRes ?? 0 : 0;
+  const resistance = effect.control&&!skipControlResistance ? combatPanel(to).controlRes ?? to.controlRes ?? 0 : 0;
   if (resistance >= 1 || resistance > 0 && b.random() < resistance) {
     record(b,'resist',to,{name:resistance>=1?'免疫控制类负面状态':'抵抗控制类负面状态'});
     return true;

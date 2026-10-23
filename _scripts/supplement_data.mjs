@@ -53,8 +53,14 @@ export function supplementData(core, root) {
   }
 
   const localPeak=path.join(root,'data','databases',`peak_${core._meta.version}.db`);
+  // Version-pinned enemy AI source index is generated from the upstream template,
+  // monster and AI tables; it records source logic but is not itself executable.
+  const enemyAISourcePath = path.join(root, 'data', `enemy_ai_${core._meta.version}.json`);
+  core.enemyAI = fs.existsSync(enemyAISourcePath)
+    ? JSON.parse(fs.readFileSync(enemyAISourcePath, 'utf8'))
+    : { version: core._meta.version, source: null, enemies: [], aiFiles: [] };
   const peakPath = fs.existsSync(localPeak) ? localPeak : path.join(root, '..', '异相仲裁', 'peak.db');
-  const peak = { seasons: [], stages: [], monsters: [], tags: [], quadrants: [] };
+  const peak = { seasons: [], stages: [], waves: [], monsters: [], tags: [], quadrants: [], bossConfigs: [] };
   if (fs.existsSync(peakPath)) {
     const db = new DatabaseSync(peakPath, { readOnly: true });
     const dates = new Map(db.prepare('SELECT * FROM bg_season').all().map((s) => [s.period, s]));
@@ -62,7 +68,14 @@ export function supplementData(core, root) {
       version: s.version, begin: dates.get(s.id)?.start_time, end: dates.get(s.id)?.end_time }));
     peak.stages = db.prepare('SELECT * FROM stage').all().map((s) => ({ seasonId: s.season_id,
       id: `${s.slot}:${s.seq}`, slot: s.slot, seq: s.seq, name: s.name, level: s.battle_level,
-      weakness: readJson(s.damage_type_json), waves: s.wave_count }));
+      sourceStageId: s.stage_id, weakness: readJson(s.damage_type_json),
+      monsterList: readJson(s.monster_list_json), waveCount: s.wave_count }));
+    peak.waves = db.prepare('SELECT * FROM stage_wave').all().map((w) => ({ seasonId: w.season_id,
+      stageId: `${w.slot}:${w.seq}`, id: w.wave_id, monsters: readJson(w.monster_group_json),
+      maxMonsterCount: w.max_monster_count, maxTeammateCount: w.max_teammate_count,
+      eliteGroup: w.elite_group, ability: w.ability, params: readJson(w.param_list_json),
+      hpBaseSum: w.hp_base_sum, eliteHpRatio: w.eg_hp_ratio, hpSource: w.eg_source,
+      estimatedHp: w.hp_estimated }));
     peak.monsters = db.prepare('SELECT * FROM stage_monster').all().map((m) => ({ seasonId: m.season_id,
       stageId: `${m.slot}:${m.seq}`, waveId: m.wave_id, childId: m.monster_id, name: m.name_zh,
       weakness: readJson(m.weak_json), rank: m.rank }));
@@ -71,9 +84,17 @@ export function supplementData(core, root) {
     peak.quadrants = db.prepare('SELECT * FROM bg_quadrant').all().map((q) => ({ seasonId: q.period,
       id: q.seq, name: q.name, text: q.desc }));
     // hp_estimated 未经对拍且第9期首领缺真实精英倍率，只保留资料，不写成已知血量。
-    peak.hpNotes = db.prepare('SELECT season_id,slot,seq,hp_estimated FROM stage_hp').all()
-      .map((h) => ({ seasonId: h.season_id, stageId: `${h.slot}:${h.seq}`, estimatedHp: h.hp_estimated,
+    peak.hpNotes = db.prepare('SELECT * FROM stage_hp').all()
+      .map((h) => ({ seasonId: h.season_id, stageId: `${h.slot}:${h.seq}`,
+        level: h.battle_level, hardLevelGroup: h.hard_level_group,
+        hpBaseSum: h.hp_base_sum, monsterCount: h.monster_count,
+        hardLevelHpRatio: h.hlg_hp_ratio, estimatedHp: h.hp_estimated,
         valid: !(h.season_id === 9 && h.slot === 'boss'), verified: false }));
+    peak.bossConfigs = db.prepare('SELECT * FROM boss_config').all().map((b) => ({
+      seasonId: b.season_id, hardName: b.hard_name,
+      buffs: readJson(b.buff_list_json), events: readJson(b.event_id_list_json),
+      tags: readJson(b.tag_list_json), waves: readJson(b.infinite_list_json),
+    }));
     db.close();
   }
   const archive = path.join(root,'data','peak_archive.json');
@@ -87,7 +108,11 @@ export function supplementData(core, root) {
     for(const [slot,seq,stage] of [...(raw.pre_level??[]).map((s,i)=>['pre',i+1,s]),['boss',1,raw.boss_level]]) {
       if(!stage)continue;const id=`${slot}:${seq}`,events=stage.event_id_list??[];
       core.peak.stages.push({seasonId:raw.id,id,slot,seq,name:stage.name,level:events[0]?.level??null,weakness:stage.damage_type,waves:events.reduce((n,e)=>n+(e.monster_list?.length??0),0)});
-      for(const event of events)for(const [waveId,wave] of (event.monster_list??[]).entries())for(const childId of Object.values(wave))core.peak.monsters.push({seasonId:raw.id,stageId:id,waveId,childId,name:monsterNames.get(childId)??`敌人 ${childId}`,weakness:stage.damage_type,rank:null});
+      for(const event of events)for(const [waveId,wave] of (event.monster_list??[]).entries()){
+        core.peak.waves.push({seasonId:raw.id,stageId:id,id:waveId,monsters:wave,
+          sourceStageId:event.stage_id??null,eliteGroup:event.elite_group??null});
+        for(const childId of Object.values(wave))core.peak.monsters.push({seasonId:raw.id,stageId:id,waveId,childId,name:monsterNames.get(childId)??`敌人 ${childId}`,weakness:stage.damage_type,rank:null});
+      }
       for(const tag of stage.tag_list??[])core.peak.tags.push({seasonId:raw.id,stageId:id,name:tag.name,desc:tag.desc,params:tag.param});
     }
   }

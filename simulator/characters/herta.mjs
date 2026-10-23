@@ -3,7 +3,7 @@ export function herta(api){const {allies,live,rank,trace,buff,stacks,resource,co
     entry(b,u){buff(b,u,u,'可以优化一下','atkPct',u.kit.params.Maze[0],u.kit.params.Maze[1]);},
     before(b,u,actor,key,kind,a){if(actor===u&&kind==='followup'){a.repeatCount=u.resources['待结算转圈']??1;a.energyGain=5*a.repeatCount;resource(b,u,'待结算转圈',0);u.hertaSpinAction=a;}},
     repeatStart(b,u,actor,key,kind){if(actor===u&&kind==='followup'&&rank(u,2))stacks(b,u,u,'黑塔 E2 · 暴击','critRate',rank(u,2),u.kit.ranks[2][1],null);},
-    afterDamage(b,u,actor,to,kind){if(actor?.side!==u.side||to.side===u.side||['dot','break_dot'].includes(kind))return;
+    afterDamage(b,u,actor,to,kind){if(actor?.side!==u.side||to.side===u.side||['dot','break_dot','break_additional'].includes(kind))return;
       // 控制类负面状态（冻结 / 禁锢 / 纠缠 / 支配等）期间不发动追击，也不占用该敌人的触发标记。
       if([...u.buffs,...u.dots].some(e=>e.control))return;
       const used=u.resources['已触发半血追击的敌人']??[];if(to.hp/combatPanel(to).hp>u.kit.params.Talent[0]){if(used.includes(to.id))resource(b,u,'已触发半血追击的敌人',used.filter(id=>id!==to.id));return;}if(used.includes(to.id))return;resource(b,u,'已触发半血追击的敌人',[...used,to.id]);

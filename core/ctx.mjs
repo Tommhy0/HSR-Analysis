@@ -179,6 +179,10 @@ export function createContext(data) {
     monsterById: new Map(data.monsters.map((m) => [m.id, m])),
     monsterStatsById: new Map(data.monsterStats.map((m) => [m.id, m])),
     monsterChildsById: groupBy(data.monsterChilds, (m) => m.monsterId),
+    // Enemy skill descriptions are keyed by the actual child/variant, not only its base monster.
+    monsterSkillsByChildId: groupBy(data.monsterSkills ?? [], (s) => s.childId),
+    enemyAIByChildId: new Map((data.enemyAI?.enemies ?? []).map((e) => [e.childId, e])),
+    enemyAIFileByPath: new Map((data.enemyAI?.aiFiles ?? []).map((f) => [f.path, f])),
     // ★ abyss_wave_monsters.monster_id 是 child_id，所以要按 childId 建一张索引。
     //   按父 monster_id 查会漏掉 921/7806 行。
     monsterChildByChildId: new Map(data.monsterChilds.map((m) => [m.childId, m])),
@@ -189,7 +193,13 @@ export function createContext(data) {
     floorByKey: new Map(data.abyssFloors.map((f) => [`${f.mode}:${f.seasonId}:${f.floorId}`, f])),
     abyssBuffByKey: groupBy(data.abyssBuffs, (b) => `${b.mode}:${b.seasonId}:${b.floorId}`),
     abyssTagByKey: groupBy(data.abyssTags, (t) => `${t.mode}:${t.seasonId}:${t.floorId}`),
+    abyssEventByKey: groupBy(data.abyssEvents ?? [], (e) => `${e.mode}:${e.seasonId}:${e.floorId}`),
     waveByKey: groupBy(data.abyssWave, (w) => `${w.mode}:${w.seasonId}:${w.floorId}`),
+    peakSeasonById: new Map((data.peak?.seasons ?? []).map((s) => [s.id, s])),
+    peakStageByKey: new Map((data.peak?.stages ?? []).map((s) => [`${s.seasonId}:${s.id}`, s])),
+    peakWaveByStageKey: groupBy(data.peak?.waves ?? [], (w) => `${w.seasonId}:${w.stageId}`),
+    peakMonsterByStageKey: groupBy(data.peak?.monsters ?? [], (m) => `${m.seasonId}:${m.stageId}`),
+    peakTagByStageKey: groupBy(data.peak?.tags ?? [], (t) => `${t.seasonId}:${t.stageId}`),
     levelCaps: data.levelCaps,   // [20,30,40,50,60,70,80]
   };
   return ctx;

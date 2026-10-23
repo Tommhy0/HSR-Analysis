@@ -408,10 +408,13 @@ test('白厄：终结技变身卡厄斯兰那（攻击 +80% / 生命上限 +270%
   stepBattle(b);
   const inserted=b.log.find(e=>e.type==='action'&&e.actor===u.id&&e.kind==='extra');
   assert.equal(inserted?.key,'skill','倒计时插入应按队伍行动策略选择强化战技');
-  assert.equal(inserted?.name,u.actions.enhancedSkill2.name,'插入强化战技需走真实动作替换路径');
+  assert.equal(inserted?.name,u.actions.enhancedSkill2.name,'持有4毁伤时插入强化战技需走死星天裁');
   assert.equal(u.resources['卡厄斯兰那回合'],u.kit.params.Ultra[3]-1,'第一段倒计时后应剩7段');
   // 变身中普攻 / 战技被替换
   assert.equal(b.rules.prepare(b,u,'basic','normal',u.actions.basic).name,k.skills['140808'].name);
+  u.resources['毁伤']=0;
+  assert.equal(b.rules.prepare(b,u,'skill','normal',u.actions.skill).name,k.skills['140809'].name,'毁伤不足时战技应为弑魂焚诏');
+  u.resources['毁伤']=4;
   assert.equal(b.rules.prepare(b,u,'skill','normal',u.actions.skill).name,k.skills['140811'].name);
 });
 

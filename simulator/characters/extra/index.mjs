@@ -26,7 +26,12 @@ import * as batch15 from './batch15.mjs';
 import * as batch16 from './batch16.mjs';
 import * as batch17 from './batch17.mjs';
 
-export const EXTRA_IDS=[],EXTRA_FACTORIES={},EXTRA_ACTIONS={},EXTRA_ERRORS=[];
+// The standalone bundler collects one declaration per export statement.
+// Keep every registry explicit so the HTML exports the action and runtime tables too.
+export const EXTRA_IDS=[];
+export const EXTRA_FACTORIES={};
+export const EXTRA_ACTIONS={};
+export const EXTRA_ERRORS=[];
 const MODULES=[
   ['batch04.mjs',batch04],['batch05.mjs',batch05],['batch06.mjs',batch06],['batch07.mjs',batch07],
   ['batch08.mjs',batch08],['batch09.mjs',batch09],['batch10.mjs',batch10],['batch11.mjs',batch11],

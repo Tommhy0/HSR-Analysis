@@ -8,6 +8,17 @@ const team=(b,u)=>b.units.filter(t=>live(t)&&t.side===u.side);
 const owner=(b,u)=>u.memospriteOwner?b.units.find(t=>t.id===u.memospriteOwner):u;
 const spirit=(b,u)=>b.units.find(t=>live(t)&&t.memospriteOwner===u.id);
 const isFollow=(a,kind,key)=>kind==='followup'||a.countAsFollowup===true||a.type==='FollowUp'||key==='dragon';
+// Input panels exclude equipped set passives. Entry checks use permanent equipment
+// speed only; combat-only character traces and teammate buffs cannot change Poet.
+export function relicOutsideSpeed(u){
+  let ratio=0;
+  for(const s of u.gear?.sets??[]){
+    if([114,121,125,130,133,320].includes(s.id))ratio+=s.p2[0];
+    if(s.count>=4&&s.id===102)ratio+=s.p4[0];
+    if(s.count>=4&&s.id===124)ratio-=s.p4[5];
+  }
+  return u.panel.speed+(u.baseSpeed??u.panel.speed)*ratio;
+}
 export const debuffCount=to=>new Set([...to.buffs.filter(e=>e.debuff),...to.dots].map(e=>e.group??e.id)).size+(to.battle?.units.filter(u=>live(u)&&u.side!==to.side&&u.kit?.characterId===1306&&u.kit.enhanced&&u.buffs.some(e=>e.tag==='illusion')).length??0);
 const imprisoned=to=>[...to.buffs,...to.dots].some(e=>e.control==='imprisonment');
 const defenseDown=to=>to.buffs.some(e=>e.key==='defShred'&&e.value>0||e.key==='defPct'&&e.value<0)||(to.battle?.units.some(u=>live(u)&&u.side!==to.side&&u.kit?.characterId===1306&&u.kit.enhanced&&u.kit.eidolon>=2&&u.buffs.some(e=>e.tag==='illusion'))??false);
@@ -25,6 +36,9 @@ export function relicRuntime({buff,stacks,record,energy,combatPanel}){
     if(s.id===131&&s.count>=4)stack(b,u,s,'marker',0,s.p4[1]);
   }
   function ready(b){for(const u of b.units.filter(live))for(const s of u.gear?.sets??[]){
+    if(s.id===124&&s.count>=4){const speed=relicOutsideSpeed(u),value=speed<s.p4[2]?s.p4[4]:speed<s.p4[1]?s.p4[3]:0;
+      if(value)buff(b,u,u,s.name+' · 暴击','critRate',value,null,{id:u.id+':relic:124:entry-crit'});
+    }
     if(s.id===305&&combatPanel(u).critDmg>=s.p2[1])add(b,u,s,'critRate',s.p2[2],null,{tag:'firstAttackCrit'});
     if(s.id===328)add(b,u,s,'dmgBoost',Math.min(s.p2[2],Math.max(0,u.energyMax-s.p2[0])*s.p2[1]));
     if(s.id===327&&u.astralExpress&&team(b,u).some(t=>t!==u&&!t.memospriteOwner&&t.astralExpress))add(b,u,s,'critDmg',s.p2[1]);
@@ -89,9 +103,13 @@ export function relicRuntime({buff,stacks,record,energy,combatPanel}){
     if(tier>(u.relicElationTier??0)){u.relicElationTier=tier;add(b,u,s,'critDmg',p[tier+2]);}
   }}finally{b.relicRefreshing=false;}}
   function panel(b,u,out,{skipAuras=false}={}){
-    const from=owner(b,u);if(from!==u)for(const s of from.gear?.sets??[]){const p=combatPanel(from,{skipAuras:true});
-      if(s.id===319&&p.hp>=s.p2[1])out.critDmg=(out.critDmg??0)+s.p2[2];
-      if(s.id===320&&p.speed>=s.p2[1])out.healingBoost=(out.healingBoost??0)+(p.speed>=s.p2[2]?s.p2[4]:s.p2[3]);
+    const from=owner(b,u);if(from!==u)for(const s of from.gear?.sets??[]){
+      // Only HP/speed thresholds need an owner panel. Exclude stat conversions:
+      // the owner's conversion may itself read this servant (RMC / Aglaea).
+      if(s.id===319||s.id===320){const p=combatPanel(from,{excludeConverted:true,skipAuras:true});
+        if(s.id===319&&p.hp>=s.p2[1])out.critDmg=(out.critDmg??0)+s.p2[2];
+        if(s.id===320&&p.speed>=s.p2[1])out.healingBoost=(out.healingBoost??0)+(p.speed>=s.p2[2]?s.p2[4]:s.p2[3]);
+      }
       if(s.id===124&&s.count>=4)out.critRate=(out.critRate??0)+from.buffs.filter(e=>e.name===s.name+' · 暴击').reduce((n,e)=>n+e.value,0);
     }
     const hero=four(u,123);if(hero&&spirit(b,u))out.speed+=(u.baseSpeed??u.panel.speed)*hero.p4[0];
@@ -99,6 +117,17 @@ export function relicRuntime({buff,stacks,record,energy,combatPanel}){
       const s=four(source,125);if(s&&source.buffs.some(e=>e.tag==='relicRain'))rain=Math.max(rain,s.p4[1]);
       const a=gear(source,323);if(a&&spirit(b,source))amphoreus=Math.max(amphoreus,a.p2[1]);
     }out.critDmg=(out.critDmg??0)+rain;out.speed+=(u.baseSpeed??u.panel.speed)*amphoreus;}
+  }
+  function servantPanel(b,u,base){
+    const out={...base};
+    // These bonuses are applied live by panel() to the servant. Remove them from
+    // its inherited snapshot so a summon never receives the same set bonus twice.
+    for(const s of u.gear?.sets??[]){
+      if(s.id===124&&s.count>=4)out.critRate-=u.buffs.filter(e=>e.name===s.name+' · 暴击').reduce((n,e)=>n+e.value,0);
+      if(s.id===319&&base.hp>=s.p2[1])out.critDmg-=s.p2[2];
+      if(s.id===320&&base.speed>=s.p2[1])out.healingBoost=(out.healingBoost??0)-(base.speed>=s.p2[2]?s.p2[4]:s.p2[3]);
+    }
+    return out;
   }
   function modifiers(b,u,to,a,kind){const out={dmgBoost:0,critRate:0,critDmg:0,defIgnore:0},n=debuffCount(to),p=combatPanel(u),from=owner(b,u);
     for(const s of u.gear?.sets??[]){const q=s.p4;
@@ -110,7 +139,7 @@ export function relicRuntime({buff,stacks,record,energy,combatPanel}){
       if(s.id===112){if(n)out.critRate+=q[0];if(imprisoned(to))out.critDmg+=q[1];}
       if(s.id===116)out.defIgnore+=Math.min(q[1],to.dots.filter(e=>!e.control).length)*q[0];
       if(s.id===117){const double=u.buffs.some(e=>e.tag==='pioneerDouble')?2:1;out.critRate+=q[0]*(double-1);out.critDmg+=(n>=q[4]?q[2]:n>=q[3]?q[1]:0)*double;}
-      if(s.id===119&&['break','break_dot','superbreak'].includes(kind)&&p.breakEffect>=q[0]){out.defIgnore+=q[2];if(kind==='superbreak'&&p.breakEffect>=q[1])out.defIgnore+=q[3];}
+      if(s.id===119&&(a.breakDamage||['break','break_dot','superbreak'].includes(kind))&&p.breakEffect>=q[0]){out.defIgnore+=q[2];if(kind==='superbreak'&&p.breakEffect>=q[1])out.defIgnore+=q[3];}
       if(s.id===131&&['BPSkill','Ultra'].includes(a.type))out.dmgBoost+=(marker(u,131)?.stacks??0)*q[0];
       if(s.id===132&&defenseDown(to))out.critDmg+=q[0];
       if(s.id===134&&a.type==='Normal')out.dmgBoost+=q[0];
@@ -127,5 +156,5 @@ export function relicRuntime({buff,stacks,record,energy,combatPanel}){
     for(const from of team(b,u)){const s=four(from,125);if(s&&from.buffs.some(e=>e.tag==='relicRain'))derived(from,s,'critDmg',s.p4[1],'甘霖存在；同类光环不叠加');const a=gear(from,323);if(a&&spirit(b,from))derived(from,a,'speedPct',a.p2[1],'忆灵在场；同类光环不叠加');}
     return out;
   }
-  return {start,ready,before,hit,after,attacked,healthConsumed,healed,debuff,broken,death,spSpent,turnStart,refresh,panel,modifiers,display};
+  return {start,ready,before,hit,after,attacked,healthConsumed,healed,debuff,broken,death,spSpent,turnStart,refresh,panel,servantPanel,modifiers,display};
 }

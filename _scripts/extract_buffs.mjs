@@ -160,7 +160,8 @@ export function extractDamage(norm, servantCtx = null) {
       target: /随机.*单体/.test(clauseText) ? 'random' : /相邻/.test(clauseText) ? 'adjacent'
         : /敌方全体|所有.*敌方目标/.test(clauseText)
           || (!/敌方单体|主目标/.test(clauseText) && /敌方全体/.test(sentenceTail)) ? 'all' : 'primary',
-      timing: /每回合开始|回合开始时|回合结束时|持续伤害/.test(sentenceTail) ? 'delayed' : 'direct',
+      timing: /每回合开始|回合开始时|回合结束时|持续伤害/.test(clauseText)
+        || /每回合开始|回合开始时|回合结束时/.test(norm.slice(sentenceStart,m.index)) ? 'delayed' : 'direct',
       conditional: /反击标记|概率|若|如果|对[^，。]*(?:处于|陷入|持有|拥有)/.test(norm.slice(sentenceStart, m.index)),
       text: clauseText,
     };

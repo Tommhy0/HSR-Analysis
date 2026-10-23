@@ -1,0 +1,1095 @@
+{
+  "datasetVersion": "4.6",
+  "members": [
+    {
+      "slot": 1,
+      "eidolon": 0,
+      "relics": [
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "HPDelta",
+          "rarity": 5,
+          "slot": 0,
+          "subs": [
+            {
+              "property": "CriticalChanceBase",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "AttackDelta",
+          "rarity": 5,
+          "slot": 1,
+          "subs": [
+            {
+              "property": "CriticalDamageBase",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "CriticalDamageBase",
+          "rarity": 5,
+          "slot": 2,
+          "subs": [
+            {
+              "property": "HPAddedRatio",
+              "rolls": [
+                0,
+                4,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "SpeedDelta",
+          "rarity": 5,
+          "slot": 3,
+          "subs": [
+            {
+              "property": "CriticalChanceBase",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "FireAddedRatio",
+          "rarity": 5,
+          "slot": 4,
+          "subs": [
+            {
+              "property": "HPAddedRatio",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "HPAddedRatio",
+          "rarity": 5,
+          "slot": 5,
+          "subs": [
+            {
+              "property": "SpeedDelta",
+              "rolls": [
+                0,
+                4,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        }
+      ],
+      "character": "千冶·刃",
+      "level": 80,
+      "lightcone": null,
+      "sets": [
+        {
+          "name": "叩问天工的名冶",
+          "count": 4
+        },
+        {
+          "name": "谧宁拾骨地",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "eidolon": 0,
+      "relics": [
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "HPDelta",
+          "rarity": 5,
+          "slot": 0,
+          "subs": [
+            {
+              "property": "CriticalChanceBase",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "AttackDelta",
+          "rarity": 5,
+          "slot": 1,
+          "subs": [
+            {
+              "property": "CriticalDamageBase",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "CriticalChanceBase",
+          "rarity": 5,
+          "slot": 2,
+          "subs": [
+            {
+              "property": "AttackAddedRatio",
+              "rolls": [
+                0,
+                4,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "SpeedDelta",
+          "rarity": 5,
+          "slot": 3,
+          "subs": [
+            {
+              "property": "CriticalDamageBase",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "ThunderAddedRatio",
+          "rarity": 5,
+          "slot": 4,
+          "subs": [
+            {
+              "property": "CriticalChanceBase",
+              "rolls": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "AttackAddedRatio",
+          "rarity": 5,
+          "slot": 5,
+          "subs": [
+            {
+              "property": "SpeedDelta",
+              "rolls": [
+                0,
+                4,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                1,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        }
+      ],
+      "character": "不死途",
+      "level": 80,
+      "lightcone": "唯有沉默",
+      "sets": [
+        {
+          "name": "毁烬焚骨的大公",
+          "count": 4
+        },
+        {
+          "name": "千星荟萃之城",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "slot": 3,
+      "eidolon": 0,
+      "relics": [
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "HPDelta",
+          "rarity": 5,
+          "slot": 0,
+          "subs": [
+            {
+              "property": "SpeedDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "AttackDelta",
+          "rarity": 5,
+          "slot": 1,
+          "subs": [
+            {
+              "property": "HPAddedRatio",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "HPAddedRatio",
+          "rarity": 5,
+          "slot": 2,
+          "subs": [
+            {
+              "property": "CriticalDamageBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "SpeedDelta",
+          "rarity": 5,
+          "slot": 3,
+          "subs": [
+            {
+              "property": "HPDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "WindAddedRatio",
+          "rarity": 5,
+          "slot": 4,
+          "subs": [
+            {
+              "property": "SpeedDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "SPRatioBase",
+          "rarity": 5,
+          "slot": 5,
+          "subs": [
+            {
+              "property": "HPAddedRatio",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        }
+      ],
+      "character": "知更鸟·晴歌",
+      "level": 80,
+      "lightcone": null,
+      "sets": [
+        {
+          "name": "再创天地的救世主",
+          "count": 4
+        },
+        {
+          "name": "永恒之地翁法罗斯",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "slot": 4,
+      "eidolon": 0,
+      "relics": [
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "HPDelta",
+          "rarity": 5,
+          "slot": 0,
+          "subs": [
+            {
+              "property": "AttackAddedRatio",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "AttackDelta",
+          "rarity": 5,
+          "slot": 1,
+          "subs": [
+            {
+              "property": "SpeedDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "AttackAddedRatio",
+          "rarity": 5,
+          "slot": 2,
+          "subs": [
+            {
+              "property": "HPAddedRatio",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "SpeedDelta",
+          "rarity": 5,
+          "slot": 3,
+          "subs": [
+            {
+              "property": "AttackAddedRatio",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "AttackAddedRatio",
+          "rarity": 5,
+          "slot": 4,
+          "subs": [
+            {
+              "property": "SpeedDelta",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        },
+        {
+          "enabled": true,
+          "initial": 4,
+          "main": "SPRatioBase",
+          "rarity": 5,
+          "slot": 5,
+          "subs": [
+            {
+              "property": "StatusResistanceBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "DefenceDelta",
+              "rolls": [
+                0,
+                3,
+                0
+              ]
+            },
+            {
+              "property": "BreakDamageAddedRatioBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "property": "StatusProbabilityBase",
+              "rolls": [
+                0,
+                2,
+                0
+              ]
+            }
+          ],
+          "level": 15
+        }
+      ],
+      "character": "丹恒·腾荒",
+      "level": 80,
+      "lightcone": null,
+      "sets": [
+        {
+          "name": "自匿星芒的隐士",
+          "count": 4
+        },
+        {
+          "name": "沉陆海域露莎卡",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "全员E0；不带各自专属光锥。按4.6本地推荐汇总设置主词条与遗器套装。",
+    "有效词条口径：优先副词条类别的强化次数；千冶·刃/不死途各28次，知更鸟·晴歌/丹恒·腾荒各14次。每件均为五星+15合法遗器，其余词条次数置于非优先属性。",
+    "本地战斗引擎暂未登记千冶·刃、知更鸟·晴歌、丹恒·腾荒可用的非专属光锥，因此这三人当前留空光锥；不死途使用已登记的四星「唯有沉默」。留空会低估白值/被动，结果仅作近似。"
+  ],
+  "schema": "hsr-analysis/team-v1"
+}

@@ -49,7 +49,7 @@ const adjacentOf=(b,u,to)=>{
   return [pool[at-1],pool[at+1]].filter(t=>t&&t.active!==false&&t.hp>1e-8);
 };
 // 超击破基础值公式与 `breaks.mjs` 的 superBreak 完全一致：等级基数 × 削韧/30 × (1+击破特攻) × 倍率。
-const superBreakValue=(from,toughness,ratio,panel)=>(BREAK_BASE[from.level]??0)*toughness/30*(1+(panel.breakEffect??0))*ratio;
+const superBreakValue=(from,toughness,ratio,panel)=>(BREAK_BASE[from.level]??0)*toughness/30*Math.max(0,1+(panel.breakEfficiency??0))*(1+(panel.breakEffect??0))*ratio;
 
 // ─────────────── 4.6 强化形态 1004（`characters[1004].enhanced['1']`，逐条取自该子记录）───────────────
 // descs：#1 使目标陷入【失重】，失重目标受到攻击时行动延后；#2 失重目标防御力降低；#3 效果命中按比例提高攻击力。
@@ -325,9 +325,9 @@ const factories={
       if(live(to)){to.broken=true;b.rules.relics.broken(b,u,to);b.breaks.apply(b,u,to,'Fire');}
     }
     // 超击破：把本次攻击的削韧值按天赋 #1=100% 转化（队友攻击同样生效）。
-    const superOf=(b,u,from,to,toughness)=>{
+    const superOf=(b,u,from,to,toughness,breakEfficiency)=>{
       if(!live(to)||!(toughness>0))return;
-      b.breaks.superBreak(b,from,to,toughness,u.kit.params.Talent[0],from.element??u.element);
+      b.breaks.superBreak(b,from,to,toughness,u.kit.params.Talent[0],from.element??u.element,{breakEfficiency});
     };
     const toughOf=(a,to,main)=>main?(a.toughness??0):(a.adjacentToughness??a.toughness??0);
     return {
@@ -338,6 +338,8 @@ const factories={
         for(const to of enemies(b,u))setCloud(b,u,to);
       },
       waveStart(b,u){for(const to of enemies(b,u))setCloud(b,u,to);},
+      shouldUseSkill(b,u){const target=allies(b,u).find(t=>t.id===u.policy?.allyTargetId)??allies(b,u).find(t=>t!==u);
+        return !burning(u)||!target||!fox(target);},
       // 战技：指定我方单体获得【狐祈】、自身进入【炽灼】#1=3 回合（E6 时狐祈对我方全体生效）。
       before(b,u,actor,key,kind,a,selected){
         if(actor!==u||kind==='copy')return;
@@ -391,7 +393,7 @@ const factories={
         const p=u.kit.params,targets=hitTargets.filter(live),main=selected[0];
         for(const to of targets){
           const t=toughOf(a,to,main&&to.id===main.id);
-          if(to.broken)superOf(b,u,actor,to,t);
+          if(to.broken)superOf(b,u,actor,to,t,a.superBreakEfficiency);
           if(to.broken)reduceCloud(b,u,to,t);
         }
         // 清理临时标记（狐祈削韧 / 终结技无视弱点）。
@@ -424,9 +426,9 @@ const factories={
       },
       modifiers(b,u,actor,to,a,kind){
         const out={};
-        if(rank(u,4)&&['break','break_dot','superbreak'].includes(kind)&&actor.side===u.side&&actor!==u
+        if(rank(u,4)&&(a?.breakDamage||['break','break_dot','break_additional','superbreak'].includes(kind))&&actor.side===u.side
            &&actor.buffs.some(e=>e.tag==='fugueFoxBreak'))
-          out.dmgBoost=(out.dmgBoost??0)+rank(u,4);
+          out.breakDmgBoost=(out.breakDmgBoost??0)+rank(u,4);
         void a;void to;
         return out;
       },
@@ -442,11 +444,11 @@ const factories={
     const isDancer=(u,t)=>t.buffs.some(e=>e.tag==='dahliaDancer'&&e.source===u.id);
     let weaknessSnapshot=new Map();
     // 超击破：已击破目标走 breaks.superBreak；结界期间未击破目标也能转化（用 breaks.damage 按同一公式结算）。
-    function superHit(b,u,from,to,toughness,ratio,allowUnbroken){
+    function superHit(b,u,from,to,toughness,ratio,allowUnbroken,breakEfficiency){
       if(!live(to)||!(toughness>0)||!(ratio>0))return;
-      if(to.broken){b.breaks.superBreak(b,from,to,toughness,ratio,from.element??u.element);return;}
+      if(to.broken){b.breaks.superBreak(b,from,to,toughness,ratio,from.element??u.element,{breakEfficiency});return;}
       if(!allowUnbroken||!field(u))return;
-      const value=superBreakValue(from,toughness,ratio,combatPanel(from));
+      const p=combatPanel(from),value=superBreakValue(from,toughness,ratio,{...p,breakEfficiency:breakEfficiency??p.breakEfficiency});
       b.breaks.damage(b,from,to,value,from.element??u.element,false,'superbreak');
     }
     function openField(b,u){
@@ -546,7 +548,7 @@ const factories={
       // 天赋：另一位【共舞者】攻击后大丽花发动追加攻击（每回合 #1=1 次）。
       afterHit(b,u,actor,to,a,kind){
         // 只有「攻击」才触发；持续伤害 tick（含击破持续伤害）与附加伤害不算攻击。
-        if(['dot','break_dot','superbreak','additional','true'].includes(kind))return;
+        if(['dot','break_dot','break_additional','superbreak','additional','true'].includes(kind))return;
         if(actor.side!==u.side||actor===u||!live(to)||to.side===u.side)return;
         if(!isDancer(u,actor))return;
         if(u.resources['追击触发回合']===u.turns)return;
@@ -562,7 +564,7 @@ const factories={
           if(isSelf||rank(u,1))ratio=p.Talent[4]*(isSelf&&rank(u,1)?1+rank(u,1,3):1);
           for(const to of targets){
             const t=main&&to.id===main.id?(a.toughness??0):(a.adjacentToughness??a.toughness??0);
-            superHit(b,u,actor,to,t,ratio,true);
+            superHit(b,u,actor,to,t,ratio,true,a.superBreakEfficiency);
             e1FixedStance(b,u,actor,to);
           }
         }
@@ -577,7 +579,7 @@ const factories={
           // E6：施放追击时使所有【共舞者】下一次行动提前 #2=20%。
           if(rank(u,6))for(const d of dancers(b))advance(b,d.id,rank(u,6,1));
           // 天赋：追击对已击破目标造成伤害后按 #3=200% 转化超击破。
-          for(const to of targets)superHit(b,u,u,to,S(1321,132104,0),p.Talent[2],false);
+          for(const to of targets)superHit(b,u,u,to,S(1321,132104,0),p.Talent[2],false,a.superBreakEfficiency);
         }
         // 行迹「弃旧，恋新」：我方为敌方添加弱点 → 速度 +#3=30% 持续 #4=2 回合；
         // 火属性角色添加弱点时，攻击后对每个新加弱点的目标补 #5=20 固定火削韧并回能（上限 #1=50%）。
@@ -723,7 +725,7 @@ const factories={
       // 老主顾受到其他我方目标攻击 → 立即追加攻击（每回合 #3=1 次）；E4 额外附加伤害 #1=50%。
       afterHit(b,u,actor,to,a,kind){
         // 「受到我方其他目标攻击后」不包含持续伤害 tick / 附加伤害。
-        if(['dot','break_dot','superbreak','additional','true'].includes(kind))return;
+        if(['dot','break_dot','break_additional','superbreak','additional','true'].includes(kind))return;
         if(actor===u||actor.side!==u.side||to.side===u.side||!live(to))return;
         if(!mark(to))return;
         if(rank(u,4))damageTo(b,u,to,{name:'赛飞儿 E4 · 附加伤害',type:'Additional',element:'Quantum',

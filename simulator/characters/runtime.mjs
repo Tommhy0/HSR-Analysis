@@ -31,6 +31,14 @@ export function rosterRuntime(api){const handlers=Object.fromEntries(Object.entr
     for(const u of owners)handlers[u.characterId]?.[name]?.(b,u,...args);};
   return {
     shouldUseSkill(b,u){return active(u)?handlers[u.characterId]?.shouldUseSkill?.(b,u):undefined;},
+    shouldUseUltimate(b,u){return active(u)?handlers[u.characterId]?.shouldUseUltimate?.(b,u):undefined;},
+    continueAction(b,actor,key){
+      for(const u of b.units.filter(active)){
+        const next=handlers[u.characterId]?.continueAction?.(b,u,actor,key);
+        if(next)return next;
+      }
+      return null;
+    },
     actionEventStart:(b,u,e)=>active(u)?handlers[u.characterId]?.actionEventStart?.(b,u,e):undefined,
     actionEventEnd:(b,u,e,result)=>active(u)?handlers[u.characterId]?.actionEventEnd?.(b,u,e,result):undefined,
     summonTurn:(b,u,s)=>active(u)?handlers[u.characterId]?.summonTurn?.(b,u,s):undefined,

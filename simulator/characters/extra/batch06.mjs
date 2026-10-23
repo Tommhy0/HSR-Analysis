@@ -258,6 +258,8 @@ const factories={
         if(to)b.queue.push({actor:u.id,key:'superCounter',kind:'followup',targetId:to.id});
       },
       start(b,u){resource(b,u,'格挡到期',0);resource(b,u,'格挡已触发',0);resource(b,u,'灼毂',0);resource(b,u,'反击次数',0);},
+      shouldUseUltimate(b,u){return !blocked(u)&&(['afterAction','afterTurn'].includes(u.policy?.ultimateTiming)||
+        b.units.some(t=>t.id===b.ultimateWindowActor&&t.side!==u.side&&live(t)));},
       before(b,u,actor,key,kind,a){
         void key;void kind;
         // E6：格挡期间敌方主动施放技能时触发【勘破•灭】并移除【格挡】。

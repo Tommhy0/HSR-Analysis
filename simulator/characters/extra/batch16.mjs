@@ -281,10 +281,9 @@ function preservation(api){
 // 秘技 800507：下一次战斗开始时我方全体击破特攻 +Maze[0]=30%、Maze[1]=2 回合。
 // E1 首次战技后回 1 战技点；E2 开场回能效率 +25% 持续 3 回合；E4 队友击破特攻 + 开拓者 15%。
 //
-// 【与 batch08 已登记的 8006 的一处削韧口径差异（已核对原始脚本）】8005/8006 的 Skill02_Phase02 弹射
+// 8005/8006 的 Skill02_Phase02 弹射
 // 节点与艾丝妲 100902 的弹射节点结构完全相同：`StanceValue = 0.5 × 1659254037`（技能削韧哈希），
-// 而仓库对艾丝妲登记的 `bounceToughness` 就是 `0.5 × stance[0] = 15`。因此本文件对 8005 取 15；
-// batch08 的 8006 取的是 `stance[2] = 30`——两者差一倍，属既有批次的独立判断，本批不改动它。
+// 与艾丝妲一致，两种性别均使用 `0.5 × stance[0] = 15`。
 function harmony(api){
   const {live,allies,enemies,rank,trace,buff,resource,energy,sp,delay,combatPanel,record}=api;
   const DANCE_TAG='hmcDance';
@@ -338,7 +337,7 @@ function harmony(api){
     // 【伴舞】超击破：我方持有者攻击处于弱点击破状态的目标后，按本次削韧 ×Ultra[1] 触发 1 次超击破。
     afterHit(b,u,actor,to,a,kind){
       if(!actor||actor.side!==u.side||!to||to.side===u.side)return;
-      if(['dot','additional','break','break_dot','superbreak','true'].includes(kind))return;
+      if(['dot','additional','break','break_dot','break_additional','superbreak','true'].includes(kind))return;
       if(!to.broken||to.hp<=0)return;
       if(!hasDance(actor))return;
       const shares=a.hitShares??[1],seg=(a.segment??1)-1;
@@ -347,13 +346,13 @@ function harmony(api){
       const base=primary?(a.toughness??0):(a.adjacentToughness??a.toughness??0);
       if(!(base>0))return;
       const share=seg<shares.length?shares[seg]:1;
-      b.breaks.superBreak(b,actor,to,base*share,u.kit.params.Ultra[1],actor.element);
+      b.breaks.superBreak(b,actor,to,base*share,u.kit.params.Ultra[1],actor.element,{source:u.id});
     },
     modifiers(b,u,actor,to,a,kind){
       void to;void a;
       if(kind!=='superbreak'||!actor||actor.side!==u.side)return {};
-      if(!hasDance(actor))return {};
-      return {dmgBoost:danceBonus(b,u)};
+      if(!hasDance(actor)||a?.superBreakSource!==u.id)return {};
+      return {superBreakDmgBoost:danceBonus(b,u)};
     },
   };
 }
@@ -393,6 +392,7 @@ function elation(api){
     if(!n)return;
     b.laughter[u.side]=(b.laughter[u.side]??0)+n;
     record(b,'resource',u,{name:'累计获得笑点',value:b.laughter[u.side],reason:reason??'笑点'});
+    b.rules?.laughterGained?.(b,u.side,n,u,reason??'笑点');
   }
   // 好活当赏：每次获得的层数独立计时，基础持续 2 回合（额外效果 10000029）。
   // 接收者自身的延长效果按各自的 4.6 文本生效，与发放者是谁无关：

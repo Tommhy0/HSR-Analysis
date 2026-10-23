@@ -12,7 +12,7 @@ export function ruanmei(api){const {allies,live,rank,trace,buff,energy,resource,
   const iceBreakBase=(u,to)=>{const level=BREAK_BASE[u.level];if(!Number.isFinite(level))return null;
     return level*(1+(combatPanel(u).breakEffect??0))*(.5+(to.toughnessMax??0)/120);};
   const breakDamage=(b,u,to,mult)=>{const base=iceBreakBase(u,to);if(base==null)return;
-    b.breaks.damage(b,u,to,base*mult,'Ice',false,'break_dot');};
+    b.breaks.damage(b,u,to,base*mult,'Ice',false,'break_additional');};
   // 行迹「落烛照水燃」：击破特攻超过 120% 后每 10% 让战技增伤再提高 6%，上限 36%。
   const stringValue=u=>{const p=u.kit.params,base=p.BPSkill[0],t=trace(u,3);if(!t)return base;
     const be=combatPanel(u).breakEffect??0,steps=Math.floor(Math.max(0,be-t[0])/t[1]+1e-9);

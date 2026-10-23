@@ -385,7 +385,7 @@ test('1321 大丽花：追击命中已击破目标按 #3 转化超击破；行�
   b.rules.after(b,u,'followup','followup',u.actions.followup,[en],[en]);
   const sb=dmgOf(b,u.id,'superbreak');
   assert.equal(sb.length,1,'追击命中已击破目标应转化超击破');
-  near(baseOf(sb[0]),BREAK_BASE[u.level]*ROSTER_DATA[1321].skills['132104'].stance[0]/30*(1+combatPanel(u).breakEffect)*p.Talent[2]);
+  near(baseOf(sb[0]),BREAK_BASE[u.level]*ROSTER_DATA[1321].skills['132104'].stance[0]/30*(1+combatPanel(u).breakEffect)*(1+(combatPanel(u).breakEfficiency??0))*p.Talent[2]);
   b.rules.after(b,u,'followup','followup',u.actions.followup,[en],[en]);
   assert.equal(b.sp,sp0+1,'每 2 次追击应回 1 点战技点');
   assert.ok(m.distance<d0,'E6 应使共舞者行动提前');
